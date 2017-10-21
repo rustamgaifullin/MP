@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">MP</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="no_network_message">No network connection available.</string>
+    <string name="requre_google_play_services">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
+    <string name="access_to_contacts">This app needs to access your Google account (via Contacts).</string>
+    <string name="welcome_message">Welcome! To continue with the application you need to sign in with your Google Account</string>
+    <string name="sign_in_button">Sign In</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="button_add">Add</string>
+</resources>
