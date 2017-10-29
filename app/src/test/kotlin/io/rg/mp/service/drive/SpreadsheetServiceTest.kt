@@ -6,18 +6,20 @@ import com.google.api.services.drive.model.FileList
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.service.SubscribableTest
 import io.rg.mp.service.data.SpreadsheetList
 import org.junit.Before
 import org.junit.Test
 
-class SpreadsheetServiceTest {
+class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
 
     private val drive: Drive = mock ()
     private val files: Drive.Files = mock ()
     private val list: Drive.Files.List = mock()
     private val fileList: FileList = mock()
+
+    private lateinit var sut: SpreadsheetService
 
     @Before
     fun setup() {
@@ -25,25 +27,37 @@ class SpreadsheetServiceTest {
         whenever(files.list()).thenReturn(list)
         whenever(list.setQ(any())).thenReturn(list)
         whenever(list.execute()).thenReturn(fileList)
+
+        sut = SpreadsheetService(drive)
     }
 
     @Test
-    fun should_return_list_of_spreadsheets() {
+    fun `should return list of spreadsheets`() {
         //given
-        val sut = SpreadsheetService(drive)
-        val testSubscriber = TestSubscriber<SpreadsheetList>()
-
-        //when
         val file: File = mock {
             on { id }.thenReturn("0")
             on { name }.thenReturn("name")
         }
+
+        //when
         whenever(fileList.files).thenReturn(listOf(file))
         sut.list().subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
         testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name"))))
+        testSubscriber.assertComplete()
+    }
+
+    @Test
+    fun `should complete stream when no values retrieved`() {
+        //when
+        whenever(fileList.files).thenReturn(null)
+        sut.list().subscribe(testSubscriber)
+
+        //then
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNoValues()
         testSubscriber.assertComplete()
     }
 
