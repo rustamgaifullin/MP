@@ -17,7 +17,7 @@ class CategoryRetrieverService (private val googleSheetService: Sheets) {
 
             var categoryList = emptyList<Category>()
 
-            if (response.getValues() != null && response.getValues().size > 0) {
+            if (response.getValues() != null) {
                 categoryList = response.getValues().map {
                     Category(it[0].toString(), sheetId)
                 }
