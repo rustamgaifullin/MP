@@ -17,7 +17,8 @@ class ExpenseService(private val googleSheetService: Sheets) {
             val result = googleSheetService
                     .spreadsheets()
                     .values()
-                    .append(spreadsheetId, "Transactions!B6:E6", body)
+                    .append(spreadsheetId, "Transactions!B5:E5", body)
+                    .setValueInputOption("USER_ENTERED")
                     .execute()
 
             if (result.tableRange.isNotEmpty()) {

@@ -10,9 +10,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Adapter
-import android.widget.AdapterView
-import android.widget.Spinner
+import android.widget.*
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -22,13 +20,19 @@ import io.reactivex.schedulers.Schedulers
 import io.rg.mp.R
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
+import io.rg.mp.persistence.entity.Category
+import io.rg.mp.service.data.Expense
+import io.rg.mp.service.data.NotSaved
+import io.rg.mp.service.data.Saved
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryRetrieverService
+import io.rg.mp.service.sheet.ExpenseService
 import io.rg.mp.ui.main.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.main.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.utils.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
+import java.util.*
 import javax.inject.Inject
 
 
@@ -43,17 +47,21 @@ class MainFragment : Fragment() {
 
     @Inject lateinit var categoryService: CategoryRetrieverService
     @Inject lateinit var spreadsheetService: SpreadsheetService
+    @Inject lateinit var expenseService: ExpenseService
     @Inject lateinit var categoryDao: CategoryDao
     @Inject lateinit var spreadsheetDao: SpreadsheetDao
     @Inject lateinit var toasts: Toasts
     @Inject lateinit var preferences: Preferences
     @Inject lateinit var credential: GoogleAccountCredential
 
-    lateinit var categorySpinner: Spinner
-    lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
+    private lateinit var categorySpinner: Spinner
+    private lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
 
-    lateinit var spreadsheetSpinner: Spinner
-    lateinit var spreadsheetSpinnerAdapter: SpreadsheetSpinnerAdapter
+    private lateinit var spreadsheetSpinner: Spinner
+    private lateinit var spreadsheetSpinnerAdapter: SpreadsheetSpinnerAdapter
+
+    private lateinit var addButton: Button
+    private lateinit var amountEditText: EditText
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -84,6 +92,28 @@ class MainFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<out Adapter>?) {}
         }
 
+        amountEditText = view.findViewById(R.id.amount_edit_text)
+        addButton = view.findViewById(R.id.add_button)
+
+        addButton.setOnClickListener {
+            val amount = amountEditText.text.toString().toFloat()
+            val date = Date()
+            val category = categorySpinner.selectedItem as Category
+            val description = ""
+
+            val expense = Expense(date, amount, description, category)
+
+            expenseService.save(expense, preferences.spreadsheetId)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        when(it) {
+                            is Saved -> toasts.shortToast(activity, "Saved")
+                            is NotSaved -> toasts.shortToast(activity, "Not saved")
+                        }
+                    }
+        }
+
         return view
     }
 
@@ -91,10 +121,6 @@ class MainFragment : Fragment() {
         super.onStart()
 
         getResultsFromApi()
-    }
-
-    override fun onResume() {
-        super.onResume()
     }
 
     override fun onActivityResult(
