@@ -7,4 +7,6 @@ data class Expense(
         val date: Date,
         val amount: Float,
         val description: String,
-        val category: Category)
+        val category: Category) {
+    fun asCellsList() = listOf(date, amount, description, category.name)
+}
