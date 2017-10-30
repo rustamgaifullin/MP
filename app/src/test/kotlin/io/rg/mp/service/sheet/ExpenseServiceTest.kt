@@ -35,12 +35,13 @@ class ExpenseServiceTest: SubscribableTest<Result>() {
     fun `should successfully save expense item`() {
         //given
         val expense = Expense(Date(), 5.5f, "", Category("", ""))
-        val appendReusult: AppendValuesResponse = mock()
+        val appendResult: AppendValuesResponse = mock()
 
         //when
         whenever(values.append(any(), any(), any())).thenReturn(append)
-        whenever(append.execute()).thenReturn(appendReusult)
-        whenever(appendReusult.tableRange).thenReturn("A1:A2")
+        whenever(append.setValueInputOption(any())).thenReturn(append)
+        whenever(append.execute()).thenReturn(appendResult)
+        whenever(appendResult.tableRange).thenReturn("A1:A2")
         sut.save(expense, "").subscribe(testSubscriber)
 
         //then
