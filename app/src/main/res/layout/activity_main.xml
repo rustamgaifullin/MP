@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.rg.mp.ui.main.MainActivity">
-
-    <include layout="@layout/content_main" />
-
+    android:id="@+id/main_container"
+    tools:context="io.rg.mp.ui.MainActivity">
 </android.support.design.widget.CoordinatorLayout>

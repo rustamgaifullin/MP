@@ -1,4 +1,4 @@
-package io.rg.mp.ui.main.adapter
+package io.rg.mp.ui.expense.adapter
 
 import android.content.Context
 import android.view.LayoutInflater

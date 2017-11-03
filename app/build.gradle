@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
 apply plugin: "kotlin-kapt"
+apply plugin: 'kotlin-android-extensions'
 
 buildscript {
     ext {
@@ -13,8 +14,8 @@ buildscript {
         support_library_version = "26.1.0"
         constraintlayout_version = "1.0.2"
         rxandroid_version = "2.0.1"
-        android_espresso_version = "2.2.2"
-        android_support_test_version = "0.5"
+        android_espresso_version = "3.0.1"
+        android_support_test_version = "1.0.1"
         uiautomator_version = "2.1.2"
         mockito_kotlin_version = "1.5.0"
         room_version = "1.0.0-rc1"
@@ -24,6 +25,7 @@ buildscript {
         google_play_services_version = "11.4.2"
         easy_permission_version = "0.3.0"
         dagger_version = "2.12"
+        multidex_version = "1.0.2"
     }
 
     repositories {
@@ -82,7 +84,6 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "com.android.support.constraint:constraint-layout:$constraintlayout_version"
     compile "com.android.support:appcompat-v7:$support_library_version"
-    compile "com.android.support:recyclerview-v7:$support_library_version"
     compile "com.android.support:design:$support_library_version"
     compile "com.android.support:support-annotations:$support_library_version"
     compile "com.android.support:support-v4:$support_library_version"
@@ -110,6 +111,8 @@ dependencies {
     compile "com.google.dagger:dagger:$dagger_version"
     compile "com.google.dagger:dagger-android:$dagger_version"
     compile "com.google.dagger:dagger-android-support:$dagger_version"
+
+    compile "com.android.support:multidex:$multidex_version"
 
     kapt "android.arch.persistence.room:compiler:$room_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
