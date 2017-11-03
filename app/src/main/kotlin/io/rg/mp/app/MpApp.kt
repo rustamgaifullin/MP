@@ -1,14 +1,14 @@
 package io.rg.mp.app
 
 import android.app.Activity
-import android.app.Application
+import android.support.multidex.MultiDexApplication
 import android.support.v4.app.Fragment
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
 import javax.inject.Inject
 
-class MpApp : Application(), HasActivityInjector, HasSupportFragmentInjector {
+class MpApp : MultiDexApplication(), HasActivityInjector, HasSupportFragmentInjector {
     @Inject lateinit var dispatchingFragmentInjector: DispatchingAndroidInjector<Fragment>
     @Inject lateinit var dispatchingActivityInjector: DispatchingAndroidInjector<Activity>
 
