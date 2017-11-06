@@ -55,6 +55,18 @@ class CategoryServiceTest : SubscribableTest<CategoryList>() {
     }
 
     @Test
+    fun `should return empty list when one row with no cells retrieved`() {
+        //when
+        setToResponse(listOf(emptyList()))
+        sut.getListBy("").subscribe(testSubscriber)
+
+        //then
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertValue { (list) -> list.isEmpty() }
+        testSubscriber.assertComplete()
+    }
+
+    @Test
     fun `should return empty list when null occurs`() {
         //when
         setToResponse(null)

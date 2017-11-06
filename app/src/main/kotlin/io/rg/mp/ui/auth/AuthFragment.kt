@@ -14,8 +14,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import dagger.android.support.AndroidSupportInjection
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import io.rg.mp.R
+import io.rg.mp.service.drive.SpreadsheetList
+import io.rg.mp.service.drive.SpreadsheetService
+import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.utils.Preferences
 import io.rg.mp.utils.Toasts
@@ -38,6 +44,8 @@ class AuthFragment : Fragment() {
     @Inject lateinit var toasts: Toasts
     @Inject lateinit var preferences: Preferences
     @Inject lateinit var credential: GoogleAccountCredential
+    @Inject lateinit var categoryService: dagger.Lazy<CategoryService>
+    @Inject lateinit var spreadsheetService: dagger.Lazy<SpreadsheetService>
 
     private lateinit var beginButton: Button
 
@@ -68,7 +76,7 @@ class AuthFragment : Fragment() {
         } else if (!activity.isDeviceOnline()) {
             toasts.noNetwork(activity)
         } else {
-            finish()
+            downloadSpreadsheets()
         }
     }
 
@@ -133,9 +141,30 @@ class AuthFragment : Fragment() {
         }
     }
 
-    private fun finish() {
-        val transaction = fragmentManager.beginTransaction()
-        transaction.replace(R.id.main_container, ExpenseFragment())
-        transaction.commit()
+    private fun downloadSpreadsheets() {
+        spreadsheetService.get().list()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        finish(),
+                        handleErrors()
+                )
+    }
+
+    private fun handleErrors(): (Throwable) -> Unit {
+        return {
+            when (it) {
+                is UserRecoverableAuthIOException ->
+                    startActivityForResult(it.intent, REQUEST_AUTHORIZATION)
+            }
+        }
+    }
+
+    private fun finish(): (SpreadsheetList) -> Unit {
+        return {
+            val transaction = fragmentManager.beginTransaction()
+            transaction.replace(R.id.main_container, ExpenseFragment())
+            transaction.commit()
+        }
     }
 }
