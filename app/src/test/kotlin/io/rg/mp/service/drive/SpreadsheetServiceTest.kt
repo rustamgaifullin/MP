@@ -8,7 +8,6 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.service.SubscribableTest
-import io.rg.mp.service.data.SpreadsheetList
 import org.junit.Before
 import org.junit.Test
 
