@@ -4,7 +4,6 @@ import com.google.api.services.drive.Drive
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.service.data.SpreadsheetList
 
 class SpreadsheetService(private val drive: Drive) {
 

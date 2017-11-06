@@ -6,9 +6,11 @@ import android.support.v4.app.Fragment
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
+import io.rg.mp.persistence.PersistenceModule
+import io.rg.mp.service.ServiceModule
 import javax.inject.Inject
 
-class MpApp : MultiDexApplication(), HasActivityInjector, HasSupportFragmentInjector {
+class MpApplication : MultiDexApplication(), HasActivityInjector, HasSupportFragmentInjector {
     @Inject lateinit var dispatchingFragmentInjector: DispatchingAndroidInjector<Fragment>
     @Inject lateinit var dispatchingActivityInjector: DispatchingAndroidInjector<Activity>
 

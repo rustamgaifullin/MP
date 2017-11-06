@@ -1,4 +1,4 @@
-package io.rg.mp.app
+package io.rg.mp.service
 
 import android.content.Context
 import com.google.api.client.extensions.android.http.AndroidHttp
@@ -10,16 +10,28 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.sheets.v4.Sheets
 import dagger.Module
 import dagger.Provides
-import io.rg.mp.service.Scopes
+import io.rg.mp.service.config.ApplicationName
+import io.rg.mp.service.config.Scopes
 import io.rg.mp.utils.Preferences
+import javax.inject.Singleton
 
 @Module
 class ServiceModule {
-    @Provides fun transport(): HttpTransport = AndroidHttp.newCompatibleTransport()
-    @Provides fun jsonFactory(): JacksonFactory = JacksonFactory.getDefaultInstance()
-    @Provides fun scopes() = Scopes()
+    @Provides
+    @Singleton
+    fun transport(): HttpTransport = AndroidHttp.newCompatibleTransport()
 
-    @Provides fun credential(
+    @Provides
+    @Singleton
+    fun jsonFactory(): JacksonFactory = JacksonFactory.getDefaultInstance()
+
+    @Provides
+    @Singleton
+    fun scopes() = Scopes()
+
+    @Provides
+    @Singleton
+    fun credential(
             context: Context,
             scopes: Scopes,
             preferences: Preferences): GoogleAccountCredential {
@@ -28,21 +40,25 @@ class ServiceModule {
                 .setSelectedAccountName(preferences.accountName)
     }
 
-    @Provides fun createSheetsService(
+    @Provides
+    @Singleton
+    fun createSheetsService(
             credential: GoogleAccountCredential,
             httpTransport: HttpTransport,
             jsonFactory: JacksonFactory): Sheets {
         return Sheets.Builder(httpTransport, jsonFactory, credential)
-                .setApplicationName("MP_Sheets/1.0")
+                .setApplicationName(ApplicationName.SHEET)
                 .build()
     }
 
-    @Provides fun createDriveService(
+    @Provides
+    @Singleton
+    fun createDriveService(
             credential: GoogleAccountCredential,
             httpTransport: HttpTransport,
             jsonFactory: JacksonFactory): Drive {
         return Drive.Builder(httpTransport, jsonFactory, credential)
-                .setApplicationName("MP_Drive/1.0")
+                .setApplicationName(ApplicationName.DRIVE)
                 .build()
     }
 }

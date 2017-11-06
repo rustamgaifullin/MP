@@ -7,14 +7,14 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.service.SubscribableTest
-import io.rg.mp.service.data.Expense
-import io.rg.mp.service.data.Result
-import io.rg.mp.service.data.Saved
+import io.rg.mp.service.sheet.data.Expense
+import io.rg.mp.service.sheet.data.Result
+import io.rg.mp.service.sheet.data.Saved
 import org.junit.Before
 import org.junit.Test
-import java.util.*
+import java.util.Date
 
-class ExpenseServiceTest: SubscribableTest<Result>() {
+class ExpenseServiceTest : SubscribableTest<Result>() {
 
     private val sheetsService: Sheets = mock()
     private val spreadsheets: Sheets.Spreadsheets = mock()
@@ -46,7 +46,7 @@ class ExpenseServiceTest: SubscribableTest<Result>() {
 
         //then
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { result ->  result is Saved }
+        testSubscriber.assertValue { result -> result is Saved }
         testSubscriber.assertComplete()
     }
 }

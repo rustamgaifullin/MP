@@ -3,10 +3,10 @@ package io.rg.mp.service.sheet
 import com.google.api.services.sheets.v4.Sheets
 import io.reactivex.Flowable
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.service.data.CategoryList
+import io.rg.mp.service.sheet.data.CategoryList
 
-class CategoryRetrieverService (private val googleSheetService: Sheets) {
-    fun all(sheetId: String): Flowable<CategoryList> {
+class CategoryService(private val googleSheetService: Sheets) {
+    fun getListBy(sheetId: String): Flowable<CategoryList> {
         return Flowable.fromCallable {
             val range = "B29:\$B"
             val response = googleSheetService
@@ -25,9 +25,5 @@ class CategoryRetrieverService (private val googleSheetService: Sheets) {
 
             CategoryList(categoryList)
         }
-    }
-
-    fun save(data: Category): Boolean {
-        return true
     }
 }

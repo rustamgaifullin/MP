@@ -17,7 +17,11 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import dagger.android.support.AndroidSupportInjection
 import io.rg.mp.R
 import io.rg.mp.ui.expense.ExpenseFragment
-import io.rg.mp.utils.*
+import io.rg.mp.utils.Preferences
+import io.rg.mp.utils.Toasts
+import io.rg.mp.utils.acquireGooglePlayServices
+import io.rg.mp.utils.isDeviceOnline
+import io.rg.mp.utils.isGooglePlayServicesAvailable
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject

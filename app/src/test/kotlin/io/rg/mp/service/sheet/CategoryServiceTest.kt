@@ -7,25 +7,24 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.service.SubscribableTest
-import io.rg.mp.service.data.CategoryList
-import org.junit.Assert
+import io.rg.mp.service.sheet.data.CategoryList
 import org.junit.Before
 import org.junit.Test
 
-class CategoryRetrieverServiceTest: SubscribableTest<CategoryList>() {
+class CategoryServiceTest : SubscribableTest<CategoryList>() {
 
     private val sheetsService: Sheets = mock()
     private val spreadsheets: Sheets.Spreadsheets = mock()
     private val values: Sheets.Spreadsheets.Values = mock()
 
-    private lateinit var sut: CategoryRetrieverService
+    private lateinit var sut: CategoryService
 
     @Before
     fun setup() {
         whenever(sheetsService.spreadsheets()).thenReturn(spreadsheets)
         whenever(spreadsheets.values()).thenReturn(values)
 
-        sut = CategoryRetrieverService(sheetsService)
+        sut = CategoryService(sheetsService)
     }
 
     @Test
@@ -35,7 +34,7 @@ class CategoryRetrieverServiceTest: SubscribableTest<CategoryList>() {
 
         //when
         setToResponse(listOfCategories)
-        sut.all("").subscribe(testSubscriber)
+        sut.getListBy("").subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
@@ -47,7 +46,7 @@ class CategoryRetrieverServiceTest: SubscribableTest<CategoryList>() {
     fun `should return empty list when no values retrieved`() {
         //when
         setToResponse(emptyList())
-        sut.all("").subscribe(testSubscriber)
+        sut.getListBy("").subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
@@ -59,7 +58,7 @@ class CategoryRetrieverServiceTest: SubscribableTest<CategoryList>() {
     fun `should return empty list when null occurs`() {
         //when
         setToResponse(null)
-        sut.all("").subscribe(testSubscriber)
+        sut.getListBy("").subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
@@ -75,17 +74,5 @@ class CategoryRetrieverServiceTest: SubscribableTest<CategoryList>() {
             on { execute() }.then { valueRange }
         }
         whenever(values.get(any(), any())).thenReturn(request)
-    }
-
-    @Test
-    fun `should successfully save new category`() {
-        //given
-        val sut = CategoryRetrieverService(sheetsService)
-
-        //when
-        val result = sut.save(Category("", ""))
-
-        //then
-        Assert.assertEquals(result, true)
     }
 }

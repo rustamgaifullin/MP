@@ -1,5 +1,5 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:application="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,23 +13,23 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        application:layout_constraintLeft_toLeftOf="parent"
+        application:layout_constraintRight_toRightOf="parent"
+        application:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
         android:id="@+id/category_spinner"
         android:layout_width="0dp"
         android:layout_height="42dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/add_button"
+        application:layout_constraintBottom_toTopOf="@+id/add_button"
         android:layout_marginRight="16dp"
-        app:layout_constraintRight_toRightOf="parent"
+        application:layout_constraintRight_toRightOf="parent"
         android:layout_marginLeft="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
+        application:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintHorizontal_bias="0.0" />
+        application:layout_constraintHorizontal_bias="0.0" />
 
     <EditText
         android:id="@+id/amount_edit_text"
@@ -44,12 +44,12 @@
         android:ems="10"
         android:inputType="numberDecimal"
         android:text=""
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/add_button"
-        app:layout_constraintTop_toBottomOf="@+id/category_spinner"
-        app:layout_constraintVertical_bias="0.0" />
+        application:layout_constraintBottom_toBottomOf="parent"
+        application:layout_constraintHorizontal_bias="0.0"
+        application:layout_constraintLeft_toLeftOf="parent"
+        application:layout_constraintRight_toLeftOf="@+id/add_button"
+        application:layout_constraintTop_toBottomOf="@+id/category_spinner"
+        application:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/add_button"
@@ -59,6 +59,6 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="@string/button_add"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        application:layout_constraintBottom_toBottomOf="parent"
+        application:layout_constraintRight_toRightOf="parent" />
 </android.support.constraint.ConstraintLayout>

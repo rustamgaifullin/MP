@@ -3,6 +3,8 @@ package io.rg.mp.app
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.support.AndroidSupportInjectionModule
+import io.rg.mp.persistence.PersistenceModule
+import io.rg.mp.service.ServiceModule
 import io.rg.mp.ui.MainActivityModule
 import io.rg.mp.ui.auth.AuthFragmentModule
 import io.rg.mp.ui.expense.ExpenseFragmentModule
@@ -20,5 +22,5 @@ import javax.inject.Singleton
 ))
 @Singleton
 interface AppComponent {
-    fun inject(app: MpApp)
+    fun inject(application: MpApplication)
 }

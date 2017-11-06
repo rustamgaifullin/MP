@@ -6,7 +6,11 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Adapter
+import android.widget.AdapterView
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -14,12 +18,12 @@ import io.rg.mp.R
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.service.data.Expense
-import io.rg.mp.service.data.NotSaved
-import io.rg.mp.service.data.Saved
 import io.rg.mp.service.drive.SpreadsheetService
-import io.rg.mp.service.sheet.CategoryRetrieverService
+import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.service.sheet.ExpenseService
+import io.rg.mp.service.sheet.data.Expense
+import io.rg.mp.service.sheet.data.NotSaved
+import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.utils.Preferences
@@ -29,7 +33,7 @@ import javax.inject.Inject
 
 
 class ExpenseFragment : Fragment() {
-    @Inject lateinit var categoryService: CategoryRetrieverService
+    @Inject lateinit var categoryService: CategoryService
     @Inject lateinit var spreadsheetService: SpreadsheetService
     @Inject lateinit var expenseService: ExpenseService
     @Inject lateinit var categoryDao: CategoryDao
@@ -143,7 +147,7 @@ class ExpenseFragment : Fragment() {
     private fun downloadCategories() {
         val spreadsheetId = preferences.spreadsheetId
 
-        categoryService.all(spreadsheetId)
+        categoryService.getListBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .subscribe { (list) -> categoryDao.insertAll(*list.toTypedArray()) }
