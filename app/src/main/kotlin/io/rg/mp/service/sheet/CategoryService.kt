@@ -18,9 +18,9 @@ class CategoryService(private val googleSheetService: Sheets) {
             var categoryList = emptyList<Category>()
 
             if (response.getValues() != null) {
-                categoryList = response.getValues().map {
-                    Category(it[0].toString(), sheetId)
-                }
+                categoryList = response.getValues()
+                        .filter { it.size > 0 }
+                        .map { Category(it[0].toString(), sheetId) }
             }
 
             CategoryList(categoryList)
