@@ -1,13 +1,16 @@
 package io.rg.mp.ui.auth
 
 import android.Manifest
+import android.Manifest.permission.GET_ACCOUNTS
 import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.widget.Toast
+import android.widget.Toast.LENGTH_LONG
+import android.widget.Toast.LENGTH_SHORT
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import io.reactivex.BackpressureStrategy
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,19 +18,15 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
 import io.rg.mp.service.drive.SpreadsheetService
+import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.model.PermissionRequest
+import io.rg.mp.ui.model.StartActivity
+import io.rg.mp.ui.model.ToastInfo
+import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions.hasPermissions
 
-
-typealias RequestCode = Int
-typealias ActivityToStart = Pair<Intent, RequestCode>
-typealias Permissions = Array<String>
-typealias PermissionRequest = Pair<Permissions, RequestCode>
-
-typealias MessageId = Int
-typealias Length = Int
-typealias ToastInfo = Pair<MessageId, Length>
 
 class AuthViewModel(private val context: Context,
                     private val credential: GoogleAccountCredential,
@@ -40,15 +39,9 @@ class AuthViewModel(private val context: Context,
         const val REQUEST_PERMISSION_GET_ACCOUNTS = 1003
     }
 
-    private val startActivitySubject = PublishSubject.create<ActivityToStart>()
-    private val requestPermissionSubject = PublishSubject.create<PermissionRequest>()
-    private val allDoneSubject = PublishSubject.create<Any>()
-    private val showToastSubject = PublishSubject.create<ToastInfo>()
+    private val viewModelSubject = PublishSubject.create<ViewModelResult>()
 
-    fun startActivity() = startActivitySubject.toFlowable(BackpressureStrategy.BUFFER)
-    fun requestPermission() = requestPermissionSubject.toFlowable(BackpressureStrategy.BUFFER)
-    fun allDone() = allDoneSubject.toFlowable(BackpressureStrategy.BUFFER)
-    fun showToast() = showToastSubject.toFlowable(BackpressureStrategy.BUFFER)
+    fun viewModelResultNotifier() = viewModelSubject.toFlowable(BackpressureStrategy.BUFFER)
 
     fun beginButtonClick() {
         authorize()
@@ -57,8 +50,9 @@ class AuthViewModel(private val context: Context,
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             REQUEST_GOOGLE_PLAY_SERVICES -> if (resultCode != Activity.RESULT_OK) {
-                showToastSubject.onNext(
-                        ToastInfo(R.string.requre_google_play_services, Toast.LENGTH_LONG))
+                viewModelSubject.onNext(
+                        ToastInfo(R.string.requre_google_play_services, LENGTH_LONG)
+                )
             } else {
                 authorize()
             }
@@ -83,7 +77,7 @@ class AuthViewModel(private val context: Context,
         if (credential.selectedAccountName == null) {
             chooseAccount()
         } else if (!isDeviceOnline()) {
-            showToastSubject.onNext(ToastInfo(R.string.no_network_message, Toast.LENGTH_SHORT))
+            viewModelSubject.onNext(ToastInfo(R.string.no_network_message, LENGTH_SHORT))
         } else {
             downloadSpreadsheets()
         }
@@ -97,14 +91,17 @@ class AuthViewModel(private val context: Context,
                 credential.selectedAccountName = accountName
                 authorize()
             } else {
-                val activityInfo = ActivityToStart(
-                        credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
-                startActivitySubject.onNext(activityInfo)
+                viewModelSubject.onNext(
+                        StartActivity(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
+                )
             }
         } else {
-            val permissionInfo = PermissionRequest(
-                    arrayOf(Manifest.permission.GET_ACCOUNTS), REQUEST_PERMISSION_GET_ACCOUNTS)
-            requestPermissionSubject.onNext(permissionInfo)
+            viewModelSubject.onNext(
+                    PermissionRequest(
+                            arrayOf(GET_ACCOUNTS),
+                            REQUEST_PERMISSION_GET_ACCOUNTS
+                    )
+            )
         }
     }
 
@@ -113,22 +110,25 @@ class AuthViewModel(private val context: Context,
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        { finish() },
-                        { handleErrors(it) }
+                        {
+                            viewModelSubject.onComplete() },
+                        {
+                            handleErrors(it)
+                        }
                 )
-    }
-
-    private fun finish() {
-        allDoneSubject.onComplete()
-        startActivitySubject.onComplete()
-        requestPermissionSubject.onComplete()
-        showToastSubject.onComplete()
     }
 
     private fun handleErrors(error: Throwable) {
         when (error) {
+            is GooglePlayServicesAvailabilityIOException ->
+                viewModelSubject.onNext(
+                        GooglePlayServicesAvailabilityError(error.connectionStatusCode)
+                )
             is UserRecoverableAuthIOException ->
-                startActivitySubject.onNext(ActivityToStart(error.intent, REQUEST_AUTHORIZATION))
+                viewModelSubject.onNext(StartActivity(error.intent, REQUEST_AUTHORIZATION))
+            else -> {
+                viewModelSubject.onNext(ToastInfo(R.string.unknown_error, LENGTH_LONG))
+            }
         }
     }
 
