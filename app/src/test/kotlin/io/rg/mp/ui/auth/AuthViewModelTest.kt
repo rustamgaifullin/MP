@@ -11,6 +11,7 @@ import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
+import com.nhaarman.mockito_kotlin.argumentCaptor
 import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
@@ -34,6 +35,7 @@ import io.rg.mp.ui.model.PermissionRequest
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
 import org.junit.AfterClass
 import org.junit.Before
@@ -44,6 +46,7 @@ import org.mockito.Mockito
 
 class AuthViewModelTest : AndroidContextAwareTest() {
     private val credential: GoogleAccountCredential = mock()
+    private val apiAvailabilityService: GoogleApiAvailabilityService = mock()
     private val preferences: Preferences = mock()
     private val spreadsheetService: SpreadsheetService = mock()
     private lateinit var testSubscriber: TestSubscriber<ViewModelResult>
@@ -72,6 +75,10 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     @Before
     fun setup() {
         testSubscriber = TestSubscriber()
+        whenever(apiAvailabilityService.isAvailable()).thenReturn(true)
+
+        hasPermission()
+        deviceOnline()
     }
 
     @Test
@@ -97,7 +104,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
         val sut = authViewModel()
         val intent: Intent = mock()
 
-        hasPermission()
         whenever(preferences.accountName).thenReturn("")
         whenever(credential.newChooseAccountIntent()).thenReturn(intent)
         sut.viewModelResultNotifier().subscribe(testSubscriber)
@@ -115,8 +121,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
         val sut = authViewModel()
         val accountName = "asdf@asdf.as"
 
-        hasPermission()
-        deviceOnline()
         whenever(preferences.accountName).thenReturn(accountName)
         whenever(credential.selectedAccountName)
                 .thenReturn(null)
@@ -138,8 +142,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
         val sut = authViewModel()
         val accountName = "asdf@asdf.as"
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn(accountName)
         whenever(spreadsheetService.list()).thenReturn(Flowable.just(SpreadsheetList(emptyList())))
         sut.viewModelResultNotifier().subscribe(testSubscriber)
@@ -155,8 +157,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     fun `should react properly after checking google play services`() {
         val sut = authViewModel()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn("asdf@asdf.as")
         whenever(spreadsheetService.list()).thenReturn(Flowable.empty())
         sut.viewModelResultNotifier().subscribe(testSubscriber)
@@ -185,8 +185,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
         val intent: Intent = mock()
         val bundle: Bundle = mock()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn(accountName)
         whenever(spreadsheetService.list()).thenReturn(Flowable.empty())
         whenever(intent.extras)
@@ -212,8 +210,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     fun `should authorize if user accepted requested permissions`() {
         val sut = authViewModel()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn("")
         whenever(spreadsheetService.list()).thenReturn(Flowable.empty())
 
@@ -244,8 +240,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     fun `should start activity when authentication error is occurred`() {
         val sut = authViewModel()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn("")
         whenever(spreadsheetService.list())
                 .thenReturn(Flowable.error(
@@ -264,8 +258,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     fun `should show dialog when google play services is not available`() {
         val sut = authViewModel()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn("")
         whenever(spreadsheetService.list())
                 .thenReturn(Flowable.error(
@@ -284,8 +276,6 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     fun `should show toast in case of unexpected exceptions`() {
         val sut = authViewModel()
 
-        hasPermission()
-        deviceOnline()
         whenever(credential.selectedAccountName).thenReturn("")
         whenever(spreadsheetService.list())
                 .thenReturn(Flowable.error(
@@ -300,7 +290,30 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .assertNotComplete()
     }
 
-    private fun authViewModel() = AuthViewModel(context, credential, preferences, spreadsheetService)
+    @Test
+    fun `should show error dialog if google play services are not available`() {
+        val sut = authViewModel()
+        val argumentCaptor = argumentCaptor<((status: Int)->Unit)>()
+
+        whenever(apiAvailabilityService.isAvailable()).thenReturn(false)
+
+        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.beginButtonClick()
+        verify(apiAvailabilityService).acquire(argumentCaptor.capture())
+        argumentCaptor.firstValue.invoke(123)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue { it is GooglePlayServicesAvailabilityError && it.requestCode == 123 }
+                .assertNotComplete()
+    }
+
+    private fun authViewModel() = AuthViewModel(
+            context,
+            apiAvailabilityService,
+            credential,
+            preferences,
+            spreadsheetService)
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
         val wrapper = UserRecoverableAuthException("", Intent())

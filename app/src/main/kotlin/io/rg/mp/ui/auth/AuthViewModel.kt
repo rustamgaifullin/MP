@@ -6,16 +6,16 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.subjects.ReplaySubject
 import io.rg.mp.R
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
@@ -23,12 +23,15 @@ import io.rg.mp.ui.model.PermissionRequest
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
+import io.rg.mp.utils.isDeviceOnline
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions.hasPermissions
 
 
 class AuthViewModel(private val context: Context,
+                    private val apiAvailabilityService: GoogleApiAvailabilityService,
                     private val credential: GoogleAccountCredential,
                     private val preferences: Preferences,
                     private val spreadsheetService: SpreadsheetService) {
@@ -39,9 +42,10 @@ class AuthViewModel(private val context: Context,
         const val REQUEST_PERMISSION_GET_ACCOUNTS = 1003
     }
 
-    private val viewModelSubject = PublishSubject.create<ViewModelResult>()
+    private val viewModelSubject = ReplaySubject.create<ViewModelResult>()
+    private val viewModelResultFlowable = viewModelSubject.toFlowable(BackpressureStrategy.BUFFER)
 
-    fun viewModelResultNotifier() = viewModelSubject.toFlowable(BackpressureStrategy.BUFFER)
+    fun viewModelResultNotifier(): Flowable<ViewModelResult> = viewModelResultFlowable
 
     fun beginButtonClick() {
         authorize()
@@ -74,9 +78,13 @@ class AuthViewModel(private val context: Context,
     }
 
     private fun authorize() {
-        if (credential.selectedAccountName == null) {
+        if (!apiAvailabilityService.isAvailable()) {
+            apiAvailabilityService.acquire {
+                viewModelSubject.onNext(GooglePlayServicesAvailabilityError(it))
+            }
+        } else if (credential.selectedAccountName == null) {
             chooseAccount()
-        } else if (!isDeviceOnline()) {
+        } else if (!context.isDeviceOnline()) {
             viewModelSubject.onNext(ToastInfo(R.string.no_network_message, LENGTH_SHORT))
         } else {
             downloadSpreadsheets()
@@ -130,11 +138,5 @@ class AuthViewModel(private val context: Context,
                 viewModelSubject.onNext(ToastInfo(R.string.unknown_error, LENGTH_LONG))
             }
         }
-    }
-
-    private fun isDeviceOnline(): Boolean {
-        val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connMgr.activeNetworkInfo
-        return networkInfo != null && networkInfo.isConnected
     }
 }

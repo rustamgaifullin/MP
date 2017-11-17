@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 
 buildscript {
     ext {
-        kotlin_version = "1.1.51"
+        kotlin_version = "1.1.60"
         rxjava_version = "2.1.2"
         rxkotlin_version = "2.1.0"
         mockito_version = "2.8.9"
@@ -18,14 +18,15 @@ buildscript {
         android_support_test_version = "1.0.1"
         uiautomator_version = "2.1.2"
         mockito_kotlin_version = "1.5.0"
-        room_version = "1.0.0-rc1"
+        room_version = "1.0.0"
         google_api_version = "1.23.0"
         google_sheets_version = "v4-rev486-$google_api_version"
         google_drive_version = "v3-rev85-$google_api_version"
-        google_play_services_version = "11.4.2"
+        google_play_services_version = "11.6.0"
         easy_permission_version = "0.3.0"
         dagger_version = "2.12"
         multidex_version = "1.0.2"
+        powermock_version = "1.7.3"
     }
 
     repositories {
@@ -130,4 +131,5 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockito_version"
     testCompile "org.mockito:mockito-inline:$mockito_version"
     testCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
+    testCompile "org.powermock:powermock-core:$powermock_version"
 }
