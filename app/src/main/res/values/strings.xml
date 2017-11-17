@@ -9,4 +9,6 @@
     <string name="sign_in_button">Sign In</string>
     <string name="unknown_error">Unknown error. Try again later.</string>
     <string name="button_add">Add</string>
+    <string name="saved_message">Saved</string>
+    <string name="not_saved_message">Not saved</string>
 </resources>

@@ -26,7 +26,6 @@ buildscript {
         easy_permission_version = "0.3.0"
         dagger_version = "2.12"
         multidex_version = "1.0.2"
-        powermock_version = "1.7.3"
     }
 
     repositories {
@@ -131,5 +130,4 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockito_version"
     testCompile "org.mockito:mockito-inline:$mockito_version"
     testCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
-    testCompile "org.powermock:powermock-core:$powermock_version"
 }
