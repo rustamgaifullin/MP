@@ -7,8 +7,6 @@
     <string name="access_to_contacts">This app needs to access your Google account (via Contacts).</string>
     <string name="welcome_message">Welcome! To continue with the application you need to sign in with your Google Account</string>
     <string name="sign_in_button">Sign In</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="unknown_error">Unknown error. Try again later.</string>
     <string name="button_add">Add</string>
 </resources>
