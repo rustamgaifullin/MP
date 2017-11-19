@@ -85,8 +85,7 @@ class ExpenseFragment : Fragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     spreadsheetSpinnerAdapter.setItems(it)
-                    val position = it.indexOfFirst { (id) -> id == viewModel.spreadsheetId() }
-                    spreadsheetSpinner.setSelection(position)
+                    spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it))
                 })
 
         compositeDisposable.add(viewModel.getCategories()

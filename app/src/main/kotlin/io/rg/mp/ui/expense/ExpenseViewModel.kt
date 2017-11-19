@@ -47,7 +47,7 @@ class ExpenseViewModel(
 
     fun saveExpense(amount: Float, category: Category): Flowable<ToastInfo> {
         val expense = Expense(Date(), amount, "", category)
-        return expenseService.save(expense, spreadsheetId())
+        return expenseService.save(expense, preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .map {
@@ -64,7 +64,8 @@ class ExpenseViewModel(
         downloadCategories()
     }
 
-    fun spreadsheetId() = preferences.spreadsheetId
+    fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>): Int =
+            spreadsheetList.indexOfFirst { (id) -> id == preferences.spreadsheetId }
 
     private fun reloadCategories() {
         categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
