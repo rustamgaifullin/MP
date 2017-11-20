@@ -92,14 +92,14 @@ class ExpenseFragment : Fragment() {
         compositeDisposable.add(
                 viewModel.viewModelNotifier()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(handleSavingExpense())
+                        .subscribe(handleViewModelResult())
         )
 
         viewModel.loadData()
         super.onStart()
     }
 
-    private fun handleSavingExpense(): (ViewModelResult) -> Unit {
+    private fun handleViewModelResult(): (ViewModelResult) -> Unit {
         return {
             when (it) {
                 is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()

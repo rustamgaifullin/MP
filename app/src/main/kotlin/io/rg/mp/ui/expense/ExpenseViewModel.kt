@@ -45,11 +45,40 @@ class ExpenseViewModel(
     fun viewModelNotifier(): Flowable<ViewModelResult>
             = subject.toFlowable(BackpressureStrategy.BUFFER)
 
+    fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>): Int =
+            spreadsheetList.indexOfFirst { (id) -> id == preferences.spreadsheetId }
+
+    fun onSpreadsheetItemSelected(spreadsheetId: String) {
+        preferences.spreadsheetId = spreadsheetId
+        reloadCategories()
+        downloadCategories()
+    }
+
+    fun loadCurrentCategories() {
+        if (preferences.isSpreadsheetIdAvailable) downloadCategories()
+    }
+
     fun loadData() {
         reloadSpreadsheets()
         reloadCategories()
 
         downloadData()
+    }
+
+    private fun reloadSpreadsheets() {
+        spreadsheetDao.all()
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    subject.onNext(ListSpreadsheet(it))
+                }
+    }
+
+    private fun reloadCategories() {
+        categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    subject.onNext(ListCategory(it))
+                }
     }
 
     private fun downloadData() {
@@ -77,6 +106,18 @@ class ExpenseViewModel(
                 )
     }
 
+    private fun handleErrors(error: Throwable, requestCode: Int) {
+        val result = when (error) {
+            is UserRecoverableAuthIOException ->
+                StartActivity(error.intent, requestCode)
+            else -> {
+                ToastInfo(R.string.unknown_error, LENGTH_LONG)
+            }
+        }
+
+        subject.onNext(result)
+    }
+
     fun saveExpense(amount: Float, category: Category) {
         val expense = Expense(Date(), amount, "", category)
 
@@ -95,46 +136,5 @@ class ExpenseViewModel(
         }
 
         subject.onNext(ToastInfo(messageId, LENGTH_LONG))
-    }
-
-    private fun handleErrors(error: Throwable, requestCode: Int) {
-        val result = when (error) {
-            is UserRecoverableAuthIOException ->
-                StartActivity(error.intent, requestCode)
-            else -> {
-                ToastInfo(R.string.unknown_error, LENGTH_LONG)
-            }
-        }
-
-        subject.onNext(result)
-    }
-
-    fun onSpreadsheetItemSelected(spreadsheetId: String) {
-        preferences.spreadsheetId = spreadsheetId
-        reloadCategories()
-        downloadCategories()
-    }
-
-    fun loadCurrentCategories() {
-        if (preferences.isSpreadsheetIdAvailable) downloadCategories()
-    }
-
-    fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>): Int =
-            spreadsheetList.indexOfFirst { (id) -> id == preferences.spreadsheetId }
-
-    private fun reloadCategories() {
-        categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
-                .subscribeOn(Schedulers.io())
-                .subscribe {
-                    subject.onNext(ListCategory(it))
-                }
-    }
-
-    private fun reloadSpreadsheets() {
-        spreadsheetDao.all()
-                .subscribeOn(Schedulers.io())
-                .subscribe {
-                    subject.onNext(ListSpreadsheet(it))
-                }
     }
 }
