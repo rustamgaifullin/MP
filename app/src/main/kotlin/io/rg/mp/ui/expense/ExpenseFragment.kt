@@ -1,6 +1,8 @@
 package io.rg.mp.ui.expense
 
+import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -17,8 +19,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.persistence.entity.Category
+import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
+import io.rg.mp.ui.model.ListCategory
+import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
@@ -69,16 +74,27 @@ class ExpenseFragment : Fragment() {
         amountEditText = view.findViewById(R.id.amount_edit_text)
         addButton = view.findViewById(R.id.add_button)
 
-        addButton.setOnClickListener {
-            val amount = amountEditText.text.toString().toFloat()
-            val category = categorySpinner.selectedItem as Category
-
-            viewModel.saveExpense(amount, category)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(handleSavingExpense())
-        }
+        addButton.setOnClickListener { saveExpense() }
 
         return view
+    }
+
+    private fun saveExpense() {
+        val amount = amountEditText.text.toString().toFloat()
+        val category = categorySpinner.selectedItem as Category
+
+        viewModel.saveExpense(amount, category)
+    }
+
+    override fun onStart() {
+        compositeDisposable.add(
+                viewModel.viewModelNotifier()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(handleSavingExpense())
+        )
+
+        viewModel.loadData()
+        super.onStart()
     }
 
     private fun handleSavingExpense(): (ViewModelResult) -> Unit {
@@ -86,31 +102,26 @@ class ExpenseFragment : Fragment() {
             when (it) {
                 is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
+                is ListCategory -> categorySpinnerAdapter.setItems(it.list)
+                is ListSpreadsheet -> {
+                    spreadsheetSpinnerAdapter.setItems(it.list)
+                    spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it.list))
+                }
             }
 
         }
     }
 
-    override fun onStart() {
-        compositeDisposable.add(viewModel.getSpreadsheets()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    spreadsheetSpinnerAdapter.setItems(it)
-                    spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it))
-                })
-
-        compositeDisposable.add(viewModel.getCategories()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    categorySpinnerAdapter.setItems(it)
-                })
-
-        viewModel.loadData()
-        super.onStart()
-    }
-
     override fun onStop() {
         super.onStop()
         compositeDisposable.clear()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_AUTHORIZATION && resultCode == RESULT_OK) {
+            saveExpense()
+        }
     }
 }

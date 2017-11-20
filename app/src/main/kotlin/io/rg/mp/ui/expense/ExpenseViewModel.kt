@@ -11,13 +11,18 @@ import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.service.drive.SpreadsheetList
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.service.sheet.ExpenseService
+import io.rg.mp.service.sheet.data.CategoryList
 import io.rg.mp.service.sheet.data.Expense
 import io.rg.mp.service.sheet.data.NotSaved
+import io.rg.mp.service.sheet.data.Result
 import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.model.ListCategory
+import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
@@ -32,48 +37,70 @@ class ExpenseViewModel(
         private val spreadsheetDao: SpreadsheetDao,
         private val preferences: Preferences) {
 
-    private val categorySubject = PublishSubject.create<List<Category>>()
-    private val spreadsheetSubject = PublishSubject.create<List<Spreadsheet>>()
+    private val subject = PublishSubject.create<ViewModelResult>()
+
+    fun viewModelNotifier(): Flowable<ViewModelResult>
+            = subject.toFlowable(BackpressureStrategy.BUFFER)
 
     fun loadData() {
         reloadSpreadsheets()
         reloadCategories()
 
-        downloadSpreadsheets()
-        if (preferences.isSpreadsheetIdAvailable) {
-            downloadCategories()
+        downloadData()
+    }
+
+    private fun downloadData() {
+        Flowable.concat(
+                spreadsheetService.list(),
+                categoryService.getListBy(preferences.spreadsheetId))
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        handleLoading(),
+                        handleErrors()
+                )
+    }
+
+    private fun handleLoading(): (Any) -> Unit {
+        return {
+            when (it) {
+                is SpreadsheetList -> spreadsheetDao.insertAll(*it.list.toTypedArray())
+                is CategoryList -> categoryDao.insertAll(*it.list.toTypedArray())
+            }
+
         }
     }
 
-    fun getSpreadsheets() = spreadsheetSubject.toFlowable(BackpressureStrategy.BUFFER)
-    fun getCategories() = categorySubject.toFlowable(BackpressureStrategy.BUFFER)
-
-    fun saveExpense(amount: Float, category: Category): Flowable<ViewModelResult> {
+    fun saveExpense(amount: Float, category: Category) {
         val expense = Expense(Date(), amount, "", category)
 
-        return Flowable.create({ emitter ->
-            expenseService.save(expense, preferences.spreadsheetId)
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(
-                            {
-                                val messageId = when (it) {
-                                    is Saved -> R.string.saved_message
-                                    is NotSaved -> R.string.not_saved_message
-                                }
+        expenseService.save(expense, preferences.spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        handleSaving(),
+                        handleErrors()
+                )
+    }
 
-                                emitter.onNext(ToastInfo(messageId, LENGTH_LONG))
-                                emitter.onComplete()
-                            },
-                            {
-                                val result = when (it) {
-                                    is UserRecoverableAuthIOException ->
-                                        StartActivity(it.intent, REQUEST_AUTHORIZATION)
-                                    else -> ToastInfo(R.string.unknown_error, LENGTH_LONG)
-                                }
-                                emitter.onNext(result)
-                                emitter.onComplete()
-                            })
-        }, BackpressureStrategy.BUFFER)
+    private fun handleSaving(): (Result) -> Unit {
+        return {
+            val messageId = when (it) {
+                is Saved -> R.string.saved_message
+                is NotSaved -> R.string.not_saved_message
+            }
+
+            subject.onNext(ToastInfo(messageId, LENGTH_LONG))
+        }
+    }
+
+    private fun handleErrors(): (Throwable) -> Unit {
+        return {
+            val result = when (it) {
+                is UserRecoverableAuthIOException ->
+                    StartActivity(it.intent, REQUEST_AUTHORIZATION)
+                else -> ToastInfo(R.string.unknown_error, LENGTH_LONG)
+            }
+            subject.onNext(result)
+        }
     }
 
     fun onSpreadsheetItemSelected(spreadsheetId: String) {
@@ -89,7 +116,7 @@ class ExpenseViewModel(
         categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe {
-                    categorySubject.onNext(it)
+                    subject.onNext(ListCategory(it))
                 }
     }
 
@@ -97,15 +124,8 @@ class ExpenseViewModel(
         spreadsheetDao.all()
                 .subscribeOn(Schedulers.io())
                 .subscribe {
-                    spreadsheetSubject.onNext(it)
+                    subject.onNext(ListSpreadsheet(it))
                 }
-    }
-
-    private fun downloadSpreadsheets() {
-        spreadsheetService.list()
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe { (list) -> spreadsheetDao.insertAll(*list.toTypedArray()) }
     }
 
     private fun downloadCategories() {

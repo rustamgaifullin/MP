@@ -7,13 +7,13 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Flowable
-import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.R
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
+import io.rg.mp.service.SubscribableTest
 import io.rg.mp.service.drive.SpreadsheetList
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryService
@@ -22,16 +22,17 @@ import io.rg.mp.service.sheet.data.CategoryList
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.model.ListCategory
+import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class ExpenseViewModelTest {
+class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
     @get:Rule
     val trampolineSchedulerRule = TrampolineSchedulerRule()
@@ -43,10 +44,6 @@ class ExpenseViewModelTest {
     private val spreadsheetDao: SpreadsheetDao = mock()
     private val preferences: Preferences = mock()
 
-    private lateinit var categoryTestSubscriber: TestSubscriber<List<Category>>
-    private lateinit var spreadsheetTestSubscriber: TestSubscriber<List<Spreadsheet>>
-
-
     private fun viewModel() = ExpenseViewModel(
             categoryService,
             spreadsheetService,
@@ -56,62 +53,67 @@ class ExpenseViewModelTest {
             preferences
     )
 
-    @Before
-    fun setup() {
-        categoryTestSubscriber = TestSubscriber()
-        spreadsheetTestSubscriber = TestSubscriber()
-    }
-
     @Test
     fun `should load categories and spreadsheet`() {
         val sut = viewModel()
-        sut.getCategories().subscribe(categoryTestSubscriber)
-        sut.getSpreadsheets().subscribe(spreadsheetTestSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
 
-        whenever(spreadsheetDao.all()).thenReturn(Flowable.just(emptyList()))
-        whenever(categoryDao.findBySpreadsheetId(any())).thenReturn(Flowable.just(emptyList()))
-        whenever(spreadsheetService.list()).thenReturn(Flowable.just(SpreadsheetList(emptyList())))
-        whenever(categoryService.getListBy(any())).thenReturn(Flowable.just(CategoryList(emptyList())))
+        whenever(spreadsheetDao.all()).thenReturn(
+                Flowable.just(emptyList())
+        )
+        whenever(categoryDao.findBySpreadsheetId(any())).thenReturn(
+                Flowable.just(emptyList())
+        )
+        whenever(spreadsheetService.list()).thenReturn(
+                Flowable.just(SpreadsheetList(emptyList()))
+        )
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.just(CategoryList(emptyList()))
+        )
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
         whenever(preferences.spreadsheetId).thenReturn("")
 
         sut.loadData()
 
-        categoryTestSubscriber.assertNoErrors()
-        categoryTestSubscriber.assertValue { it.isEmpty() }
-
-        spreadsheetTestSubscriber.assertNoErrors()
-        spreadsheetTestSubscriber.assertValue { it.isEmpty() }
+        testSubscriber
+                .assertNoErrors()
+                .assertValues(ListSpreadsheet(emptyList()), ListCategory(emptyList()))
+                .assertNotComplete()
     }
 
     @Test
     fun `should show toast with saved message when an expense is saved`() {
         val sut = viewModel()
-        val testSubscriber = TestSubscriber<ViewModelResult>()
+
 
         whenever(preferences.spreadsheetId).thenReturn("")
-        whenever(expenseService.save(any(), any())).thenReturn(Flowable.just(Saved()))
+        whenever(expenseService.save(any(), any())).thenReturn(
+                Flowable.just(Saved())
+        )
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(123.0F, Category("", ""))
-                .subscribe(testSubscriber)
 
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue {it is ToastInfo && it.messageId == R.string.saved_message }
-        testSubscriber.assertComplete()
+        testSubscriber
+                .assertNoErrors()
+                .assertValue { it is ToastInfo && it.messageId == R.string.saved_message }
+                .assertNotComplete()
     }
 
     @Test
     fun `should show toast with not saved message when an expense is not saved`() {
         val sut = viewModel()
-        val testSubscriber = TestSubscriber<ViewModelResult>()
 
         whenever(preferences.spreadsheetId).thenReturn("")
-        whenever(expenseService.save(any(), any())).thenReturn(Flowable.just(NotSaved()))
+        whenever(expenseService.save(any(), any())).thenReturn(
+                Flowable.just(NotSaved())
+        )
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(123.0F, Category("", ""))
-                .subscribe(testSubscriber)
 
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
-        testSubscriber.assertComplete()
+        testSubscriber
+                .assertNoErrors()
+                .assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
+                .assertNotComplete()
     }
 
     @Test
@@ -121,19 +123,20 @@ class ExpenseViewModelTest {
         val spreadsheetId = "123"
 
         whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
-        whenever(categoryDao.findBySpreadsheetId(spreadsheetId))
-                .thenReturn(Flowable.just(listOf(category)))
-        whenever(categoryService.getListBy(any()))
-                .thenReturn(Flowable.just(CategoryList(listOf(category))))
+        whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
+                Flowable.just(listOf(category))
+        )
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.just(CategoryList(listOf(category)))
+        )
 
-        sut.getCategories().subscribe(categoryTestSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.onSpreadsheetItemSelected(spreadsheetId)
 
-        categoryTestSubscriber.assertNoErrors()
-        categoryTestSubscriber.assertValue {
-            it.isNotEmpty() && it.first().name == "name" && it.first().spreadsheetId == "id"
-        }
-        categoryTestSubscriber.assertNotComplete()
+        testSubscriber
+                .assertNoErrors()
+                .assertValue(ListCategory(listOf(category)))
+                .assertNotComplete()
     }
 
     @Test
@@ -154,19 +157,48 @@ class ExpenseViewModelTest {
     @Test
     fun `should show authorization dialog during saving when authorization error appeared`() {
         val sut = viewModel()
-        val testSubscriber = TestSubscriber<ViewModelResult>()
 
         whenever(preferences.spreadsheetId).thenReturn("")
-        whenever(expenseService.save(any(), any()))
-                .thenReturn(Flowable.error(userRecoverableAuthIoException()))
+        whenever(expenseService.save(any(), any())).thenReturn(
+                Flowable.error(userRecoverableAuthIoException())
+        )
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(123.0F, Category("", ""))
-                .subscribe(testSubscriber)
 
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue {
-            it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION
-        }
-        testSubscriber.assertComplete()
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should show authorization dialog during loading spreadsheets`() {
+        val sut = viewModel()
+
+        whenever(spreadsheetDao.all()).thenReturn(
+                Flowable.empty()
+        )
+        whenever(categoryDao.findBySpreadsheetId(any())).thenReturn(
+                Flowable.empty()
+        )
+        whenever(spreadsheetService.list()).thenReturn(
+                Flowable.error(userRecoverableAuthIoException())
+        )
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.empty()
+        )
+        whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
+        whenever(preferences.spreadsheetId).thenReturn("")
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.loadData()
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue { it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION }
+                .assertNotComplete()
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
