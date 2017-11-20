@@ -18,12 +18,10 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Flowable
-import io.reactivex.android.plugins.RxAndroidPlugins
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.AndroidContextAwareTest
 import io.rg.mp.R
+import io.rg.mp.rule.TrampolineSchedulerRule
 import io.rg.mp.service.drive.SpreadsheetList
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_ACCOUNT_PICKER
@@ -37,40 +35,22 @@ import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
-import org.junit.AfterClass
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 
 
 class AuthViewModelTest : AndroidContextAwareTest() {
+
+    @get:Rule
+    val trampolineSchedulerRule = TrampolineSchedulerRule()
+
     private val credential: GoogleAccountCredential = mock()
     private val apiAvailabilityService: GoogleApiAvailabilityService = mock()
     private val preferences: Preferences = mock()
     private val spreadsheetService: SpreadsheetService = mock()
     private lateinit var testSubscriber: TestSubscriber<ViewModelResult>
-
-    companion object {
-        @JvmStatic
-        @BeforeClass
-        fun setupRxJava() {
-            RxJavaPlugins.setIoSchedulerHandler {
-                Schedulers.trampoline()
-            }
-            RxAndroidPlugins.setMainThreadSchedulerHandler {
-                Schedulers.trampoline()
-            }
-        }
-
-        @JvmStatic
-        @AfterClass
-        fun cleanUpRxJava() {
-            RxJavaPlugins.reset()
-            RxAndroidPlugins.reset()
-        }
-
-    }
 
     @Before
     fun setup() {
@@ -293,7 +273,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
     @Test
     fun `should show error dialog if google play services are not available`() {
         val sut = authViewModel()
-        val argumentCaptor = argumentCaptor<((status: Int)->Unit)>()
+        val argumentCaptor = argumentCaptor<((status: Int) -> Unit)>()
 
         whenever(apiAvailabilityService.isAvailable()).thenReturn(false)
 

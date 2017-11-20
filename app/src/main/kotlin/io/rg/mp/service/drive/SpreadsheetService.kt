@@ -6,7 +6,6 @@ import io.reactivex.Flowable
 import io.rg.mp.persistence.entity.Spreadsheet
 
 class SpreadsheetService(private val drive: Drive) {
-
     fun list(): Flowable<SpreadsheetList> {
         return Flowable.create({
             val files = drive

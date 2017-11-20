@@ -1,6 +1,8 @@
 package io.rg.mp.ui.expense
 
+import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -11,35 +13,27 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.Toast
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
-import io.rg.mp.persistence.dao.CategoryDao
-import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.service.drive.SpreadsheetService
-import io.rg.mp.service.sheet.CategoryService
-import io.rg.mp.service.sheet.ExpenseService
-import io.rg.mp.service.sheet.data.Expense
-import io.rg.mp.service.sheet.data.NotSaved
-import io.rg.mp.service.sheet.data.Saved
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
-import io.rg.mp.utils.Preferences
-import io.rg.mp.utils.Toasts
-import java.util.Date
+import io.rg.mp.ui.model.ListCategory
+import io.rg.mp.ui.model.ListSpreadsheet
+import io.rg.mp.ui.model.StartActivity
+import io.rg.mp.ui.model.ToastInfo
+import io.rg.mp.ui.model.ViewModelResult
 import javax.inject.Inject
 
 
 class ExpenseFragment : Fragment() {
-    @Inject lateinit var categoryService: CategoryService
-    @Inject lateinit var spreadsheetService: SpreadsheetService
-    @Inject lateinit var expenseService: ExpenseService
-    @Inject lateinit var categoryDao: CategoryDao
-    @Inject lateinit var spreadsheetDao: SpreadsheetDao
-    @Inject lateinit var toasts: Toasts
-    @Inject lateinit var preferences: Preferences
+    @Inject lateinit var viewModel: ExpenseViewModel
 
     private lateinit var categorySpinner: Spinner
     private lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
@@ -49,6 +43,8 @@ class ExpenseFragment : Fragment() {
 
     private lateinit var addButton: Button
     private lateinit var amountEditText: EditText
+
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -71,9 +67,7 @@ class ExpenseFragment : Fragment() {
         spreadsheetSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, v: View, pos: Int, id: Long) {
                 val spreadsheet = spreadsheetSpinnerAdapter.getItem(pos)
-                preferences.spreadsheetId = spreadsheet.id
-                reloadCategories()
-                downloadCategories()
+                viewModel.onSpreadsheetItemSelected(spreadsheet.id)
             }
 
             override fun onNothingSelected(parent: AdapterView<out Adapter>?) {}
@@ -82,74 +76,58 @@ class ExpenseFragment : Fragment() {
         amountEditText = view.findViewById(R.id.amount_edit_text)
         addButton = view.findViewById(R.id.add_button)
 
-        addButton.setOnClickListener {
-            val amount = amountEditText.text.toString().toFloat()
-            val date = Date()
-            val category = categorySpinner.selectedItem as Category
-            val description = ""
-
-            val expense = Expense(date, amount, description, category)
-
-            expenseService.save(expense, preferences.spreadsheetId)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
-                        when(it) {
-                            is Saved -> toasts.shortToast(activity, "Saved")
-                            is NotSaved -> toasts.shortToast(activity, "Not saved")
-                        }
-                    }
-        }
+        addButton.setOnClickListener { saveExpense() }
 
         return view
     }
 
+    private fun saveExpense() {
+        val amount = amountEditText.text.toString().toFloat()
+        val category = categorySpinner.selectedItem as Category
+
+        viewModel.saveExpense(amount, category)
+    }
+
     override fun onStart() {
-        reloadSpreadsheets()
-        reloadCategories()
+        compositeDisposable.add(
+                viewModel.viewModelNotifier()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(handleViewModelResult())
+        )
 
-        downloadSpreadsheets()
-        if (preferences.isSpreadsheetIdAvailable) {
-            downloadCategories()
-        }
-
+        viewModel.loadData()
         super.onStart()
     }
 
-    private fun reloadCategories() {
-        categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    categorySpinnerAdapter.setItems(it)
+    private fun handleViewModelResult(): (ViewModelResult) -> Unit {
+        return {
+            when (it) {
+                is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
+                is StartActivity -> startActivityForResult(it.intent, it.requestCode)
+                is ListCategory -> categorySpinnerAdapter.setItems(it.list)
+                is ListSpreadsheet -> {
+                    spreadsheetSpinnerAdapter.setItems(it.list)
+                    spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it.list))
                 }
+            }
+
+        }
     }
 
-    private fun reloadSpreadsheets() {
-        spreadsheetDao.all()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    spreadsheetSpinnerAdapter.setItems(it)
-
-                    val position = it.indexOfFirst{ (id) -> id == preferences.spreadsheetId }
-                    spreadsheetSpinner.setSelection(position)
-                }
+    override fun onStop() {
+        super.onStop()
+        compositeDisposable.clear()
     }
 
-    private fun downloadSpreadsheets() {
-        spreadsheetService.list()
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe { (list) -> spreadsheetDao.insertAll(*list.toTypedArray()) }
-    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-    private fun downloadCategories() {
-        val spreadsheetId = preferences.spreadsheetId
-
-        categoryService.getListBy(spreadsheetId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe { (list) -> categoryDao.insertAll(*list.toTypedArray()) }
+        if (resultCode == RESULT_OK) {
+            when (requestCode) {
+                REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
+                REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.loadData()
+                REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.loadCurrentCategories()
+            }
+        }
     }
 }
