@@ -5,6 +5,8 @@ import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Flowable
 import io.rg.mp.R
@@ -21,7 +23,9 @@ import io.rg.mp.service.sheet.ExpenseService
 import io.rg.mp.service.sheet.data.CategoryList
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Saved
-import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.StartActivity
@@ -168,7 +172,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         testSubscriber
                 .assertNoErrors()
                 .assertValue {
-                    it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION
+                    it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION_EXPENSE
                 }
                 .assertNotComplete()
     }
@@ -187,7 +191,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.error(userRecoverableAuthIoException())
         )
         whenever(categoryService.getListBy(any())).thenReturn(
-                Flowable.empty()
+                Flowable.error(userRecoverableAuthIoException())
         )
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
         whenever(preferences.spreadsheetId).thenReturn("")
@@ -197,7 +201,56 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         testSubscriber
                 .assertNoErrors()
-                .assertValue { it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION }
+                .assertValueCount(1)
+                .assertValue {
+                    it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION_LOADING_ALL
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should load current category when spreadsheet id is available`() {
+        val sut = viewModel()
+
+        whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
+        whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.just(CategoryList(emptyList()))
+        )
+        sut.loadCurrentCategories()
+
+        verify(categoryDao).insertAll(any())
+    }
+
+    @Test
+    fun `should not load current category when spreadsheet id is not available`() {
+        val sut = viewModel()
+
+        whenever(preferences.isSpreadsheetIdAvailable).thenReturn(false)
+        sut.loadCurrentCategories()
+
+        verifyZeroInteractions(categoryService)
+        verifyZeroInteractions(categoryDao)
+    }
+
+    @Test
+    fun `should handle authorization error for loading current category`() {
+        val sut = viewModel()
+
+        whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
+        whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.error(userRecoverableAuthIoException())
+        )
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.loadCurrentCategories()
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity
+                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+                }
                 .assertNotComplete()
     }
 

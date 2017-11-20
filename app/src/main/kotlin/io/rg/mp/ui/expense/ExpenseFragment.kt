@@ -19,7 +19,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.model.ListCategory
@@ -120,8 +122,12 @@ class ExpenseFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQUEST_AUTHORIZATION && resultCode == RESULT_OK) {
-            saveExpense()
+        if (resultCode == RESULT_OK) {
+            when (requestCode) {
+                REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
+                REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.loadData()
+                REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.loadCurrentCategories()
+            }
         }
     }
 }
