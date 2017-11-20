@@ -19,6 +19,9 @@ import io.rg.mp.R
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
+import io.rg.mp.ui.model.StartActivity
+import io.rg.mp.ui.model.ToastInfo
+import io.rg.mp.ui.model.ViewModelResult
 import javax.inject.Inject
 
 
@@ -72,12 +75,20 @@ class ExpenseFragment : Fragment() {
 
             viewModel.saveExpense(amount, category)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
-                        Toast.makeText(activity, it.messageId, it.length).show();
-                    }
+                    .subscribe(handleSavingExpense())
         }
 
         return view
+    }
+
+    private fun handleSavingExpense(): (ViewModelResult) -> Unit {
+        return {
+            when (it) {
+                is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
+                is StartActivity -> startActivityForResult(it.intent, it.requestCode)
+            }
+
+        }
     }
 
     override fun onStart() {

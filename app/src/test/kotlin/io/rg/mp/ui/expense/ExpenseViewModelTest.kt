@@ -1,5 +1,8 @@
 package io.rg.mp.ui.expense
 
+import android.content.Intent
+import com.google.android.gms.auth.UserRecoverableAuthException
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
@@ -18,7 +21,10 @@ import io.rg.mp.service.sheet.ExpenseService
 import io.rg.mp.service.sheet.data.CategoryList
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Saved
+import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
+import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
 import org.junit.Before
 import org.junit.Rule
@@ -81,7 +87,7 @@ class ExpenseViewModelTest {
     @Test
     fun `should show toast with saved message when an expense is saved`() {
         val sut = viewModel()
-        val testSubscriber = TestSubscriber<ToastInfo>()
+        val testSubscriber = TestSubscriber<ViewModelResult>()
 
         whenever(preferences.spreadsheetId).thenReturn("")
         whenever(expenseService.save(any(), any())).thenReturn(Flowable.just(Saved()))
@@ -89,14 +95,14 @@ class ExpenseViewModelTest {
                 .subscribe(testSubscriber)
 
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { it.messageId == R.string.saved_message }
+        testSubscriber.assertValue {it is ToastInfo && it.messageId == R.string.saved_message }
         testSubscriber.assertComplete()
     }
 
     @Test
     fun `should show toast with not saved message when an expense is not saved`() {
         val sut = viewModel()
-        val testSubscriber = TestSubscriber<ToastInfo>()
+        val testSubscriber = TestSubscriber<ViewModelResult>()
 
         whenever(preferences.spreadsheetId).thenReturn("")
         whenever(expenseService.save(any(), any())).thenReturn(Flowable.just(NotSaved()))
@@ -104,7 +110,7 @@ class ExpenseViewModelTest {
                 .subscribe(testSubscriber)
 
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { it.messageId == R.string.not_saved_message }
+        testSubscriber.assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
         testSubscriber.assertComplete()
     }
 
@@ -143,5 +149,28 @@ class ExpenseViewModelTest {
         val result = sut.currentSpreadsheet(spreadsheetList)
 
         assertEquals(1, result)
+    }
+
+    @Test
+    fun `should show authorization dialog during saving when authorization error appeared`() {
+        val sut = viewModel()
+        val testSubscriber = TestSubscriber<ViewModelResult>()
+
+        whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(expenseService.save(any(), any()))
+                .thenReturn(Flowable.error(userRecoverableAuthIoException()))
+        sut.saveExpense(123.0F, Category("", ""))
+                .subscribe(testSubscriber)
+
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertValue {
+            it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION
+        }
+        testSubscriber.assertComplete()
+    }
+
+    private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
+        val wrapper = UserRecoverableAuthException("", Intent())
+        return UserRecoverableAuthIOException(wrapper)
     }
 }

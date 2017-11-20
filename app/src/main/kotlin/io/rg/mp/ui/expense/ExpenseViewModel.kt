@@ -1,9 +1,9 @@
 package io.rg.mp.ui.expense
 
 import android.widget.Toast.LENGTH_LONG
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
@@ -17,7 +17,10 @@ import io.rg.mp.service.sheet.ExpenseService
 import io.rg.mp.service.sheet.data.Expense
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Saved
+import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
+import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
+import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
 import java.util.Date
 
@@ -45,17 +48,32 @@ class ExpenseViewModel(
     fun getSpreadsheets() = spreadsheetSubject.toFlowable(BackpressureStrategy.BUFFER)
     fun getCategories() = categorySubject.toFlowable(BackpressureStrategy.BUFFER)
 
-    fun saveExpense(amount: Float, category: Category): Flowable<ToastInfo> {
+    fun saveExpense(amount: Float, category: Category): Flowable<ViewModelResult> {
         val expense = Expense(Date(), amount, "", category)
-        return expenseService.save(expense, preferences.spreadsheetId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map {
-                    when (it) {
-                        is Saved -> ToastInfo(R.string.saved_message, LENGTH_LONG)
-                        is NotSaved -> ToastInfo(R.string.not_saved_message, LENGTH_LONG)
-                    }
-                }
+
+        return Flowable.create({ emitter ->
+            expenseService.save(expense, preferences.spreadsheetId)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(
+                            {
+                                val messageId = when (it) {
+                                    is Saved -> R.string.saved_message
+                                    is NotSaved -> R.string.not_saved_message
+                                }
+
+                                emitter.onNext(ToastInfo(messageId, LENGTH_LONG))
+                                emitter.onComplete()
+                            },
+                            {
+                                val result = when (it) {
+                                    is UserRecoverableAuthIOException ->
+                                        StartActivity(it.intent, REQUEST_AUTHORIZATION)
+                                    else -> ToastInfo(R.string.unknown_error, LENGTH_LONG)
+                                }
+                                emitter.onNext(result)
+                                emitter.onComplete()
+                            })
+        }, BackpressureStrategy.BUFFER)
     }
 
     fun onSpreadsheetItemSelected(spreadsheetId: String) {
