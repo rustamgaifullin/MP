@@ -9,6 +9,7 @@ import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.service.sheet.ExpenseService
+import io.rg.mp.service.sheet.LocaleService
 import io.rg.mp.ui.FragmentScope
 import io.rg.mp.utils.Preferences
 
@@ -24,6 +25,10 @@ class ExpenseServiceModule {
 
     @Provides
     @FragmentScope
+    fun localeService(sheets: Sheets) = LocaleService(sheets)
+
+    @Provides
+    @FragmentScope
     fun expenseService(sheets: Sheets) = ExpenseService(sheets)
 
     @Provides
@@ -31,12 +36,14 @@ class ExpenseServiceModule {
     fun expenseViewModel(
             categoryService: CategoryService,
             spreadsheetService: SpreadsheetService,
+            localeService: LocaleService,
             expenseService: ExpenseService,
             categoryDao: CategoryDao,
             spreadsheetDao: SpreadsheetDao,
             preferences: Preferences) =
             ExpenseViewModel(categoryService,
                     spreadsheetService,
+                    localeService,
                     expenseService,
                     categoryDao,
                     spreadsheetDao,

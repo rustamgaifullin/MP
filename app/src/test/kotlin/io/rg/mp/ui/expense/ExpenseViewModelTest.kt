@@ -4,6 +4,7 @@ import android.content.Intent
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
@@ -20,6 +21,7 @@ import io.rg.mp.service.drive.SpreadsheetList
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.service.sheet.ExpenseService
+import io.rg.mp.service.sheet.LocaleService
 import io.rg.mp.service.sheet.data.CategoryList
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Saved
@@ -43,6 +45,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
     private val categoryService: CategoryService = mock()
     private val spreadsheetService: SpreadsheetService = mock()
+    private val localeService: LocaleService = mock()
     private val expenseService: ExpenseService = mock()
     private val categoryDao: CategoryDao = mock()
     private val spreadsheetDao: SpreadsheetDao = mock()
@@ -51,6 +54,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     private fun viewModel() = ExpenseViewModel(
             categoryService,
             spreadsheetService,
+            localeService,
             expenseService,
             categoryDao,
             spreadsheetDao,
@@ -121,7 +125,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     }
 
     @Test
-    fun `should load categories when spreadsheet selected`() {
+    fun `should load categories and locale when spreadsheet selected`() {
         val sut = viewModel()
         val category = Category("name", "id")
         val spreadsheetId = "123"
@@ -130,8 +134,11 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
                 Flowable.just(listOf(category))
         )
-        whenever(categoryService.getListBy(any())).thenReturn(
+        whenever(categoryService.getListBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just(CategoryList(listOf(category)))
+        )
+        whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
+                Flowable.just("en_EN")
         )
 
         sut.viewModelNotifier().subscribe(testSubscriber)
@@ -141,6 +148,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertNoErrors()
                 .assertValue(ListCategory(listOf(category)))
                 .assertNotComplete()
+
+        verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
+        verify(localeService).getBy(eq(spreadsheetId))
     }
 
     @Test
@@ -209,21 +219,26 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     }
 
     @Test
-    fun `should load current category when spreadsheet id is available`() {
+    fun `should load current category and locale when spreadsheet id is available`() {
         val sut = viewModel()
+        val spreadsheetId = "id"
 
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
-        whenever(preferences.spreadsheetId).thenReturn("")
-        whenever(categoryService.getListBy(any())).thenReturn(
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(categoryService.getListBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just(CategoryList(emptyList()))
+        )
+        whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
+                Flowable.just("en_EN")
         )
         sut.loadCurrentCategories()
 
         verify(categoryDao).insertAll(any())
+        verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
     }
 
     @Test
-    fun `should not load current category when spreadsheet id is not available`() {
+    fun `should not load current category and locale when spreadsheet id is not available`() {
         val sut = viewModel()
 
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(false)
@@ -231,6 +246,8 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         verifyZeroInteractions(categoryService)
         verifyZeroInteractions(categoryDao)
+        verifyZeroInteractions(localeService)
+        verifyZeroInteractions(spreadsheetDao)
     }
 
     @Test
@@ -253,6 +270,33 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 }
                 .assertNotComplete()
     }
+
+    @Test
+    fun `should handle authorization error for loading locale`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+
+        whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(categoryService.getListBy(any())).thenReturn(
+                Flowable.empty()
+        )
+        whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
+                Flowable.error(userRecoverableAuthIoException())
+        )
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.loadCurrentCategories()
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity
+                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+                }
+                .assertNotComplete()
+    }
+
+
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
         val wrapper = UserRecoverableAuthException("", Intent())

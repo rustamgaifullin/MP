@@ -14,4 +14,7 @@ interface SpreadsheetDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(vararg spreadsheets: Spreadsheet)
+
+    @Query("UPDATE spreadsheet SET locale = :locale WHERE id = :spreadsheetId")
+    fun updateLocale(locale: String, spreadsheetId: String)
 }
