@@ -12,6 +12,9 @@ interface SpreadsheetDao {
     @Query("SELECT * FROM spreadsheet")
     fun all() : Flowable<List<Spreadsheet>>
 
+    @Query("SELECT locale FROM spreadsheet WHERE id = :spreadsheetId")
+    fun getLocaleBy(spreadsheetId: String): Flowable<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(vararg spreadsheets: Spreadsheet)
 

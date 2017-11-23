@@ -25,7 +25,7 @@ import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
-import java.util.Date
+import io.rg.mp.utils.currentDate
 
 class ExpenseViewModel(
         private val categoryService: CategoryService,
@@ -132,14 +132,20 @@ class ExpenseViewModel(
     }
 
     fun saveExpense(amount: Float, category: Category) {
-        val expense = Expense(Date(), amount, "", category)
-
-        expenseService.save(expense, preferences.spreadsheetId)
+        val spreadsheetId = preferences.spreadsheetId
+        spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { handleSaving(it) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
-                )
+                .subscribe {
+                    val date = currentDate(it)
+                    val expense = Expense(date, amount, "", category)
+
+                    expenseService.save(expense, spreadsheetId)
+                            .subscribeOn(Schedulers.io())
+                            .subscribe(
+                                    { handleSaving(it) },
+                                    { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
+                            )
+                }
     }
 
     private fun handleSaving(result: Result) {
