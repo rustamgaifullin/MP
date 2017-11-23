@@ -12,7 +12,6 @@ import io.rg.mp.service.sheet.data.Result
 import io.rg.mp.service.sheet.data.Saved
 import org.junit.Before
 import org.junit.Test
-import java.util.Date
 
 class ExpenseServiceTest : SubscribableTest<Result>() {
 
@@ -34,7 +33,7 @@ class ExpenseServiceTest : SubscribableTest<Result>() {
     @Test
     fun `should successfully save expense item`() {
         //given
-        val expense = Expense(Date(), 5.5f, "", Category("", ""))
+        val expense = Expense("01/01/17", 5.5f, "", Category("", ""))
         val appendResult: AppendValuesResponse = mock()
 
         //when

@@ -6,5 +6,6 @@ import android.arch.persistence.room.PrimaryKey
 @Entity(tableName = "spreadsheet")
 data class Spreadsheet(
         @PrimaryKey var id: String,
-        var name: String
+        var name: String,
+        var locale: String = ""
 )

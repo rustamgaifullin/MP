@@ -14,6 +14,7 @@ import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.service.drive.SpreadsheetService
 import io.rg.mp.service.sheet.CategoryService
 import io.rg.mp.service.sheet.ExpenseService
+import io.rg.mp.service.sheet.LocaleService
 import io.rg.mp.service.sheet.data.Expense
 import io.rg.mp.service.sheet.data.NotSaved
 import io.rg.mp.service.sheet.data.Result
@@ -24,11 +25,12 @@ import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
-import java.util.Date
+import io.rg.mp.utils.currentDate
 
 class ExpenseViewModel(
         private val categoryService: CategoryService,
         private val spreadsheetService: SpreadsheetService,
+        private val localeService: LocaleService,
         private val expenseService: ExpenseService,
         private val categoryDao: CategoryDao,
         private val spreadsheetDao: SpreadsheetDao,
@@ -52,10 +54,23 @@ class ExpenseViewModel(
         preferences.spreadsheetId = spreadsheetId
         reloadCategories()
         downloadCategories()
+        updateLocale(spreadsheetId)
     }
 
     fun loadCurrentCategories() {
-        if (preferences.isSpreadsheetIdAvailable) downloadCategories()
+        if (preferences.isSpreadsheetIdAvailable) {
+            downloadCategories()
+            updateLocale(preferences.spreadsheetId)
+        }
+    }
+
+    private fun updateLocale(spreadsheetId: String) {
+        localeService.getBy(spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        { spreadsheetDao.updateLocale(it, spreadsheetId) },
+                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
+                )
     }
 
     fun loadData() {
@@ -86,8 +101,6 @@ class ExpenseViewModel(
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         {
-                            if (preferences.isSpreadsheetIdAvailable) downloadCategories()
-
                             spreadsheetDao.insertAll(*it.list.toTypedArray())
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
@@ -119,14 +132,20 @@ class ExpenseViewModel(
     }
 
     fun saveExpense(amount: Float, category: Category) {
-        val expense = Expense(Date(), amount, "", category)
-
-        expenseService.save(expense, preferences.spreadsheetId)
+        val spreadsheetId = preferences.spreadsheetId
+        spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { handleSaving(it) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
-                )
+                .subscribe {
+                    val date = currentDate(it)
+                    val expense = Expense(date, amount, "", category)
+
+                    expenseService.save(expense, spreadsheetId)
+                            .subscribeOn(Schedulers.io())
+                            .subscribe(
+                                    { handleSaving(it) },
+                                    { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
+                            )
+                }
     }
 
     private fun handleSaving(result: Result) {
