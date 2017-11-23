@@ -92,9 +92,12 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should show toast with saved message when an expense is saved`() {
         val sut = viewModel()
+        val spreadsheetId = "id"
 
-
-        whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(spreadsheetDao.getLocaleBy(eq(spreadsheetId))).thenReturn(
+                Flowable.just("en_GB")
+        )
         whenever(expenseService.save(any(), any())).thenReturn(
                 Flowable.just(Saved())
         )
@@ -110,9 +113,13 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should show toast with not saved message when an expense is not saved`() {
         val sut = viewModel()
+        val spreadsheetId = "id"
 
-        whenever(preferences.spreadsheetId).thenReturn("")
-        whenever(expenseService.save(any(), any())).thenReturn(
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
+                Flowable.just("en_GB")
+        )
+        whenever(expenseService.save(any(), eq(spreadsheetId))).thenReturn(
                 Flowable.just(NotSaved())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
@@ -171,8 +178,12 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should show authorization dialog during saving when authorization error appeared`() {
         val sut = viewModel()
+        val spreadsheetId = "id"
 
-        whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
+                Flowable.just("en_GB")
+        )
         whenever(expenseService.save(any(), any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
