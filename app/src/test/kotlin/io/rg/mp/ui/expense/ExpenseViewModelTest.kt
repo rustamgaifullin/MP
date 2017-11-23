@@ -256,6 +256,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
         whenever(preferences.spreadsheetId).thenReturn("")
+        whenever(localeService.getBy(any())).thenReturn(
+                Flowable.empty()
+        )
         whenever(categoryService.getListBy(any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
