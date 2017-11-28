@@ -31,9 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initFragments() {
         if (preferences.isAccountNameAvailable) {
-            addFragment(EXPENSE_FRAGMENT, {
-                ExpenseFragment()
-            })
+            addFragment(EXPENSE_FRAGMENT, { ExpenseFragment() })
         } else {
             addFragment(AUTH_FRAGMENT, { AuthFragment() })
         }
