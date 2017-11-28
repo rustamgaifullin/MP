@@ -1,6 +1,7 @@
 package io.rg.mp.ui
 
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import dagger.android.AndroidInjection
 import io.rg.mp.R
@@ -11,6 +12,11 @@ import javax.inject.Inject
 
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXPENSE_FRAGMENT = "EXPENSE_FRAGMENT"
+        const val AUTH_FRAGMENT = "AUTH_FRAGMENT"
+    }
 
     @Inject lateinit var preferences: Preferences
 
@@ -24,14 +30,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initFragments() {
-        val transaction = supportFragmentManager.beginTransaction()
-
         if (preferences.isAccountNameAvailable) {
-            transaction.add(R.id.main_container, ExpenseFragment())
+            addFragment(EXPENSE_FRAGMENT, { ExpenseFragment() })
         } else {
-            transaction.add(R.id.main_container, AuthFragment())
+            addFragment(AUTH_FRAGMENT, { AuthFragment() })
         }
+    }
 
-        transaction.commit()
+    private fun addFragment(tag: String, fragment: () -> Fragment) {
+        if (supportFragmentManager.findFragmentByTag(tag) == null) {
+            supportFragmentManager.beginTransaction()
+                    .add(R.id.main_container, fragment.invoke(), tag)
+                    .commit()
+        }
     }
 }
