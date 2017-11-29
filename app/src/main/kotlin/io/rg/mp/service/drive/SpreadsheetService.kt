@@ -11,7 +11,8 @@ class SpreadsheetService(private val drive: Drive) {
             val files = drive
                     .files()
                     .list()
-                    .setQ("mimeType = 'application/vnd.google-apps.spreadsheet'")
+                    .setQ("mimeType = 'application/vnd.google-apps.spreadsheet' " +
+                            "and fullText contains 'Monthly Budget'")
                     .execute()
                     .files
             if (files != null) {
