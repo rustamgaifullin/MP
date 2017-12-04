@@ -1,5 +1,6 @@
 package io.rg.mp.ui.expense
 
+import android.util.Log
 import android.widget.Toast.LENGTH_LONG
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import io.reactivex.BackpressureStrategy
@@ -21,6 +22,7 @@ import io.rg.mp.service.sheet.data.Result
 import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
+import io.rg.mp.ui.model.SavedSuccessfully
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
@@ -68,7 +70,10 @@ class ExpenseViewModel(
         localeService.getBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        { spreadsheetDao.updateLocale(it, spreadsheetId) },
+                        {
+                            Log.d("ExpenseViewModel", "update locale: $it for spreadsheet: $spreadsheetId")
+                            spreadsheetDao.updateLocale(it, spreadsheetId)
+                        },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
     }
@@ -135,8 +140,9 @@ class ExpenseViewModel(
         val spreadsheetId = preferences.spreadsheetId
         spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
-                .subscribe {
-                    val date = currentDate(it)
+                .subscribe { locale ->
+                    Log.d("ExpenseViewModel", "get locale: $locale for spreadsheet: $spreadsheetId")
+                    val date = currentDate(locale)
                     val expense = Expense(date, amount, "", category)
 
                     expenseService.save(expense, spreadsheetId)
@@ -150,7 +156,10 @@ class ExpenseViewModel(
 
     private fun handleSaving(result: Result) {
         val messageId = when (result) {
-            is Saved -> R.string.saved_message
+            is Saved -> {
+                subject.onNext(SavedSuccessfully())
+                R.string.saved_message
+            }
             is NotSaved -> R.string.not_saved_message
         }
 

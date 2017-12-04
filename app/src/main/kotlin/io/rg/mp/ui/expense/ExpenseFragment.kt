@@ -26,6 +26,7 @@ import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
+import io.rg.mp.ui.model.SavedSuccessfully
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
@@ -109,6 +110,7 @@ class ExpenseFragment : Fragment() {
                     spreadsheetSpinnerAdapter.setItems(it.list)
                     spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it.list))
                 }
+                is SavedSuccessfully -> amountEditText.text.clear()
             }
 
         }

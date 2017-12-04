@@ -1,11 +1,12 @@
 package io.rg.mp.service.sheet
 
 import com.google.api.services.sheets.v4.Sheets
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 
 class LocaleService(private val googleSheetService: Sheets) {
     fun getBy(spreadsheetId: String): Flowable<String> {
-        return Flowable.fromCallable {
+        return Flowable.create({
             val response = googleSheetService
                     .spreadsheets()
                     .get(spreadsheetId)
@@ -14,7 +15,13 @@ class LocaleService(private val googleSheetService: Sheets) {
                     .setFields("properties.locale")
                     .execute()
 
-            response.properties.locale
-        }
+            val locale = response.properties.locale
+
+            if (!locale.isNullOrEmpty()) {
+                it.onNext(locale)
+            }
+
+            it.onComplete()
+        }, BackpressureStrategy.BUFFER)
     }
 }
