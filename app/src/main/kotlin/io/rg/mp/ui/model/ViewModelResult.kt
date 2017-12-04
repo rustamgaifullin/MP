@@ -13,3 +13,5 @@ data class GooglePlayServicesAvailabilityError(val requestCode: Int) : ViewModel
 
 data class ListCategory(val list: List<Category>) : ViewModelResult()
 data class ListSpreadsheet(val list: List<Spreadsheet>) : ViewModelResult()
+
+class SavedSuccessfully : ViewModelResult()

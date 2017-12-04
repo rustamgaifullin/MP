@@ -10,6 +10,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.rg.mp.R
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
@@ -30,6 +31,7 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOAD
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
+import io.rg.mp.ui.model.SavedSuccessfully
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
@@ -90,13 +92,13 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     }
 
     @Test
-    fun `should show toast with saved message when an expense is saved`() {
+    fun `should show toast with saved message and notify with successful result when an expense is saved`() {
         val sut = viewModel()
         val spreadsheetId = "id"
 
         whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
         whenever(spreadsheetDao.getLocaleBy(eq(spreadsheetId))).thenReturn(
-                Flowable.just("en_GB")
+                Single.just("en_GB")
         )
         whenever(expenseService.save(any(), any())).thenReturn(
                 Flowable.just(Saved())
@@ -106,7 +108,8 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         testSubscriber
                 .assertNoErrors()
-                .assertValue { it is ToastInfo && it.messageId == R.string.saved_message }
+                .assertValueAt(0, { it is SavedSuccessfully })
+                .assertValueAt(1, { it is ToastInfo && it.messageId == R.string.saved_message })
                 .assertNotComplete()
     }
 
@@ -117,7 +120,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
         whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
-                Flowable.just("en_GB")
+                Single.just("en_GB")
         )
         whenever(expenseService.save(any(), eq(spreadsheetId))).thenReturn(
                 Flowable.just(NotSaved())
@@ -182,7 +185,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
         whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
-                Flowable.just("en_GB")
+                Single.just("en_GB")
         )
         whenever(expenseService.save(any(), any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
