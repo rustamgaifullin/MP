@@ -166,9 +166,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should return current spreadsheet id index`() {
         val spreadsheetList = listOf(
-                Spreadsheet("11", "A"),
-                Spreadsheet("22", "B"),
-                Spreadsheet("33", "C")
+                Spreadsheet("11", "A", 123),
+                Spreadsheet("22", "B", 123),
+                Spreadsheet("33", "C", 123)
         )
         val sut = viewModel()
 

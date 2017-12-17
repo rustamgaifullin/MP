@@ -1,5 +1,6 @@
 package io.rg.mp.service.drive
 
+import com.google.api.client.util.DateTime
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
@@ -25,6 +26,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
         whenever(drive.files()).thenReturn(files)
         whenever(files.list()).thenReturn(list)
         whenever(list.setQ(any())).thenReturn(list)
+        whenever(list.setFields(any())).thenReturn(list)
         whenever(list.execute()).thenReturn(fileList)
 
         sut = SpreadsheetService(drive)
@@ -36,6 +38,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
         val file: File = mock {
             on { id }.thenReturn("0")
             on { name }.thenReturn("name")
+            on { modifiedTime }.thenReturn(DateTime(123))
         }
 
         //when
@@ -44,7 +47,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
 
         //then
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name"))))
+        testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name", 123))))
         testSubscriber.assertComplete()
     }
 

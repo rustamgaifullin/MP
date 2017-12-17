@@ -72,7 +72,8 @@ class ExpenseViewModel(
                 .subscribe(
                         {
                             Log.d("ExpenseViewModel", "update locale: $it for spreadsheet: $spreadsheetId")
-                            spreadsheetDao.updateLocale(it, spreadsheetId)
+                            val result = spreadsheetDao.updateLocale(it, spreadsheetId)
+                            Log.d("ExpenseViewModel", "result code: $result")
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
@@ -106,6 +107,13 @@ class ExpenseViewModel(
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         {
+                            val ids = it.list.map { spreadsheet -> spreadsheet.id }
+                            val names = it.list.map { spreadsheet -> spreadsheet.name }
+
+                            val idsForUpdate = spreadsheetDao.findRecordsForUpdate(ids, names)
+
+
+
                             spreadsheetDao.insertAll(*it.list.toTypedArray())
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }

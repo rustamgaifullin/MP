@@ -7,5 +7,6 @@ import android.arch.persistence.room.PrimaryKey
 data class Spreadsheet(
         @PrimaryKey var id: String,
         var name: String,
+        var modifiedTime: Long,
         var locale: String = ""
 )
