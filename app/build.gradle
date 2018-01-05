@@ -26,6 +26,7 @@ buildscript {
         easy_permission_version = "0.3.0"
         dagger_version = "2.12"
         multidex_version = "1.0.2"
+        dex_opener_version = "0.12.1"
     }
 
     repositories {
@@ -48,7 +49,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.github.tmurakami.dexopener.DexOpenerAndroidJUnitRunner"
 
         multiDexEnabled true
 
@@ -132,6 +133,9 @@ dependencies {
     androidTestCompile "com.android.support.test:runner:$android_support_test_version"
     androidTestCompile "com.android.support.test:rules:$android_support_test_version"
     androidTestCompile "com.android.support.test.uiautomator:uiautomator-v18:$uiautomator_version"
+    androidTestCompile "org.mockito:mockito-android:$mockito_version"
+    androidTestCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
+    androidTestCompile "com.github.tmurakami:dexopener:$dex_opener_version"
 
     testCompile "junit:junit:$junit_version"
     testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

@@ -112,8 +112,6 @@ class ExpenseViewModel(
 
                             val idsForUpdate = spreadsheetDao.findRecordsForUpdate(ids, names)
 
-
-
                             spreadsheetDao.insertAll(*it.list.toTypedArray())
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
