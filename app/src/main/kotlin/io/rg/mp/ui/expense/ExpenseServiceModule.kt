@@ -6,10 +6,10 @@ import dagger.Module
 import dagger.Provides
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
-import io.rg.mp.service.drive.SpreadsheetService
-import io.rg.mp.service.sheet.CategoryService
-import io.rg.mp.service.sheet.ExpenseService
-import io.rg.mp.service.sheet.LocaleService
+import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.CategoryService
+import io.rg.mp.drive.ExpenseService
+import io.rg.mp.drive.LocaleService
 import io.rg.mp.ui.FragmentScope
 import io.rg.mp.utils.Preferences
 

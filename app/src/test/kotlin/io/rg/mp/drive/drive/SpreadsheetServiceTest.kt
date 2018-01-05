@@ -1,4 +1,4 @@
-package io.rg.mp.service.drive
+package io.rg.mp.drive.drive
 
 import com.google.api.client.util.DateTime
 import com.google.api.services.drive.Drive
@@ -8,7 +8,9 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.service.SubscribableTest
+import io.rg.mp.drive.SpreadsheetList
+import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.SubscribableTest
 import org.junit.Before
 import org.junit.Test
 

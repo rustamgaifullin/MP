@@ -1,4 +1,4 @@
-package io.rg.mp.service.config
+package io.rg.mp.drive.config
 
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.sheets.v4.SheetsScopes

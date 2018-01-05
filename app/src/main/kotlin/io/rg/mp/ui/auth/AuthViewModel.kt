@@ -17,7 +17,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.ReplaySubject
 import io.rg.mp.R
-import io.rg.mp.service.drive.SpreadsheetService
+import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
 import io.rg.mp.ui.model.PermissionRequest
 import io.rg.mp.ui.model.StartActivity

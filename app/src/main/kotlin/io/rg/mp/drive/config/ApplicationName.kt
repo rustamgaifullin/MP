@@ -1,4 +1,4 @@
-package io.rg.mp.service.config
+package io.rg.mp.drive.config
 
 class ApplicationName {
     companion object {

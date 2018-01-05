@@ -1,4 +1,4 @@
-package io.rg.mp.service.sheet
+package io.rg.mp.drive.sheet
 
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.ValueRange
@@ -6,8 +6,9 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.service.SubscribableTest
-import io.rg.mp.service.sheet.data.CategoryList
+import io.rg.mp.drive.CategoryService
+import io.rg.mp.drive.SubscribableTest
+import io.rg.mp.drive.data.CategoryList
 import org.junit.Before
 import org.junit.Test
 

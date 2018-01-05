@@ -1,4 +1,4 @@
-package io.rg.mp.service.drive
+package io.rg.mp.drive
 
 import com.google.api.services.drive.Drive
 import io.reactivex.BackpressureStrategy
