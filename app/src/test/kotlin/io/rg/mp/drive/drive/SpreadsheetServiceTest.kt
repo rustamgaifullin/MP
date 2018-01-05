@@ -8,7 +8,7 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.drive.SpreadsheetList
+import io.rg.mp.drive.data.SpreadsheetList
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.SubscribableTest
 import org.junit.Before

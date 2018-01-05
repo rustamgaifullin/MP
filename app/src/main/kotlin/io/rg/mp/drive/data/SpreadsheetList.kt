@@ -1,4 +1,4 @@
-package io.rg.mp.drive
+package io.rg.mp.drive.data
 
 import io.rg.mp.persistence.entity.Spreadsheet
 
