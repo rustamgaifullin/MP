@@ -22,8 +22,8 @@ import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.AndroidContextAwareTest
 import io.rg.mp.R
 import io.rg.mp.rule.TrampolineSchedulerRule
-import io.rg.mp.service.drive.SpreadsheetList
-import io.rg.mp.service.drive.SpreadsheetService
+import io.rg.mp.drive.data.SpreadsheetList
+import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_ACCOUNT_PICKER
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES

@@ -1,4 +1,4 @@
-package io.rg.mp.service.sheet
+package io.rg.mp.drive.sheet
 
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.Spreadsheet
@@ -6,7 +6,8 @@ import com.google.api.services.sheets.v4.model.SpreadsheetProperties
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import io.rg.mp.service.SubscribableTest
+import io.rg.mp.drive.LocaleService
+import io.rg.mp.drive.SubscribableTest
 import org.junit.Before
 import org.junit.Test
 

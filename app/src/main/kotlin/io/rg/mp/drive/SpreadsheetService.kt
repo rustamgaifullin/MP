@@ -1,8 +1,9 @@
-package io.rg.mp.service.drive
+package io.rg.mp.drive
 
 import com.google.api.services.drive.Drive
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.rg.mp.drive.data.SpreadsheetList
 import io.rg.mp.persistence.entity.Spreadsheet
 
 class SpreadsheetService(private val drive: Drive) {
@@ -13,11 +14,12 @@ class SpreadsheetService(private val drive: Drive) {
                     .list()
                     .setQ("mimeType = 'application/vnd.google-apps.spreadsheet' " +
                             "and fullText contains 'Monthly Budget'")
+                    .setFields("files(id, name, modifiedTime)")
                     .execute()
                     .files
             if (files != null) {
                 val spreadsheets = files.map {
-                    Spreadsheet(it.id, it.name)
+                    Spreadsheet(it.id, it.name, it.modifiedTime.value)
                 }
 
                 it.onNext(SpreadsheetList(spreadsheets))

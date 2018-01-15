@@ -7,7 +7,7 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
 import io.rg.mp.persistence.PersistenceModule
-import io.rg.mp.service.ServiceModule
+import io.rg.mp.drive.ServiceModule
 import javax.inject.Inject
 
 class MpApplication : MultiDexApplication(), HasActivityInjector, HasSupportFragmentInjector {

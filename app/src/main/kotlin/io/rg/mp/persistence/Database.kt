@@ -8,10 +8,7 @@ import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
 
 @Database(
-        entities = arrayOf(
-                Category::class,
-                Spreadsheet::class
-        ),
+        entities = [(Category::class), (Spreadsheet::class)],
         version = 1)
 abstract class Database : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao

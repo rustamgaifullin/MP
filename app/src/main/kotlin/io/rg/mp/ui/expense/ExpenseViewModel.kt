@@ -8,18 +8,18 @@ import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
+import io.rg.mp.drive.CategoryService
+import io.rg.mp.drive.ExpenseService
+import io.rg.mp.drive.LocaleService
+import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.data.Expense
+import io.rg.mp.drive.data.NotSaved
+import io.rg.mp.drive.data.Result
+import io.rg.mp.drive.data.Saved
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.service.drive.SpreadsheetService
-import io.rg.mp.service.sheet.CategoryService
-import io.rg.mp.service.sheet.ExpenseService
-import io.rg.mp.service.sheet.LocaleService
-import io.rg.mp.service.sheet.data.Expense
-import io.rg.mp.service.sheet.data.NotSaved
-import io.rg.mp.service.sheet.data.Result
-import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.SavedSuccessfully
@@ -72,7 +72,8 @@ class ExpenseViewModel(
                 .subscribe(
                         {
                             Log.d("ExpenseViewModel", "update locale: $it for spreadsheet: $spreadsheetId")
-                            spreadsheetDao.updateLocale(it, spreadsheetId)
+                            val result = spreadsheetDao.updateLocale(it, spreadsheetId)
+                            Log.d("ExpenseViewModel", "result code: $result")
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
@@ -105,8 +106,8 @@ class ExpenseViewModel(
         spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        {
-                            spreadsheetDao.insertAll(*it.list.toTypedArray())
+                        { (spreadsheetList) ->
+                            spreadsheetDao.updateData(spreadsheetList)
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
                 )

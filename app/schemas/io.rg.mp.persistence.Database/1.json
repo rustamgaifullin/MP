@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "eac4b2470893608874a1bdd0617651eb",
+    "identityHash": "2296c173ba635f98f8690dff6d55129f",
     "entities": [
       {
         "tableName": "category",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "name",
@@ -41,7 +41,7 @@
         "foreignKeys": [
           {
             "table": "spreadsheet",
-            "onDelete": "NO ACTION",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
               "spreadsheet_id"
@@ -54,7 +54,7 @@
       },
       {
         "tableName": "spreadsheet",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `locale` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `modifiedTime` INTEGER NOT NULL, `locale` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -66,6 +66,12 @@
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modifiedTime",
+            "columnName": "modifiedTime",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -87,7 +93,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"eac4b2470893608874a1bdd0617651eb\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2296c173ba635f98f8690dff6d55129f\")"
     ]
   }
 }

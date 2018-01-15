@@ -1,5 +1,6 @@
-package io.rg.mp.service.drive
+package io.rg.mp.drive.drive
 
+import com.google.api.client.util.DateTime
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
@@ -7,7 +8,9 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.service.SubscribableTest
+import io.rg.mp.drive.data.SpreadsheetList
+import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.SubscribableTest
 import org.junit.Before
 import org.junit.Test
 
@@ -25,6 +28,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
         whenever(drive.files()).thenReturn(files)
         whenever(files.list()).thenReturn(list)
         whenever(list.setQ(any())).thenReturn(list)
+        whenever(list.setFields(any())).thenReturn(list)
         whenever(list.execute()).thenReturn(fileList)
 
         sut = SpreadsheetService(drive)
@@ -36,6 +40,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
         val file: File = mock {
             on { id }.thenReturn("0")
             on { name }.thenReturn("name")
+            on { modifiedTime }.thenReturn(DateTime(123))
         }
 
         //when
@@ -44,7 +49,7 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
 
         //then
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name"))))
+        testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name", 123))))
         testSubscriber.assertComplete()
     }
 

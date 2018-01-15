@@ -1,4 +1,4 @@
-package io.rg.mp.service
+package io.rg.mp.drive
 
 import android.content.Context
 import com.google.api.client.extensions.android.http.AndroidHttp
@@ -10,8 +10,8 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.sheets.v4.Sheets
 import dagger.Module
 import dagger.Provides
-import io.rg.mp.service.config.ApplicationName
-import io.rg.mp.service.config.Scopes
+import io.rg.mp.drive.config.ApplicationName
+import io.rg.mp.drive.config.Scopes
 import io.rg.mp.utils.Preferences
 import javax.inject.Singleton
 

@@ -12,20 +12,20 @@ import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.rg.mp.R
+import io.rg.mp.drive.CategoryService
+import io.rg.mp.drive.ExpenseService
+import io.rg.mp.drive.LocaleService
+import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.SubscribableTest
+import io.rg.mp.drive.data.CategoryList
+import io.rg.mp.drive.data.NotSaved
+import io.rg.mp.drive.data.Saved
+import io.rg.mp.drive.data.SpreadsheetList
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
-import io.rg.mp.service.SubscribableTest
-import io.rg.mp.service.drive.SpreadsheetList
-import io.rg.mp.service.drive.SpreadsheetService
-import io.rg.mp.service.sheet.CategoryService
-import io.rg.mp.service.sheet.ExpenseService
-import io.rg.mp.service.sheet.LocaleService
-import io.rg.mp.service.sheet.data.CategoryList
-import io.rg.mp.service.sheet.data.NotSaved
-import io.rg.mp.service.sheet.data.Saved
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
@@ -166,9 +166,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should return current spreadsheet id index`() {
         val spreadsheetList = listOf(
-                Spreadsheet("11", "A"),
-                Spreadsheet("22", "B"),
-                Spreadsheet("33", "C")
+                Spreadsheet("11", "A", 123),
+                Spreadsheet("22", "B", 123),
+                Spreadsheet("33", "C", 123)
         )
         val sut = viewModel()
 
@@ -312,8 +312,6 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 }
                 .assertNotComplete()
     }
-
-
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
         val wrapper = UserRecoverableAuthException("", Intent())
