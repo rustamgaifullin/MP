@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/code
     docker:
-      - image: bitriseio/docker-android
+      - image: bitriseio/docker-android:latest
     environment:
       JVM_OPTS: -Xmx3200m
     steps:
