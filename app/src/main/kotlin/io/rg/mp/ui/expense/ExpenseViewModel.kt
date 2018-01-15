@@ -106,13 +106,8 @@ class ExpenseViewModel(
         spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        {
-                            val ids = it.list.map { spreadsheet -> spreadsheet.id }
-                            val names = it.list.map { spreadsheet -> spreadsheet.name }
-
-                            val idsForUpdate = spreadsheetDao.findRecordsForUpdate(ids, names)
-
-                            spreadsheetDao.insertAll(*it.list.toTypedArray())
+                        { (spreadsheetList) ->
+                            spreadsheetDao.updateData(spreadsheetList)
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
                 )

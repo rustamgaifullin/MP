@@ -136,6 +136,9 @@ dependencies {
     androidTestCompile "org.mockito:mockito-android:$mockito_version"
     androidTestCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
     androidTestCompile "com.github.tmurakami:dexopener:$dex_opener_version"
+    androidTestCompile ("android.arch.core:core-testing:$room_version") {
+        exclude module: 'support-annotations'
+    }
 
     testCompile "junit:junit:$junit_version"
     testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3c6967b59b1d3f132ab0271afa1fa88c",
+    "identityHash": "2296c173ba635f98f8690dff6d55129f",
     "entities": [
       {
         "tableName": "category",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "name",
@@ -41,7 +41,7 @@
         "foreignKeys": [
           {
             "table": "spreadsheet",
-            "onDelete": "NO ACTION",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
               "spreadsheet_id"
@@ -93,7 +93,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"3c6967b59b1d3f132ab0271afa1fa88c\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2296c173ba635f98f8690dff6d55129f\")"
     ]
   }
 }
