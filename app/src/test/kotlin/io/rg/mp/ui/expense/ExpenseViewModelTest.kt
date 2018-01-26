@@ -29,6 +29,8 @@ import io.rg.mp.rule.TrampolineSchedulerRule
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.SavedSuccessfully
@@ -309,6 +311,27 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertValue {
                     it is StartActivity
                             && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should notify to update date button when date was changed`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
+                Single.just("pl_PL")
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.updateDate(DateInt(2016, 3 ,10))
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is DateChanged && it.date == "10.04.16"
                 }
                 .assertNotComplete()
     }
