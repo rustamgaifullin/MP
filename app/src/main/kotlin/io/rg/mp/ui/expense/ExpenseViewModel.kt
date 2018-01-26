@@ -20,6 +20,8 @@ import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
 import io.rg.mp.ui.model.SavedSuccessfully
@@ -27,7 +29,7 @@ import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.Preferences
-import io.rg.mp.utils.currentDate
+import io.rg.mp.utils.formatDate
 
 class ExpenseViewModel(
         private val categoryService: CategoryService,
@@ -45,6 +47,8 @@ class ExpenseViewModel(
     }
 
     private val subject = PublishSubject.create<ViewModelResult>()
+
+    private var lastDate = DateInt.currentDateInt()
 
     fun viewModelNotifier(): Flowable<ViewModelResult>
             = subject.toFlowable(BackpressureStrategy.BUFFER)
@@ -137,14 +141,14 @@ class ExpenseViewModel(
         subject.onNext(result)
     }
 
-    fun saveExpense(amount: Float, category: Category) {
+    fun saveExpense(amount: Float, category: Category, description: String) {
         val spreadsheetId = preferences.spreadsheetId
         spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
                     Log.d("ExpenseViewModel", "get locale: $locale for spreadsheet: $spreadsheetId")
-                    val date = currentDate(locale)
-                    val expense = Expense(date, amount, "", category)
+                    val date = formatDate(locale, lastDate)
+                    val expense = Expense(date, amount, description, category)
 
                     expenseService.save(expense, spreadsheetId)
                             .subscribeOn(Schedulers.io())
@@ -166,4 +170,18 @@ class ExpenseViewModel(
 
         subject.onNext(ToastInfo(messageId, LENGTH_LONG))
     }
+
+    fun updateDate(newDate: DateInt) {
+        spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe { locale ->
+                    lastDate = newDate
+
+                    val date = formatDate(locale, lastDate)
+
+                    subject.onNext(DateChanged(date))
+                }
+    }
+
+    fun lastDate() = lastDate
 }

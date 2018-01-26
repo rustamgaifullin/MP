@@ -104,7 +104,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.just(Saved())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.saveExpense(123.0F, Category("", ""))
+        sut.saveExpense(123.0F, Category("", ""), "")
 
         testSubscriber
                 .assertNoErrors()
@@ -126,7 +126,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.just(NotSaved())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.saveExpense(123.0F, Category("", ""))
+        sut.saveExpense(123.0F, Category("", ""), "")
 
         testSubscriber
                 .assertNoErrors()
@@ -191,7 +191,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.error(userRecoverableAuthIoException())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.saveExpense(123.0F, Category("", ""))
+        sut.saveExpense(123.0F, Category("", ""), "")
 
         testSubscriber
                 .assertNoErrors()
