@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/fragment_auth"
+    android:id="@+id/authFragment"
     tools:context="io.rg.mp.ui.MainActivity">
 
     <Button
-        android:id="@+id/begin_button"
+        android:id="@+id/beginButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -28,7 +28,7 @@
         android:layout_marginTop="8dp"
         android:text="To continue to work with the application you need to authorize\nPress begin to start"
         android:textAlignment="textStart"
-        app:layout_constraintBottom_toTopOf="@+id/begin_button"
+        app:layout_constraintBottom_toTopOf="@+id/beginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

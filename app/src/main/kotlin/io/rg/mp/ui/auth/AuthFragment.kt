@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import com.google.android.gms.common.GoogleApiAvailability
@@ -24,6 +23,7 @@ import io.rg.mp.ui.model.PermissionRequest
 import io.rg.mp.ui.model.StartActivity
 import io.rg.mp.ui.model.ToastInfo
 import io.rg.mp.ui.model.ViewModelResult
+import kotlinx.android.synthetic.main.fragment_auth.*
 import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 
@@ -31,7 +31,6 @@ import javax.inject.Inject
 class AuthFragment : Fragment() {
     @Inject lateinit var authViewModel: AuthViewModel
 
-    private lateinit var beginButton: Button
     private val compositeDisposable = CompositeDisposable()
 
     override fun onAttach(context: Context?) {
@@ -41,12 +40,13 @@ class AuthFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater!!.inflate(R.layout.fragment_auth, container, false)
+        return inflater!!.inflate(R.layout.fragment_auth, container, false)
+    }
 
-        beginButton = view.findViewById(R.id.begin_button)
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         beginButton.setOnClickListener { _ -> authViewModel.beginButtonClick() }
-
-        return view
     }
 
     override fun onStart() {
