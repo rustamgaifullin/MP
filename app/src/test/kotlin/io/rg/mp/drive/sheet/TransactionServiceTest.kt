@@ -6,7 +6,7 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.drive.ExpenseService
+import io.rg.mp.drive.TransactionService
 import io.rg.mp.drive.SubscribableTest
 import io.rg.mp.drive.data.Expense
 import io.rg.mp.drive.data.Result
@@ -14,21 +14,21 @@ import io.rg.mp.drive.data.Saved
 import org.junit.Before
 import org.junit.Test
 
-class ExpenseServiceTest : SubscribableTest<Result>() {
+class TransactionServiceTest : SubscribableTest<Result>() {
 
     private val sheetsService: Sheets = mock()
     private val spreadsheets: Sheets.Spreadsheets = mock()
     private val values: Sheets.Spreadsheets.Values = mock()
     private val append: Sheets.Spreadsheets.Values.Append = mock()
 
-    private lateinit var sut: ExpenseService
+    private lateinit var sut: TransactionService
 
     @Before
     fun setup() {
         whenever(sheetsService.spreadsheets()).thenReturn(spreadsheets)
         whenever(spreadsheets.values()).thenReturn(values)
 
-        sut = ExpenseService(sheetsService)
+        sut = TransactionService(sheetsService)
     }
 
     @Test
@@ -42,7 +42,7 @@ class ExpenseServiceTest : SubscribableTest<Result>() {
         whenever(append.setValueInputOption(any())).thenReturn(append)
         whenever(append.execute()).thenReturn(appendResult)
         whenever(appendResult.tableRange).thenReturn("A1:A2")
-        sut.save(expense, "").subscribe(testSubscriber)
+        sut.saveExpense(expense, "").subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
