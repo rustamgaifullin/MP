@@ -16,4 +16,6 @@ data class ListSpreadsheet(val list: List<Spreadsheet>) : ViewModelResult()
 
 data class DateChanged(val date: String) : ViewModelResult()
 
+data class CreatedSuccessfully(val spreadsheetId: String) : ViewModelResult()
+
 class SavedSuccessfully : ViewModelResult()

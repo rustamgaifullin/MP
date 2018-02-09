@@ -21,6 +21,7 @@ import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
@@ -93,7 +94,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             datePickerDialog.updateDate(year, month, dayOfWeek)
             datePickerDialog.show()
         }
-
     }
 
     private fun saveExpense() {
@@ -156,6 +156,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
                 REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.loadData()
                 REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.loadCurrentCategories()
+                REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> viewModel.createNewSpreadsheet()
             }
         }
     }

@@ -6,18 +6,23 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
+import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.rg.mp.R
 import io.rg.mp.drive.CategoryService
-import io.rg.mp.drive.ExpenseService
+import io.rg.mp.drive.CopyService
+import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.LocaleService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.SubscribableTest
+import io.rg.mp.drive.TransactionService
 import io.rg.mp.drive.data.CategoryList
+import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.NotSaved
 import io.rg.mp.drive.data.Saved
 import io.rg.mp.drive.data.SpreadsheetList
@@ -30,6 +35,7 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.CreatedSuccessfully
 import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
@@ -50,7 +56,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     private val categoryService: CategoryService = mock()
     private val spreadsheetService: SpreadsheetService = mock()
     private val localeService: LocaleService = mock()
-    private val expenseService: ExpenseService = mock()
+    private val transactionService: TransactionService = mock()
+    private val copyService: CopyService = mock()
+    private val folderService: FolderService = mock()
     private val categoryDao: CategoryDao = mock()
     private val spreadsheetDao: SpreadsheetDao = mock()
     private val preferences: Preferences = mock()
@@ -59,7 +67,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
             categoryService,
             spreadsheetService,
             localeService,
-            expenseService,
+            transactionService,
+            copyService,
+            folderService,
             categoryDao,
             spreadsheetDao,
             preferences
@@ -102,7 +112,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(spreadsheetDao.getLocaleBy(eq(spreadsheetId))).thenReturn(
                 Single.just("en_GB")
         )
-        whenever(expenseService.save(any(), any())).thenReturn(
+        whenever(transactionService.saveExpense(any(), any())).thenReturn(
                 Flowable.just(Saved())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
@@ -124,7 +134,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
                 Single.just("en_GB")
         )
-        whenever(expenseService.save(any(), eq(spreadsheetId))).thenReturn(
+        whenever(transactionService.saveExpense(any(), eq(spreadsheetId))).thenReturn(
                 Flowable.just(NotSaved())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
@@ -189,7 +199,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
                 Single.just("en_GB")
         )
-        whenever(expenseService.save(any(), any())).thenReturn(
+        whenever(transactionService.saveExpense(any(), any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
@@ -326,7 +336,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
 
         sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.updateDate(DateInt(2016, 3 ,10))
+        sut.updateDate(DateInt(2016, 3, 10))
 
         testSubscriber
                 .assertNoErrors()
@@ -335,6 +345,131 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 }
                 .assertNotComplete()
     }
+
+    @Test
+    fun `should successfully create new spreadsheet and receive event`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "newId"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+                Completable.complete()
+        )
+        whenever(transactionService.clearAllTransactions(newSpreadsheetId)).thenReturn(
+                Completable.complete()
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.createNewSpreadsheet()
+
+        verify(copyService).copy()
+        verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
+        verify(transactionService).clearAllTransactions(newSpreadsheetId)
+        verify(spreadsheetService, never()).deleteSpreadsheet(newSpreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is CreatedSuccessfully && it.spreadsheetId == "newId"
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should delete created earlier spreadsheet if error will occur during moving to folder`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "newId"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+                Completable.error(Exception())
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
+                Completable.complete()
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.createNewSpreadsheet()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is ToastInfo
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should delete created earlier spreadsheet if error will occur during clearing old transactions`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "id"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+                Completable.complete()
+        )
+        whenever(transactionService.clearAllTransactions(newSpreadsheetId)).thenReturn(
+                Completable.error(Exception())
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
+                Completable.complete()
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.createNewSpreadsheet()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is ToastInfo
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should delete created earlier spreadsheet if error will occur during getting folder id`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "id"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.error(Exception())
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.createNewSpreadsheet()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is ToastInfo
+                }
+                .assertNotComplete()
+    }
+
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
         val wrapper = UserRecoverableAuthException("", Intent())
