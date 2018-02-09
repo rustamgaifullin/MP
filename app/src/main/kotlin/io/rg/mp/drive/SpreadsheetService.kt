@@ -1,7 +1,6 @@
 package io.rg.mp.drive
 
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.File
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -29,16 +28,6 @@ class SpreadsheetService(private val drive: Drive) {
 
             it.onComplete()
         }, BackpressureStrategy.BUFFER)
-    }
-
-    fun moveToFolder(spreadsheetId: String, toFolder: String): Completable {
-        return Completable.fromAction {
-            val content = File()
-
-            drive.files().update(spreadsheetId, content)
-                    .setAddParents(toFolder)
-                    .execute()
-        }
     }
 
     fun deleteSpreadsheet(spreadsheetId: String): Completable {

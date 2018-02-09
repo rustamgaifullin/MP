@@ -1,6 +1,7 @@
 package io.rg.mp.drive
 
 import com.google.api.client.testing.http.MockLowLevelHttpResponse
+import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.createFolder
 import io.rg.mp.emptyFolder
 import io.rg.mp.mockDriveClient
@@ -60,5 +61,20 @@ class FolderServiceTest : SubscribableTest<String>() {
                 .assertValue {
                     it == "newIdForYearFolder"
                 }
+    }
+
+    @Test
+    fun `should complete stream after moving a file to some folder`(){
+        //given
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse("{}"))
+        val sut = FolderService(mockDriveClient(responses))
+        val testSubscriber = TestSubscriber<Any>()
+
+        //when
+        sut.moveToFolder("id", "folder").toFlowable<Any>().subscribe(testSubscriber)
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNoValues()
+        testSubscriber.assertComplete()
     }
 }

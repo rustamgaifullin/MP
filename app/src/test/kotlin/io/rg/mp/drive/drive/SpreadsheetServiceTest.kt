@@ -53,21 +53,6 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
     }
 
     @Test
-    fun `should complete stream after moving a file to some folder`(){
-        //given
-        val responses = LinkedList<MockLowLevelHttpResponse>()
-        responses.add(mockResponse("{}"))
-        val sut = SpreadsheetService(mockDriveClient(responses))
-        val testSubscriber = TestSubscriber<Any>()
-
-        //when
-        sut.moveToFolder("id", "folder").toFlowable<Any>().subscribe(testSubscriber)
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertNoValues()
-        testSubscriber.assertComplete()
-    }
-
-    @Test
     fun `should complete stream after deleting a spreadsheet`(){
         //given
         val responses = LinkedList<MockLowLevelHttpResponse>()

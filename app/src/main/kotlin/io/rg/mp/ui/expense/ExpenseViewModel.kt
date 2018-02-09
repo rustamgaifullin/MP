@@ -209,7 +209,7 @@ class ExpenseViewModel(
                 .flatMap { folderId ->
                     Completable.concat(
                             listOf(
-                                    spreadsheetService.moveToFolder(result.id, folderId),
+                                    folderService.moveToFolder(result.id, folderId),
                                     transactionService.clearAllTransactions(result.id)
                             ))
                             .toSingleDefault(result)

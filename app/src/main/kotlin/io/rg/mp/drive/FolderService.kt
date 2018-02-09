@@ -3,12 +3,23 @@ package io.rg.mp.drive
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
+import io.reactivex.Completable
 import io.reactivex.Single
 import java.util.Calendar
 
 class FolderService(private val drive: Drive) {
     companion object {
         const val FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
+    }
+
+    fun moveToFolder(spreadsheetId: String, toFolder: String): Completable {
+        return Completable.fromAction {
+            val content = File()
+
+            drive.files().update(spreadsheetId, content)
+                    .setAddParents(toFolder)
+                    .execute()
+        }
     }
 
     fun folderIdForCurrentYear(): Single<String> {
