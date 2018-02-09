@@ -16,6 +16,7 @@ import io.reactivex.Single
 import io.rg.mp.R
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
+import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.LocaleService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.SubscribableTest
@@ -57,6 +58,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     private val localeService: LocaleService = mock()
     private val transactionService: TransactionService = mock()
     private val copyService: CopyService = mock()
+    private val folderService: FolderService = mock()
     private val categoryDao: CategoryDao = mock()
     private val spreadsheetDao: SpreadsheetDao = mock()
     private val preferences: Preferences = mock()
@@ -67,6 +69,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
             localeService,
             transactionService,
             copyService,
+            folderService,
             categoryDao,
             spreadsheetDao,
             preferences
@@ -351,6 +354,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(copyService.copy()).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
         whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.complete()
         )
@@ -382,6 +388,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(copyService.copy()).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
         whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.error(Exception())
         )
@@ -410,6 +419,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(copyService.copy()).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
         whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.complete()
         )
@@ -418,6 +430,31 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
                 Completable.complete()
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.createNewSpreadsheet()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is ToastInfo
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should delete created earlier spreadsheet if error will occur during getting folder id`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "id"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.error(Exception())
         )
 
         sut.viewModelNotifier().subscribe(testSubscriber)

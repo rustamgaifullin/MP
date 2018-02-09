@@ -6,14 +6,17 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
+import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.LocaleService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
+import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.Expense
 import io.rg.mp.drive.data.NotSaved
 import io.rg.mp.drive.data.Result
@@ -40,6 +43,7 @@ class ExpenseViewModel(
         private val localeService: LocaleService,
         private val transactionService: TransactionService,
         private val copyService: CopyService,
+        private val folderService: FolderService,
         private val categoryDao: CategoryDao,
         private val spreadsheetDao: SpreadsheetDao,
         private val preferences: Preferences) {
@@ -150,7 +154,6 @@ class ExpenseViewModel(
         spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
-                    Log.d("ExpenseViewModel", "get locale: $locale for spreadsheet: $spreadsheetId")
                     val date = formatDate(locale, lastDate)
                     val expense = Expense(date, amount, description, category)
 
@@ -192,19 +195,25 @@ class ExpenseViewModel(
     fun createNewSpreadsheet() {
         copyService
                 .copy()
-                .flatMap { result ->
-                    Completable.concat(
-                            listOf(
-                                    spreadsheetService.moveToFolder(result.id, ""),
-                                    transactionService.clearAllTransactions(result.id)
-                            ))
-                            .doOnError { spreadsheetService.deleteSpreadsheet(result.id) }
-                            .toSingleDefault(result)
-                }
+                .flatMap(this@ExpenseViewModel::moveToFolderAndClearTransactions)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { subject.onNext(CreatedSuccessfully(it.id)) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET) }
                 )
+    }
+
+    private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {
+        return folderService
+                .folderIdForCurrentYear()
+                .flatMap { folderId ->
+                    Completable.concat(
+                            listOf(
+                                    spreadsheetService.moveToFolder(result.id, folderId),
+                                    transactionService.clearAllTransactions(result.id)
+                            ))
+                            .toSingleDefault(result)
+                }
+                .doOnError { spreadsheetService.deleteSpreadsheet(result.id).subscribe() }
     }
 }

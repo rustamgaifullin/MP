@@ -19,7 +19,7 @@ class SpreadsheetService(private val drive: Drive) {
                     .setFields("files(id, name, modifiedTime)")
                     .execute()
                     .files
-            if (files != null) {
+            if (files != null && files.size > 0) {
                 val spreadsheets = files.map {
                     Spreadsheet(it.id, it.name, it.modifiedTime.value)
                 }
@@ -34,8 +34,10 @@ class SpreadsheetService(private val drive: Drive) {
     fun moveToFolder(spreadsheetId: String, toFolder: String): Completable {
         return Completable.fromAction {
             val content = File()
-            content.parents.add(toFolder)
-            drive.files().update(spreadsheetId, content).execute()
+
+            drive.files().update(spreadsheetId, content)
+                    .setAddParents(toFolder)
+                    .execute()
         }
     }
 

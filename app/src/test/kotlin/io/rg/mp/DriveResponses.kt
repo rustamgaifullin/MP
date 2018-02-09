@@ -29,3 +29,29 @@ fun createFolder(id: String) = """
                 }
             """.trimIndent()
 
+fun dummyFileSearch() = """
+                {
+                "files": [
+                {
+                "id": "id0",
+                "name": "name0",
+                "modifiedTime": "2018-02-09T14:13:30.345Z"
+                },
+                {
+                "id": "id1",
+                "name": "name1",
+                "modifiedTime": "2018-02-09T14:13:30.345Z"
+                },
+                {
+                "id": "id2",
+                "name": "name2",
+                "modifiedTime": "2018-02-09T14:13:30.345Z"
+                }
+                ]
+                }
+            """.trimIndent()
+fun emptyFileSearch() = """
+                {
+                    "files": []
+                }
+            """.trimIndent()

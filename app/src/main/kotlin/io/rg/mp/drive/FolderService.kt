@@ -26,7 +26,7 @@ class FolderService(private val drive: Drive) {
         return drive.files()
                 .list()
                 .setQ("name = '$name' and mimeType = '$FOLDER_MIME_TYPE'")
-                .setFields("id")
+                .setFields("files/id")
                 .execute()
     }
 

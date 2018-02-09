@@ -1,62 +1,49 @@
 package io.rg.mp.drive.drive
 
-import com.google.api.client.util.DateTime
-import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.File
-import com.google.api.services.drive.model.FileList
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.whenever
-import io.rg.mp.persistence.entity.Spreadsheet
-import io.rg.mp.drive.data.SpreadsheetList
+import com.google.api.client.testing.http.MockLowLevelHttpResponse
+import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.SubscribableTest
-import org.junit.Before
+import io.rg.mp.drive.data.SpreadsheetList
+import io.rg.mp.dummyFileSearch
+import io.rg.mp.emptyFileSearch
+import io.rg.mp.mockDriveClient
+import io.rg.mp.mockResponse
+import io.rg.mp.persistence.entity.Spreadsheet
 import org.junit.Test
+import java.util.LinkedList
 
 class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
-
-    private val drive: Drive = mock ()
-    private val files: Drive.Files = mock ()
-    private val list: Drive.Files.List = mock()
-    private val fileList: FileList = mock()
-
-    private lateinit var sut: SpreadsheetService
-
-    @Before
-    fun setup() {
-        whenever(drive.files()).thenReturn(files)
-        whenever(files.list()).thenReturn(list)
-        whenever(list.setQ(any())).thenReturn(list)
-        whenever(list.setFields(any())).thenReturn(list)
-        whenever(list.execute()).thenReturn(fileList)
-
-        sut = SpreadsheetService(drive)
-    }
 
     @Test
     fun `should return list of spreadsheets`() {
         //given
-        val file: File = mock {
-            on { id }.thenReturn("0")
-            on { name }.thenReturn("name")
-            on { modifiedTime }.thenReturn(DateTime(123))
-        }
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse(dummyFileSearch()))
+        val sut = SpreadsheetService(mockDriveClient(responses))
 
         //when
-        whenever(fileList.files).thenReturn(listOf(file))
         sut.list().subscribe(testSubscriber)
 
         //then
         testSubscriber.assertNoErrors()
-        testSubscriber.assertValue(SpreadsheetList(listOf(Spreadsheet("0", "name", 123))))
+        testSubscriber.assertValue(SpreadsheetList(
+                listOf(
+                        Spreadsheet("id0", "name0", 1518185610345),
+                        Spreadsheet("id1", "name1", 1518185610345),
+                        Spreadsheet("id2", "name2", 1518185610345)
+                )))
         testSubscriber.assertComplete()
     }
 
     @Test
     fun `should complete stream when no values retrieved`() {
+        //given
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse(emptyFileSearch()))
+        val sut = SpreadsheetService(mockDriveClient(responses))
+
         //when
-        whenever(fileList.files).thenReturn(null)
         sut.list().subscribe(testSubscriber)
 
         //then
@@ -65,4 +52,33 @@ class SpreadsheetServiceTest: SubscribableTest<SpreadsheetList>() {
         testSubscriber.assertComplete()
     }
 
+    @Test
+    fun `should complete stream after moving a file to some folder`(){
+        //given
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse("{}"))
+        val sut = SpreadsheetService(mockDriveClient(responses))
+        val testSubscriber = TestSubscriber<Any>()
+
+        //when
+        sut.moveToFolder("id", "folder").toFlowable<Any>().subscribe(testSubscriber)
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNoValues()
+        testSubscriber.assertComplete()
+    }
+
+    @Test
+    fun `should complete stream after deleting a spreadsheet`(){
+        //given
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse("{}"))
+        val sut = SpreadsheetService(mockDriveClient(responses))
+        val testSubscriber = TestSubscriber<Any>()
+
+        //when
+        sut.deleteSpreadsheet("id").toFlowable<Any>().subscribe(testSubscriber)
+        testSubscriber.assertNoErrors()
+        testSubscriber.assertNoValues()
+        testSubscriber.assertComplete()
+    }
 }

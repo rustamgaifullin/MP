@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
+import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.LocaleService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
@@ -38,12 +39,17 @@ class ExpenseServiceModule {
 
     @Provides
     @FragmentScope
+    fun folderService(drive: Drive) = FolderService(drive)
+
+    @Provides
+    @FragmentScope
     fun expenseViewModel(
             categoryService: CategoryService,
             spreadsheetService: SpreadsheetService,
             localeService: LocaleService,
             transactionService: TransactionService,
             copyService: CopyService,
+            folderService: FolderService,
             categoryDao: CategoryDao,
             spreadsheetDao: SpreadsheetDao,
             preferences: Preferences) =
@@ -52,6 +58,7 @@ class ExpenseServiceModule {
                     localeService,
                     transactionService,
                     copyService,
+                    folderService,
                     categoryDao,
                     spreadsheetDao,
                     preferences)

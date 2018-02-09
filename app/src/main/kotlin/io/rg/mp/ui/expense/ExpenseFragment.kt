@@ -94,9 +94,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             datePickerDialog.updateDate(year, month, dayOfWeek)
             datePickerDialog.show()
         }
-
-        createButton.setOnClickListener { _-> viewModel.createNewSpreadsheet() }
-
     }
 
     private fun saveExpense() {

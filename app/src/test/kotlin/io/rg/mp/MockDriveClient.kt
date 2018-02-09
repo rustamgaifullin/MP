@@ -29,6 +29,7 @@ fun mockDriveClient(responses: LinkedList<MockLowLevelHttpResponse>): Drive {
             .build()
 
     return Drive.Builder(mockTransport, JacksonFactory.getDefaultInstance(), mockCredential)
+            .setApplicationName("MockedStubbedTestApp")
             .build()
 }
 
