@@ -357,7 +357,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
                 Single.just("folderId")
         )
-        whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.complete()
         )
         whenever(transactionService.clearAllTransactions(newSpreadsheetId)).thenReturn(
@@ -368,7 +368,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         sut.createNewSpreadsheet()
 
         verify(copyService).copy()
-        verify(spreadsheetService).moveToFolder(eq(newSpreadsheetId), any())
+        verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
         verify(transactionService).clearAllTransactions(newSpreadsheetId)
         verify(spreadsheetService, never()).deleteSpreadsheet(newSpreadsheetId)
 
@@ -391,7 +391,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
                 Single.just("folderId")
         )
-        whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.error(Exception())
         )
         whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
@@ -422,7 +422,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
                 Single.just("folderId")
         )
-        whenever(spreadsheetService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
                 Completable.complete()
         )
         whenever(transactionService.clearAllTransactions(newSpreadsheetId)).thenReturn(
