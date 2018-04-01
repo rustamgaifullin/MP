@@ -41,9 +41,10 @@ jobs:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
-          name: Run Tests
+          name: Building app
           command: ./gradlew assembleDebug
       - run:
+          name: Uploading to HockeyApp
           command: bash .circleci/deploy_dev.sh
 
 workflows:
