@@ -31,7 +31,7 @@ jobs:
       enabled: true
     steps:
       - run:
-        command: bash .circleci/deploy_dev.sh
+          command: bash .circleci/deploy_dev.sh
 
 workflows:
   version: 2
