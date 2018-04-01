@@ -26,8 +26,9 @@ jobs:
       - store_test_results:
           path: app/build/test-results
 
-deployment:
-  develop:
-    branch: hockeyapp
-    commands:
-      - ./.circleci/deploy_dev.sh
+  deployment:
+    machine:
+      enabled: true
+      steps:
+        - run:
+          command: ./.circleci/deploy_dev.sh
