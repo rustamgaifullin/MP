@@ -25,3 +25,9 @@ jobs:
           destination: reports
       - store_test_results:
           path: app/build/test-results
+
+  deployment:
+    develop:
+      branch: master
+      commands:
+        - ./.circleci/deploy_dev.sh
