@@ -29,6 +29,6 @@ jobs:
   deploy:
     machine:
       enabled: true
-      steps:
-        - run:
-          command: ./.circleci/deploy_dev.sh
+    steps:
+      - run:
+        command: ./.circleci/deploy_dev.sh
