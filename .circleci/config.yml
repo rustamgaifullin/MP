@@ -28,6 +28,6 @@ jobs:
 
 deployment:
   develop:
-    branch: master
+    branch: hockeyapp
     commands:
       - ./.circleci/deploy_dev.sh
