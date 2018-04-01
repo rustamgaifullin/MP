@@ -29,6 +29,7 @@ jobs:
   deploy:
     machine:
       enabled: true
+    working_directory: ~/code
     steps:
       - run:
           command: bash .circleci/deploy_dev.sh
