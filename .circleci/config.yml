@@ -27,6 +27,8 @@ jobs:
           path: app/build/test-results
 
   deploy:
+    docker:
+      - image: circleci/android:api-26-alpha
     steps:
       - checkout
       - restore_cache:
