@@ -42,7 +42,7 @@ jobs:
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
           name: Run Tests
-          command: ./gradlew build
+          command: ./gradlew assembleDebug
       - run:
           command: bash .circleci/deploy_dev.sh
 
