@@ -25,3 +25,33 @@ jobs:
           destination: reports
       - store_test_results:
           path: app/build/test-results
+
+  deploy:
+    docker:
+      - image: circleci/android:api-26-alpha
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Building app
+          command: ./gradlew assembleDebug
+      - run:
+          name: Uploading to HockeyApp
+          command: bash .circleci/deploy_dev.sh
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
