@@ -17,6 +17,7 @@ import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
@@ -25,6 +26,7 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_NEW_
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.BalanceUpdated
 import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
 import io.rg.mp.ui.model.ListSpreadsheet
@@ -130,9 +132,16 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                     descriptionEditText.text.clear()
                 }
                 is DateChanged -> dateButton.text = it.date
+                is BalanceUpdated -> updateBalance(it.balance)
             }
 
         }
+    }
+
+    private fun updateBalance(balance: Balance) {
+        currentBalanceTextView.text = balance.current
+        actualBalanceTextView.text = balance.actual
+        plannedBalanceTextView.text = balance.planned
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
