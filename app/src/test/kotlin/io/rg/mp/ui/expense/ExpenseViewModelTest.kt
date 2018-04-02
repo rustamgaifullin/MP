@@ -167,13 +167,16 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just("en_EN")
         )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance())
+        )
 
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.onSpreadsheetItemSelected(spreadsheetId)
 
         testSubscriber
                 .assertNoErrors()
-                .assertValue(ListCategory(listOf(category)))
+                .assertValues(ListCategory(listOf(category)), BalanceUpdated(Balance()))
                 .assertNotComplete()
 
         verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
