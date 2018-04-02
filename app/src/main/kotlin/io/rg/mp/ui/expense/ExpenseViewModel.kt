@@ -10,6 +10,7 @@ import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
+import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
@@ -26,6 +27,7 @@ import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.BalanceUpdated
 import io.rg.mp.ui.model.CreatedSuccessfully
 import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
@@ -44,6 +46,7 @@ class ExpenseViewModel(
         private val transactionService: TransactionService,
         private val copyService: CopyService,
         private val folderService: FolderService,
+        private val balanceService: BalanceService,
         private val categoryDao: CategoryDao,
         private val spreadsheetDao: SpreadsheetDao,
         private val preferences: Preferences) {
@@ -69,6 +72,7 @@ class ExpenseViewModel(
         reloadCategories()
         downloadCategories()
         updateLocale(spreadsheetId)
+        reloadBalance()
     }
 
     fun loadCurrentCategories() {
@@ -111,6 +115,14 @@ class ExpenseViewModel(
                 .subscribeOn(Schedulers.io())
                 .subscribe {
                     subject.onNext(ListCategory(it))
+                }
+    }
+
+    private fun reloadBalance() {
+        balanceService.retrieve(preferences.spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe { balance ->
+                    subject.onNext(BalanceUpdated(balance))
                 }
     }
 

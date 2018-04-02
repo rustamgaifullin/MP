@@ -4,6 +4,7 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.sheets.v4.Sheets
 import dagger.Module
 import dagger.Provides
+import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
@@ -43,6 +44,10 @@ class ExpenseServiceModule {
 
     @Provides
     @FragmentScope
+    fun balanceService(sheets: Sheets) = BalanceService(sheets)
+
+    @Provides
+    @FragmentScope
     fun expenseViewModel(
             categoryService: CategoryService,
             spreadsheetService: SpreadsheetService,
@@ -50,6 +55,7 @@ class ExpenseServiceModule {
             transactionService: TransactionService,
             copyService: CopyService,
             folderService: FolderService,
+            balanceService: BalanceService,
             categoryDao: CategoryDao,
             spreadsheetDao: SpreadsheetDao,
             preferences: Preferences) =
@@ -59,6 +65,7 @@ class ExpenseServiceModule {
                     transactionService,
                     copyService,
                     folderService,
+                    balanceService,
                     categoryDao,
                     spreadsheetDao,
                     preferences)

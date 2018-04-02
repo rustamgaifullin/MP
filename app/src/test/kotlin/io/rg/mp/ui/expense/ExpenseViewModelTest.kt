@@ -14,6 +14,7 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.rg.mp.R
+import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
@@ -21,6 +22,7 @@ import io.rg.mp.drive.LocaleService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.SubscribableTest
 import io.rg.mp.drive.TransactionService
+import io.rg.mp.drive.data.Balance
 import io.rg.mp.drive.data.CategoryList
 import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.NotSaved
@@ -35,6 +37,7 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.model.BalanceUpdated
 import io.rg.mp.ui.model.CreatedSuccessfully
 import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
@@ -59,6 +62,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     private val transactionService: TransactionService = mock()
     private val copyService: CopyService = mock()
     private val folderService: FolderService = mock()
+    private val balanceService: BalanceService = mock()
     private val categoryDao: CategoryDao = mock()
     private val spreadsheetDao: SpreadsheetDao = mock()
     private val preferences: Preferences = mock()
@@ -70,6 +74,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
             transactionService,
             copyService,
             folderService,
+            balanceService,
             categoryDao,
             spreadsheetDao,
             preferences
@@ -162,13 +167,16 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just("en_EN")
         )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance())
+        )
 
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.onSpreadsheetItemSelected(spreadsheetId)
 
         testSubscriber
                 .assertNoErrors()
-                .assertValue(ListCategory(listOf(category)))
+                .assertValues(ListCategory(listOf(category)), BalanceUpdated(Balance()))
                 .assertNotComplete()
 
         verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
@@ -470,6 +478,35 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertNotComplete()
     }
 
+    @Test
+    fun `should receive balance after changing spreadsheet`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance("1000", "200", "500"))
+        )
+        whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(categoryService.getListBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(localeService.getBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.onSpreadsheetItemSelected(spreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is BalanceUpdated &&
+                            it.balance == Balance("1000", "200", "500")
+                }
+    }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {
         val wrapper = UserRecoverableAuthException("", Intent())
