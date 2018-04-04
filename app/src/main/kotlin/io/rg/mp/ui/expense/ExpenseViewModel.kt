@@ -69,16 +69,19 @@ class ExpenseViewModel(
 
     fun onSpreadsheetItemSelected(spreadsheetId: String) {
         preferences.spreadsheetId = spreadsheetId
+
         reloadCategories()
-        downloadCategories()
+        downloadCategories(spreadsheetId)
         updateLocale(spreadsheetId)
-        reloadBalance()
+        reloadBalance(spreadsheetId)
     }
 
     fun loadCurrentCategories() {
         if (preferences.isSpreadsheetIdAvailable) {
-            downloadCategories()
-            updateLocale(preferences.spreadsheetId)
+            val spreadsheetId = preferences.spreadsheetId
+
+            downloadCategories(spreadsheetId)
+            updateLocale(spreadsheetId)
         }
     }
 
@@ -118,8 +121,8 @@ class ExpenseViewModel(
                 }
     }
 
-    private fun reloadBalance() {
-        balanceService.retrieve(preferences.spreadsheetId)
+    private fun reloadBalance(spreadsheetId: String) {
+        balanceService.retrieve(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { balance ->
                     subject.onNext(BalanceUpdated(balance))
@@ -137,9 +140,7 @@ class ExpenseViewModel(
                 )
     }
 
-    private fun downloadCategories() {
-        val spreadsheetId = preferences.spreadsheetId
-
+    private fun downloadCategories(spreadsheetId: String) {
         categoryService.getListBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
@@ -166,7 +167,7 @@ class ExpenseViewModel(
         spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
-                    val date = formatDate(locale, lastDate)
+                    val date = formatDate(lastDate, locale)
                     val expense = Expense(date, amount, description, category)
 
                     transactionService.saveExpense(expense, spreadsheetId)
@@ -193,13 +194,19 @@ class ExpenseViewModel(
     fun updateDate(newDate: DateInt) {
         spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
-                .subscribe { locale ->
-                    lastDate = newDate
+                .subscribe(
+                        { locale ->
+                            lastDate = newDate
 
-                    val date = formatDate(locale, lastDate)
+                            val date = formatDate(lastDate, locale)
 
-                    subject.onNext(DateChanged(date))
-                }
+                            subject.onNext(DateChanged(date))
+                        },
+                        {
+                            //TODO: Not a good way to handle not found rows scenario. Maybe rework with Maybe?
+                            subject.onNext(DateChanged(formatDate(lastDate)))
+                        }
+                )
     }
 
     fun lastDate() = lastDate
