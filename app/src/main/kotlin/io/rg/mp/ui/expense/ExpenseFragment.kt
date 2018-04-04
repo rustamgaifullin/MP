@@ -124,20 +124,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         super.onStart()
     }
 
-    private fun handleProgressDialog(): (Boolean) -> Unit {
-        return { showProgress ->
-            progressBar.isIndeterminate = showProgress
-
-            progressBar.setVisibility(showProgress)
-            actualBalanceLabel.setVisibility(!showProgress)
-            currentBalanceLabel.setVisibility(!showProgress)
-            plannedBalanceLabel.setVisibility(!showProgress)
-            actualBalanceTextView.setVisibility(!showProgress)
-            currentBalanceTextView.setVisibility(!showProgress)
-            plannedBalanceTextView.setVisibility(!showProgress)
-        }
-    }
-
     private fun handleViewModelResult(): (ViewModelResult) -> Unit {
         return {
             when (it) {
@@ -156,6 +142,20 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 is BalanceUpdated -> updateBalance(it.balance)
             }
 
+        }
+    }
+
+    private fun handleProgressDialog(): (Boolean) -> Unit {
+        return { showProgress ->
+            progressBar.isIndeterminate = showProgress
+
+            progressBar.setVisibility(showProgress)
+            actualBalanceLabel.setVisibility(!showProgress)
+            currentBalanceLabel.setVisibility(!showProgress)
+            plannedBalanceLabel.setVisibility(!showProgress)
+            actualBalanceTextView.setVisibility(!showProgress)
+            currentBalanceTextView.setVisibility(!showProgress)
+            plannedBalanceTextView.setVisibility(!showProgress)
         }
     }
 
