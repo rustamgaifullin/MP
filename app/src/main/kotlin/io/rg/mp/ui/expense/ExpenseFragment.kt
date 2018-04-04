@@ -117,7 +117,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         compositeDisposable.add(
                 viewModel.isOperationInProgress()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(handleProgressDialog())
+                        .subscribe(handleProgressBar())
         )
 
         viewModel.loadData()
@@ -145,7 +145,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         }
     }
 
-    private fun handleProgressDialog(): (Boolean) -> Unit {
+    private fun handleProgressBar(): (Boolean) -> Unit {
         return { showProgress ->
             progressBar.isIndeterminate = showProgress
 
