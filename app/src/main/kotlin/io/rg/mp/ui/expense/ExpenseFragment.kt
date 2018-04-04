@@ -26,6 +26,7 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_NEW_
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.extension.setVisibility
 import io.rg.mp.ui.model.BalanceUpdated
 import io.rg.mp.ui.model.DateChanged
 import io.rg.mp.ui.model.ListCategory
@@ -43,7 +44,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
     }
 
-    @Inject lateinit var viewModel: ExpenseViewModel
+    @Inject
+    lateinit var viewModel: ExpenseViewModel
 
     private lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
     private lateinit var spreadsheetSpinnerAdapter: SpreadsheetSpinnerAdapter
@@ -112,9 +114,28 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(handleViewModelResult())
         )
+        compositeDisposable.add(
+                viewModel.isOperationInProgress()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(handleProgressDialog())
+        )
 
         viewModel.loadData()
         super.onStart()
+    }
+
+    private fun handleProgressDialog(): (Boolean) -> Unit {
+        return { showProgress ->
+            progressBar.isIndeterminate = showProgress
+
+            progressBar.setVisibility(showProgress)
+            actualBalanceLabel.setVisibility(!showProgress)
+            currentBalanceLabel.setVisibility(!showProgress)
+            plannedBalanceLabel.setVisibility(!showProgress)
+            actualBalanceTextView.setVisibility(!showProgress)
+            currentBalanceTextView.setVisibility(!showProgress)
+            plannedBalanceTextView.setVisibility(!showProgress)
+        }
     }
 
     private fun handleViewModelResult(): (ViewModelResult) -> Unit {
