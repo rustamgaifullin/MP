@@ -1,5 +1,6 @@
 package io.rg.mp.ui.expense
 
+import android.arch.persistence.room.EmptyResultSetException
 import android.content.Intent
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -505,6 +506,26 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertValue {
                     it is BalanceUpdated &&
                             it.balance == Balance("1000", "200", "500")
+                }
+    }
+
+    @Test
+    fun `should return formatted date even if there are no records in db`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
+                Single.error(EmptyResultSetException(""))
+        )
+
+        sut.viewModelNotifier().subscribe(testSubscriber)
+        sut.updateDate(DateInt(2018, 3, 4))
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is DateChanged && it.date == "4/4/18"
                 }
     }
 

@@ -192,12 +192,12 @@ class ExpenseViewModel(
     }
 
     fun updateDate(newDate: DateInt) {
+        lastDate = newDate
+
         spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { locale ->
-                            lastDate = newDate
-
                             val date = formatDate(lastDate, locale)
 
                             subject.onNext(DateChanged(date))
