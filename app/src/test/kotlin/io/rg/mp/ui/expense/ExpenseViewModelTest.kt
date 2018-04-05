@@ -268,6 +268,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just("en_EN")
         )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance())
+        )
         sut.loadCurrentCategories()
 
         verify(categoryDao).insertAll(any())
@@ -299,6 +302,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(categoryService.getListBy(any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
+        whenever(balanceService.retrieve(any())).thenReturn(
+                Single.never()
+        )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.loadCurrentCategories()
 
@@ -323,6 +329,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.never()
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.loadCurrentCategories()
