@@ -120,7 +120,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .subscribe(handleProgressBar())
         )
 
-        viewModel.loadData()
+        viewModel.startLoadingData()
         super.onStart()
     }
 
@@ -184,7 +184,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
-                REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.loadData()
+                REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.startLoadingData()
                 REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.loadCurrentCategories()
                 REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> viewModel.createNewSpreadsheet()
             }

@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
@@ -74,18 +75,21 @@ class ExpenseViewModel(
         preferences.spreadsheetId = spreadsheetId
 
         reloadCategories()
-        downloadCategories(spreadsheetId)
-        updateLocale(spreadsheetId)
-        reloadBalance(spreadsheetId)
+        downloadDataFor(spreadsheetId)
     }
 
     fun loadCurrentCategories() {
         if (preferences.isSpreadsheetIdAvailable) {
             val spreadsheetId = preferences.spreadsheetId
 
-            downloadCategories(spreadsheetId)
-            updateLocale(spreadsheetId)
+            downloadDataFor(spreadsheetId)
         }
+    }
+
+    private fun downloadDataFor(spreadsheetId: String) {
+        downloadCategories(spreadsheetId)
+        updateLocale(spreadsheetId)
+        reloadBalance(spreadsheetId)
     }
 
     private fun updateLocale(spreadsheetId: String) {
@@ -103,11 +107,11 @@ class ExpenseViewModel(
                 )
     }
 
-    fun loadData() {
+    fun startLoadingData() {
         reloadSpreadsheets()
         reloadCategories()
 
-        downloadData()
+        downloadSpreadsheets()
     }
 
     private fun reloadSpreadsheets() {
@@ -136,7 +140,7 @@ class ExpenseViewModel(
                 }
     }
 
-    private fun downloadData() {
+    private fun downloadSpreadsheets() {
         spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
@@ -245,7 +249,7 @@ class ExpenseViewModel(
                 .doOnError { spreadsheetService.deleteSpreadsheet(result.id).subscribe() }
     }
 
-    fun isOperationInProgress() = progressSubject
+    fun isOperationInProgress(): Observable<Boolean> = progressSubject
                 .scan({ sum, item -> sum + item })
                 .map({ sum -> sum > 0 })
 }
