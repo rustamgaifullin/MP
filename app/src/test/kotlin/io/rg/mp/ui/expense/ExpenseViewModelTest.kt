@@ -11,9 +11,11 @@ import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
+import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.R
 import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
@@ -101,7 +103,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(preferences.isSpreadsheetIdAvailable).thenReturn(true)
         whenever(preferences.spreadsheetId).thenReturn("")
 
-        sut.loadData()
+        sut.startLoadingData()
 
         testSubscriber
                 .assertNoErrors()
@@ -242,7 +244,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(preferences.spreadsheetId).thenReturn("")
 
         sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.loadData()
+        sut.startLoadingData()
 
         testSubscriber
                 .assertNoErrors()
@@ -265,6 +267,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.just("en_EN")
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance())
         )
         sut.loadCurrentCategories()
 
@@ -297,6 +302,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(categoryService.getListBy(any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
+        whenever(balanceService.retrieve(any())).thenReturn(
+                Single.never()
+        )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.loadCurrentCategories()
 
@@ -321,6 +329,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.never()
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.loadCurrentCategories()
@@ -527,6 +538,39 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertValue {
                     it is DateChanged && it.date == "4/4/18"
                 }
+    }
+
+    @Test
+    fun `should receive progress notifications`() {
+        val sut = viewModel()
+        val progressTestSubscriber = TestSubscriber<Boolean>()
+        val spreadsheetId = "id"
+
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+        whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(categoryService.getListBy(eq(spreadsheetId))).thenReturn(
+                Flowable.empty()
+        )
+        whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
+                Flowable.empty()
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance())
+        )
+        whenever(preferences.spreadsheetId).thenReturn(spreadsheetId)
+
+
+        sut.isOperationInProgress().toFlowable(BackpressureStrategy.BUFFER)
+                .subscribe(progressTestSubscriber)
+        sut.onSpreadsheetItemSelected(spreadsheetId)
+
+        progressTestSubscriber
+                .assertNoErrors()
+                .assertValues(false, true, false, true, false, true, false)
+
+
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

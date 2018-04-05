@@ -6,8 +6,10 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
 import io.rg.mp.drive.BalanceService
@@ -62,6 +64,8 @@ class ExpenseViewModel(
 
     private var lastDate = DateInt.currentDateInt()
 
+    private val progressSubject = BehaviorSubject.createDefault(0)
+
     fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
 
     fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>): Int =
@@ -71,23 +75,28 @@ class ExpenseViewModel(
         preferences.spreadsheetId = spreadsheetId
 
         reloadCategories()
-        downloadCategories(spreadsheetId)
-        updateLocale(spreadsheetId)
-        reloadBalance(spreadsheetId)
+        downloadDataFor(spreadsheetId)
     }
 
     fun loadCurrentCategories() {
         if (preferences.isSpreadsheetIdAvailable) {
             val spreadsheetId = preferences.spreadsheetId
 
-            downloadCategories(spreadsheetId)
-            updateLocale(spreadsheetId)
+            downloadDataFor(spreadsheetId)
         }
+    }
+
+    private fun downloadDataFor(spreadsheetId: String) {
+        downloadCategories(spreadsheetId)
+        updateLocale(spreadsheetId)
+        reloadBalance(spreadsheetId)
     }
 
     private fun updateLocale(spreadsheetId: String) {
         localeService.getBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         {
                             Log.d("ExpenseViewModel", "update locale: $it for spreadsheet: $spreadsheetId")
@@ -98,11 +107,11 @@ class ExpenseViewModel(
                 )
     }
 
-    fun loadData() {
+    fun startLoadingData() {
         reloadSpreadsheets()
         reloadCategories()
 
-        downloadData()
+        downloadSpreadsheets()
     }
 
     private fun reloadSpreadsheets() {
@@ -124,12 +133,14 @@ class ExpenseViewModel(
     private fun reloadBalance(spreadsheetId: String) {
         balanceService.retrieve(spreadsheetId)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribe { balance ->
                     subject.onNext(BalanceUpdated(balance))
                 }
     }
 
-    private fun downloadData() {
+    private fun downloadSpreadsheets() {
         spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
@@ -144,6 +155,8 @@ class ExpenseViewModel(
         categoryService.getListBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         { categoryDao.insertAll(*it.list.toTypedArray()) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
@@ -235,4 +248,8 @@ class ExpenseViewModel(
                 }
                 .doOnError { spreadsheetService.deleteSpreadsheet(result.id).subscribe() }
     }
+
+    fun isOperationInProgress(): Observable<Boolean> = progressSubject
+                .scan({ sum, item -> sum + item })
+                .map({ sum -> sum > 0 })
 }
