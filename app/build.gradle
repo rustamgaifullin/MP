@@ -13,7 +13,7 @@ buildscript {
         junit_platform_runner_version = "1.0.0-M4"
         support_library_version = "27.1.1"
         constraintlayout_version = "1.0.2"
-        rxandroid_version = "2.0.2"Ľ
+        rxandroid_version = "2.0.2"
         android_espresso_version = "3.0.1"
         android_support_test_version = "1.0.1"
         uiautomator_version = "2.1.2"
