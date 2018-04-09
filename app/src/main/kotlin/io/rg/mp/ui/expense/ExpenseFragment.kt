@@ -58,20 +58,24 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        categorySpinnerAdapter = CategorySpinnerAdapter(
-                activity, android.R.layout.simple_spinner_dropdown_item, activity.layoutInflater)
+        activity?.apply {
+            categorySpinnerAdapter = CategorySpinnerAdapter(
+                    this, android.R.layout.simple_spinner_dropdown_item, layoutInflater)
 
-        spreadsheetSpinnerAdapter = SpreadsheetSpinnerAdapter(
-                activity, android.R.layout.simple_spinner_dropdown_item, activity.layoutInflater)
+            spreadsheetSpinnerAdapter = SpreadsheetSpinnerAdapter(
+                    this, android.R.layout.simple_spinner_dropdown_item, layoutInflater)
+
+        }
+
 
         datePickerDialog = DatePickerDialog(activity, this, 0, 0, 0)
 
-        return inflater!!.inflate(R.layout.fragment_expense, container, false)
+        return inflater.inflate(R.layout.fragment_expense, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         categorySpinner.adapter = categorySpinnerAdapter
@@ -88,7 +92,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         addButton.setOnClickListener { saveExpense() }
 
-        val dateToUpdate = savedInstanceState?.getParcelable<DateInt>(LAST_DATE_KEY)
+        val dateToUpdate = savedInstanceState?.getParcelable(LAST_DATE_KEY)
                 ?: viewModel.lastDate()
         viewModel.updateDate(dateToUpdate)
 
@@ -165,10 +169,10 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         plannedBalanceTextView.text = balance.planned
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState?.apply {
+        outState.apply {
             putParcelable(LAST_DATE_KEY, viewModel.lastDate())
         }
     }

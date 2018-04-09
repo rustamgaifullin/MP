@@ -38,12 +38,12 @@ class AuthFragment : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        return inflater!!.inflate(R.layout.fragment_auth, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View {
+        return inflater.inflate(R.layout.fragment_auth, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         beginButton.setOnClickListener { _ -> authViewModel.beginButtonClick() }
@@ -98,9 +98,11 @@ class AuthFragment : Fragment() {
 
     private fun finish(): () -> Unit {
         return {
-            val transaction = fragmentManager.beginTransaction()
-            transaction.replace(R.id.main_container, ExpenseFragment())
-            transaction.commit()
+            fragmentManager?.apply {
+                val transaction = beginTransaction()
+                transaction.replace(R.id.main_container, ExpenseFragment())
+                transaction.commit()
+            }
         }
     }
 
