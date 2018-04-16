@@ -9,8 +9,6 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Adapter
-import android.widget.AdapterView
 import android.widget.DatePicker
 import android.widget.Toast
 import dagger.android.support.AndroidSupportInjection
@@ -19,22 +17,18 @@ import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
+import io.rg.mp.ui.BalanceUpdated
+import io.rg.mp.ui.DateChanged
+import io.rg.mp.ui.ListCategory
+import io.rg.mp.ui.SavedSuccessfully
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
-import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_ALL
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
-import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
-import io.rg.mp.ui.expense.adapter.SpreadsheetSpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
-import io.rg.mp.ui.extension.setVisibility
-import io.rg.mp.ui.model.BalanceUpdated
-import io.rg.mp.ui.model.DateChanged
-import io.rg.mp.ui.model.ListCategory
-import io.rg.mp.ui.model.ListSpreadsheet
-import io.rg.mp.ui.model.SavedSuccessfully
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_expense.*
 import javax.inject.Inject
 
@@ -42,14 +36,26 @@ import javax.inject.Inject
 class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     companion object {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
+        private const val SPREADSHEET_ID = "spreadsheetId"
+        const val NAME = "EXPENSE_FRAGMENT"
+
+        fun create(spreadsheetId: String): ExpenseFragment {
+            val expenseFragment = ExpenseFragment()
+
+            val args = Bundle()
+            args.putString(SPREADSHEET_ID, spreadsheetId)
+            expenseFragment.arguments = args
+
+            return expenseFragment
+        }
     }
 
     @Inject
     lateinit var viewModel: ExpenseViewModel
 
     private lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
-    private lateinit var spreadsheetSpinnerAdapter: SpreadsheetSpinnerAdapter
     private lateinit var datePickerDialog: DatePickerDialog
+    private lateinit var spreadsheetId: String
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -63,12 +69,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         activity?.apply {
             categorySpinnerAdapter = CategorySpinnerAdapter(
                     this, android.R.layout.simple_spinner_dropdown_item, layoutInflater)
-
-            spreadsheetSpinnerAdapter = SpreadsheetSpinnerAdapter(
-                    this, android.R.layout.simple_spinner_dropdown_item, layoutInflater)
-
         }
 
+        spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
 
         datePickerDialog = DatePickerDialog(activity, this, 0, 0, 0)
 
@@ -80,21 +83,11 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         categorySpinner.adapter = categorySpinnerAdapter
 
-        spreadsheetSpinner.adapter = spreadsheetSpinnerAdapter
-        spreadsheetSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, v: View, pos: Int, id: Long) {
-                val spreadsheet = spreadsheetSpinnerAdapter.getItem(pos)
-                viewModel.onSpreadsheetItemSelected(spreadsheet.id)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<out Adapter>?) {}
-        }
-
         addButton.setOnClickListener { saveExpense() }
 
         val dateToUpdate = savedInstanceState?.getParcelable(LAST_DATE_KEY)
                 ?: viewModel.lastDate()
-        viewModel.updateDate(dateToUpdate)
+        viewModel.updateDate(dateToUpdate, spreadsheetId)
 
         dateButton.setOnClickListener {
             val (year, month, dayOfWeek) = viewModel.lastDate()
@@ -109,7 +102,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         val category = categorySpinner.selectedItem as Category
         val description = descriptionEditText.text.toString()
 
-        viewModel.saveExpense(amount, category, description)
+        viewModel.saveExpense(amount, category, description, spreadsheetId)
     }
 
     override fun onStart() {
@@ -124,7 +117,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .subscribe(handleProgressBar())
         )
 
-        viewModel.startLoadingData()
+        viewModel.reloadData(spreadsheetId)
         super.onStart()
     }
 
@@ -134,10 +127,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListCategory -> categorySpinnerAdapter.setItems(it.list)
-                is ListSpreadsheet -> {
-                    spreadsheetSpinnerAdapter.setItems(it.list)
-                    spreadsheetSpinner.setSelection(viewModel.currentSpreadsheet(it.list))
-                }
                 is SavedSuccessfully -> {
                     amountEditText.text.clear()
                     descriptionEditText.text.clear()
@@ -188,14 +177,13 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
-                REQUEST_AUTHORIZATION_LOADING_ALL -> viewModel.startLoadingData()
-                REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.loadCurrentCategories()
-                REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> viewModel.createNewSpreadsheet()
+                REQUEST_AUTHORIZATION_LOADING_CATEGORIES ->
+                    viewModel.reloadData(spreadsheetId)
             }
         }
     }
 
     override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
-        viewModel.updateDate(DateInt(year, month, dayOfMonth))
+        viewModel.updateDate(DateInt(year, month, dayOfMonth), spreadsheetId)
     }
 }

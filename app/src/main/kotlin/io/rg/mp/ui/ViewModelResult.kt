@@ -1,4 +1,4 @@
-package io.rg.mp.ui.model
+package io.rg.mp.ui
 
 import android.content.Intent
 import io.rg.mp.drive.data.Balance

@@ -16,19 +16,23 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.rg.mp.R
+import io.rg.mp.ui.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.PermissionRequest
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES
 import io.rg.mp.ui.expense.ExpenseFragment
-import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
-import io.rg.mp.ui.model.PermissionRequest
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
 import kotlinx.android.synthetic.main.fragment_auth.*
 import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 
 
 class AuthFragment : Fragment() {
+    companion object {
+        const val NAME = "AUTH_FRAGMENT"
+    }
+
     @Inject lateinit var authViewModel: AuthViewModel
 
     private val compositeDisposable = CompositeDisposable()

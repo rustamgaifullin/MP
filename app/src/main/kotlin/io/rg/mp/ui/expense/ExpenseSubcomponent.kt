@@ -5,7 +5,7 @@ import dagger.android.AndroidInjector
 import io.rg.mp.ui.FragmentScope
 
 
-@Subcomponent(modules = arrayOf(ExpenseServiceModule::class))
+@Subcomponent(modules = [(ExpenseServiceModule::class)])
 @FragmentScope
 interface ExpenseSubcomponent : AndroidInjector<ExpenseFragment> {
     @Subcomponent.Builder

@@ -1,25 +1,12 @@
 package io.rg.mp.ui.expense
 
-import android.util.Log
 import android.widget.Toast.LENGTH_LONG
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
 import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
-import io.rg.mp.drive.CopyService
-import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.LocaleService
-import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
-import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.Expense
 import io.rg.mp.drive.data.NotSaved
 import io.rg.mp.drive.data.Result
@@ -28,68 +15,45 @@ import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.ui.AbstractViewModel
+import io.rg.mp.ui.BalanceUpdated
+import io.rg.mp.ui.DateChanged
+import io.rg.mp.ui.ListCategory
+import io.rg.mp.ui.SavedSuccessfully
+import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.expense.model.DateInt
-import io.rg.mp.ui.model.BalanceUpdated
-import io.rg.mp.ui.model.CreatedSuccessfully
-import io.rg.mp.ui.model.DateChanged
-import io.rg.mp.ui.model.ListCategory
-import io.rg.mp.ui.model.ListSpreadsheet
-import io.rg.mp.ui.model.SavedSuccessfully
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
-import io.rg.mp.utils.Preferences
 import io.rg.mp.utils.formatDate
 
 class ExpenseViewModel(
         private val categoryService: CategoryService,
-        private val spreadsheetService: SpreadsheetService,
         private val localeService: LocaleService,
         private val transactionService: TransactionService,
-        private val copyService: CopyService,
-        private val folderService: FolderService,
         private val balanceService: BalanceService,
         private val categoryDao: CategoryDao,
-        private val spreadsheetDao: SpreadsheetDao,
-        private val preferences: Preferences) {
+        private val spreadsheetDao: SpreadsheetDao) : AbstractViewModel() {
 
     companion object {
         const val REQUEST_AUTHORIZATION_EXPENSE = 2000
-        const val REQUEST_AUTHORIZATION_LOADING_ALL = 2001
         const val REQUEST_AUTHORIZATION_LOADING_CATEGORIES = 2002
-        const val REQUEST_AUTHORIZATION_NEW_SPREADSHEET = 2003
     }
-
-    private val subject = PublishSubject.create<ViewModelResult>()
 
     private var lastDate = DateInt.currentDateInt()
 
-    private val progressSubject = BehaviorSubject.createDefault(0)
+    fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>, spreadsheetId: String): Int =
+            spreadsheetList.indexOfFirst { (id) -> id == spreadsheetId }
 
-    fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
+    fun reloadData(spreadsheetId: String) {
+        reloadCategories(spreadsheetId)
 
-    fun currentSpreadsheet(spreadsheetList: List<Spreadsheet>): Int =
-            spreadsheetList.indexOfFirst { (id) -> id == preferences.spreadsheetId }
-
-    fun onSpreadsheetItemSelected(spreadsheetId: String) {
-        preferences.spreadsheetId = spreadsheetId
-
-        reloadCategories()
-        downloadDataFor(spreadsheetId)
-    }
-
-    fun loadCurrentCategories() {
-        if (preferences.isSpreadsheetIdAvailable) {
-            val spreadsheetId = preferences.spreadsheetId
-
-            downloadDataFor(spreadsheetId)
-        }
-    }
-
-    private fun downloadDataFor(spreadsheetId: String) {
         downloadCategories(spreadsheetId)
         updateLocale(spreadsheetId)
         reloadBalance(spreadsheetId)
+    }
+
+    private fun reloadCategories(spreadsheetId: String) {
+        categoryDao.findBySpreadsheetId(spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe { subject.onNext(ListCategory(it)) }
     }
 
     private fun updateLocale(spreadsheetId: String) {
@@ -98,36 +62,9 @@ class ExpenseViewModel(
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
-                        {
-                            Log.d("ExpenseViewModel", "update locale: $it for spreadsheet: $spreadsheetId")
-                            val result = spreadsheetDao.updateLocale(it, spreadsheetId)
-                            Log.d("ExpenseViewModel", "result code: $result")
-                        },
+                        { spreadsheetDao.updateLocale(it, spreadsheetId) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
-    }
-
-    fun startLoadingData() {
-        reloadSpreadsheets()
-        reloadCategories()
-
-        downloadSpreadsheets()
-    }
-
-    private fun reloadSpreadsheets() {
-        spreadsheetDao.all()
-                .subscribeOn(Schedulers.io())
-                .subscribe {
-                    subject.onNext(ListSpreadsheet(it))
-                }
-    }
-
-    private fun reloadCategories() {
-        categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
-                .subscribeOn(Schedulers.io())
-                .subscribe {
-                    subject.onNext(ListCategory(it))
-                }
     }
 
     private fun reloadBalance(spreadsheetId: String) {
@@ -138,17 +75,6 @@ class ExpenseViewModel(
                 .subscribe { balance ->
                     subject.onNext(BalanceUpdated(balance))
                 }
-    }
-
-    private fun downloadSpreadsheets() {
-        spreadsheetService.list()
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { (spreadsheetList) ->
-                            spreadsheetDao.updateData(spreadsheetList)
-                        },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
-                )
     }
 
     private fun downloadCategories(spreadsheetId: String) {
@@ -163,20 +89,8 @@ class ExpenseViewModel(
                 )
     }
 
-    private fun handleErrors(error: Throwable, requestCode: Int) {
-        val result = when (error) {
-            is UserRecoverableAuthIOException ->
-                StartActivity(error.intent, requestCode)
-            else -> {
-                ToastInfo(R.string.unknown_error, LENGTH_LONG)
-            }
-        }
-
-        subject.onNext(result)
-    }
-
-    fun saveExpense(amount: Float, category: Category, description: String) {
-        val spreadsheetId = preferences.spreadsheetId
+    fun saveExpense(amount: Float, category: Category, description: String, spreadsheetId: String) {
+        val spreadsheetId = spreadsheetId
         spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
@@ -204,10 +118,10 @@ class ExpenseViewModel(
         subject.onNext(ToastInfo(messageId, LENGTH_LONG))
     }
 
-    fun updateDate(newDate: DateInt) {
+    fun updateDate(newDate: DateInt, spreadsheetId: String) {
         lastDate = newDate
 
-        spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
+        spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { locale ->
@@ -223,33 +137,4 @@ class ExpenseViewModel(
     }
 
     fun lastDate() = lastDate
-
-    fun createNewSpreadsheet() {
-        copyService
-                .copy()
-                .flatMap(this@ExpenseViewModel::moveToFolderAndClearTransactions)
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { subject.onNext(CreatedSuccessfully(it.id)) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET) }
-                )
-    }
-
-    private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {
-        return folderService
-                .folderIdForCurrentYear()
-                .flatMap { folderId ->
-                    Completable.concat(
-                            listOf(
-                                    folderService.moveToFolder(result.id, folderId),
-                                    transactionService.clearAllTransactions(result.id)
-                            ))
-                            .toSingleDefault(result)
-                }
-                .doOnError { spreadsheetService.deleteSpreadsheet(result.id).subscribe() }
-    }
-
-    fun isOperationInProgress(): Observable<Boolean> = progressSubject
-                .scan({ sum, item -> sum + item })
-                .map({ sum -> sum > 0 })
 }
