@@ -28,11 +28,11 @@ import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_ACCOUNT_PICKER
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_PERMISSION_GET_ACCOUNTS
-import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
-import io.rg.mp.ui.model.PermissionRequest
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.ui.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.PermissionRequest
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
 import org.junit.Before

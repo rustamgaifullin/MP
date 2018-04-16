@@ -6,7 +6,6 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
@@ -15,17 +14,15 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.ReplaySubject
 import io.rg.mp.R
 import io.rg.mp.drive.SpreadsheetService
-import io.rg.mp.ui.DisposableViewModel
-import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
-import io.rg.mp.ui.model.PermissionRequest
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.ui.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.PermissionRequest
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
 import io.rg.mp.utils.isDeviceOnline
@@ -37,9 +34,8 @@ class AuthViewModel(private val context: Context,
                     private val apiAvailabilityService: GoogleApiAvailabilityService,
                     private val credential: GoogleAccountCredential,
                     private val preferences: Preferences,
-                    private val spreadsheetService: SpreadsheetService): DisposableViewModel {
+                    private val spreadsheetService: SpreadsheetService) {
     companion object {
-        private const val TAG = "AuthViewModel"
         const val REQUEST_ACCOUNT_PICKER = 1000
         const val REQUEST_AUTHORIZATION = 1001
         const val REQUEST_GOOGLE_PLAY_SERVICES = 1002
@@ -48,11 +44,6 @@ class AuthViewModel(private val context: Context,
 
     private val viewModelSubject = ReplaySubject.create<ViewModelResult>()
     private val viewModelResultFlowable = viewModelSubject.toFlowable(BackpressureStrategy.BUFFER)
-    private val compositeDisposable = CompositeDisposable()
-
-    override fun clear() {
-        compositeDisposable.dispose()
-    }
 
     fun viewModelResultNotifier(): Flowable<ViewModelResult> = viewModelResultFlowable
 
@@ -123,18 +114,16 @@ class AuthViewModel(private val context: Context,
     }
 
     private fun downloadSpreadsheets() {
-        val disposable = spreadsheetService.list()
+        spreadsheetService.list()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         {
-                            viewModelSubject.onComplete()
-                        },
+                            viewModelSubject.onComplete() },
                         {
                             handleErrors(it)
                         }
                 )
-        compositeDisposable.add(disposable)
     }
 
     private fun handleErrors(error: Throwable) {
@@ -146,7 +135,6 @@ class AuthViewModel(private val context: Context,
             is UserRecoverableAuthIOException ->
                 viewModelSubject.onNext(StartActivity(error.intent, REQUEST_AUTHORIZATION))
             else -> {
-                Log.e(TAG, error.message, error)
                 viewModelSubject.onNext(ToastInfo(R.string.unknown_error, LENGTH_LONG))
             }
         }

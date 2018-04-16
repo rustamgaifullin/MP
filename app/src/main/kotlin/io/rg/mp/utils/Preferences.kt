@@ -19,14 +19,6 @@ class Preferences(val context: Context) {
     val isAccountNameAvailable: Boolean
         get() = accountName.isNotEmpty()
 
-    var spreadsheetId: String
-        get() = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-                .getString(PREF_CURRENT_SPREADSHEET_ID, "")
-        set(value) = save { it.putString(PREF_CURRENT_SPREADSHEET_ID, value) }
-
-    val isSpreadsheetIdAvailable: Boolean
-        get() = spreadsheetId.isNotEmpty()
-
     private fun save(putValue: (editor: SharedPreferences.Editor) -> Unit) {
         val settings = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
         val editor = settings.edit()
