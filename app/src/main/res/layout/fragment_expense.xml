@@ -101,32 +101,35 @@
         android:id="@+id/currentBalanceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="Current balance:"
         android:textAppearance="@android:style/TextAppearance.Medium"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="24dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/plannedBalanceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="Planned expenses:"
         android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintTop_toBottomOf="@+id/currentBalanceLabel"
-        tools:layout_editor_absoluteX="24dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentBalanceLabel" />
 
     <TextView
         android:id="@+id/actualBalanceLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:text="Actual expenses:"
         android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintTop_toBottomOf="@+id/plannedBalanceLabel"
-        tools:layout_editor_absoluteX="24dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/plannedBalanceLabel" />
 
     <ProgressBar
         android:id="@+id/progressBar"
