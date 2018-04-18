@@ -1,6 +1,5 @@
 package io.rg.mp.ui.expense
 
-import android.arch.persistence.room.EmptyResultSetException
 import android.content.Intent
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -26,10 +25,8 @@ import io.rg.mp.drive.data.Saved
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
 import io.rg.mp.ui.BalanceUpdated
-import io.rg.mp.ui.DateChanged
 import io.rg.mp.ui.ListCategory
 import io.rg.mp.ui.SavedSuccessfully
 import io.rg.mp.ui.StartActivity
@@ -40,7 +37,6 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOAD
 import io.rg.mp.ui.expense.model.DateInt
 import org.junit.Rule
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
@@ -165,7 +161,11 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(
-                123.0F, Category("", ""), "", spreadsheetId)
+                123.0F,
+                Category("", ""),
+                "",
+                spreadsheetId,
+                DateInt.currentDateInt())
 
         testSubscriber
                 .assertNoErrors()
@@ -187,26 +187,15 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(
-                123.0F, Category("", ""), "", spreadsheetId)
+                123.0F,
+                Category("", ""),
+                "", spreadsheetId,
+                DateInt.currentDateInt())
 
         testSubscriber
                 .assertNoErrors()
                 .assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
                 .assertNotComplete()
-    }
-
-    @Test
-    fun `should return current spreadsheet id index`() {
-        val spreadsheetList = listOf(
-                Spreadsheet("11", "A", 123),
-                Spreadsheet("22", "B", 123),
-                Spreadsheet("33", "C", 123)
-        )
-        val sut = viewModel()
-
-        val result = sut.currentSpreadsheet(spreadsheetList, "22")
-
-        assertEquals(1, result)
     }
 
     @Test
@@ -222,7 +211,11 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(
-                123.0F, Category("", ""), "", spreadsheetId)
+                123.0F,
+                Category("", ""),
+                "",
+                spreadsheetId,
+                DateInt.currentDateInt())
 
         testSubscriber
                 .assertNoErrors()
@@ -230,45 +223,6 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                     it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION_EXPENSE
                 }
                 .assertNotComplete()
-    }
-
-    @Test
-    fun `should notify to update date button when date was changed`() {
-        val sut = viewModel()
-        val spreadsheetId = "id"
-
-        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
-                Single.just("pl_PL")
-        )
-
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.updateDate(DateInt(2016, 3, 10), spreadsheetId)
-
-        testSubscriber
-                .assertNoErrors()
-                .assertValue {
-                    it is DateChanged && it.date == "10.04.16"
-                }
-                .assertNotComplete()
-    }
-
-    @Test
-    fun `should return formatted date even if there are no records in db`() {
-        val sut = viewModel()
-        val spreadsheetId = "id"
-
-        whenever(spreadsheetDao.getLocaleBy(spreadsheetId)).thenReturn(
-                Single.error(EmptyResultSetException(""))
-        )
-
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.updateDate(DateInt(2018, 3, 4), spreadsheetId)
-
-        testSubscriber
-                .assertNoErrors()
-                .assertValue {
-                    it is DateChanged && it.date == "4/4/18"
-                }
     }
 
     @Test
