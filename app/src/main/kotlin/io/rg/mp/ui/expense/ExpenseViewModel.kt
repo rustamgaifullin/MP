@@ -64,11 +64,12 @@ class ExpenseViewModel(
 
     private val subject = PublishSubject.create<ViewModelResult>()
     private var lastDate = DateInt.currentDateInt()
-    private val progressSubject = BehaviorSubject.createDefault(0)
+    private var progressSubject = BehaviorSubject.createDefault(0)
     private val compositeDisposable = CompositeDisposable()
 
     override fun clear() {
-        compositeDisposable.dispose()
+        compositeDisposable.clear()
+        progressSubject = BehaviorSubject.createDefault(0)
     }
 
     fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
