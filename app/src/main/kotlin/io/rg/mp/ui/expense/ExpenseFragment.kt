@@ -180,6 +180,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     override fun onStop() {
         super.onStop()
         compositeDisposable.clear()
+        viewModel.clear()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

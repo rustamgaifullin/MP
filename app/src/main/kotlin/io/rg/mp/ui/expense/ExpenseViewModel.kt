@@ -8,6 +8,7 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
@@ -28,6 +29,7 @@ import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.ui.DisposableViewModel
 import io.rg.mp.ui.expense.model.DateInt
 import io.rg.mp.ui.model.BalanceUpdated
 import io.rg.mp.ui.model.CreatedSuccessfully
@@ -51,7 +53,7 @@ class ExpenseViewModel(
         private val balanceService: BalanceService,
         private val categoryDao: CategoryDao,
         private val spreadsheetDao: SpreadsheetDao,
-        private val preferences: Preferences) {
+        private val preferences: Preferences) : DisposableViewModel {
 
     companion object {
         const val REQUEST_AUTHORIZATION_EXPENSE = 2000
@@ -61,10 +63,13 @@ class ExpenseViewModel(
     }
 
     private val subject = PublishSubject.create<ViewModelResult>()
-
     private var lastDate = DateInt.currentDateInt()
-
     private val progressSubject = BehaviorSubject.createDefault(0)
+    private val compositeDisposable = CompositeDisposable()
+
+    override fun clear() {
+        compositeDisposable.dispose()
+    }
 
     fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
 
@@ -93,7 +98,7 @@ class ExpenseViewModel(
     }
 
     private fun updateLocale(spreadsheetId: String) {
-        localeService.getBy(spreadsheetId)
+        val disposable = localeService.getBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
@@ -105,6 +110,7 @@ class ExpenseViewModel(
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     fun startLoadingData() {
@@ -115,33 +121,36 @@ class ExpenseViewModel(
     }
 
     private fun reloadSpreadsheets() {
-        spreadsheetDao.all()
+        val disposable = spreadsheetDao.all()
                 .subscribeOn(Schedulers.io())
                 .subscribe {
                     subject.onNext(ListSpreadsheet(it))
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun reloadCategories() {
-        categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
+        val disposable = categoryDao.findBySpreadsheetId(preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe {
                     subject.onNext(ListCategory(it))
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun reloadBalance(spreadsheetId: String) {
-        balanceService.retrieve(spreadsheetId)
+        val disposable = balanceService.retrieve(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribe { balance ->
                     subject.onNext(BalanceUpdated(balance))
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun downloadSpreadsheets() {
-        spreadsheetService.list()
+        val disposable = spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { (spreadsheetList) ->
@@ -149,10 +158,11 @@ class ExpenseViewModel(
                         },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_ALL) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     private fun downloadCategories(spreadsheetId: String) {
-        categoryService.getListBy(spreadsheetId)
+        val disposable = categoryService.getListBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
@@ -161,6 +171,7 @@ class ExpenseViewModel(
                         { categoryDao.insertAll(*it.list.toTypedArray()) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     private fun handleErrors(error: Throwable, requestCode: Int) {
@@ -168,6 +179,7 @@ class ExpenseViewModel(
             is UserRecoverableAuthIOException ->
                 StartActivity(error.intent, requestCode)
             else -> {
+                Log.e("RUSTA", error.message, error)
                 ToastInfo(R.string.unknown_error, LENGTH_LONG)
             }
         }
@@ -177,7 +189,7 @@ class ExpenseViewModel(
 
     fun saveExpense(amount: Float, category: Category, description: String) {
         val spreadsheetId = preferences.spreadsheetId
-        spreadsheetDao.getLocaleBy(spreadsheetId)
+        val disposable = spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
                     val date = formatDate(lastDate, locale)
@@ -190,12 +202,14 @@ class ExpenseViewModel(
                                     { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
                             )
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun handleSaving(result: Result) {
         val messageId = when (result) {
             is Saved -> {
                 subject.onNext(SavedSuccessfully())
+                reloadBalance(preferences.spreadsheetId)
                 R.string.saved_message
             }
             is NotSaved -> R.string.not_saved_message
@@ -207,7 +221,7 @@ class ExpenseViewModel(
     fun updateDate(newDate: DateInt) {
         lastDate = newDate
 
-        spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
+        val disposable = spreadsheetDao.getLocaleBy(preferences.spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { locale ->
@@ -220,12 +234,13 @@ class ExpenseViewModel(
                             subject.onNext(DateChanged(formatDate(lastDate)))
                         }
                 )
+        compositeDisposable.add(disposable)
     }
 
     fun lastDate() = lastDate
 
     fun createNewSpreadsheet() {
-        copyService
+        val disposable = copyService
                 .copy()
                 .flatMap(this@ExpenseViewModel::moveToFolderAndClearTransactions)
                 .subscribeOn(Schedulers.io())
@@ -233,6 +248,7 @@ class ExpenseViewModel(
                         { subject.onNext(CreatedSuccessfully(it.id)) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {
@@ -250,6 +266,6 @@ class ExpenseViewModel(
     }
 
     fun isOperationInProgress(): Observable<Boolean> = progressSubject
-                .scan({ sum, item -> sum + item })
-                .map({ sum -> sum > 0 })
+            .scan { sum, item -> sum + item }
+            .map { sum -> sum > 0 }
 }
