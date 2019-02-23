@@ -112,7 +112,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
     }
 
     @Test
-    fun `should show toast with saved message and notify with successful result when an expense is saved`() {
+    fun `should show toast with saved message, update balance and notify with successful result when an expense is saved`() {
         val sut = viewModel()
         val spreadsheetId = "id"
 
@@ -123,13 +123,17 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(transactionService.saveExpense(any(), any())).thenReturn(
                 Flowable.just(Saved())
         )
+        whenever(balanceService.retrieve(any())).thenReturn(
+                Single.just(Balance("", "", ""))
+        )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(123.0F, Category("", ""), "")
 
         testSubscriber
                 .assertNoErrors()
                 .assertValueAt(0, { it is SavedSuccessfully })
-                .assertValueAt(1, { it is ToastInfo && it.messageId == R.string.saved_message })
+                .assertValueAt(1, { it is BalanceUpdated })
+                .assertValueAt(2, { it is ToastInfo && it.messageId == R.string.saved_message })
                 .assertNotComplete()
     }
 

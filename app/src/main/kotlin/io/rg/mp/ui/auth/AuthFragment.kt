@@ -107,8 +107,9 @@ class AuthFragment : Fragment() {
     }
 
     override fun onStop() {
-        compositeDisposable.clear()
         super.onStop()
+        compositeDisposable.clear()
+        authViewModel.clear()
     }
 
     override fun onActivityResult(
