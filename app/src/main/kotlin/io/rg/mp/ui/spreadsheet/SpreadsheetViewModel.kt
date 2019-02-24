@@ -31,7 +31,7 @@ class SpreadsheetViewModel(
     }
 
     private fun reloadSpreadsheets() {
-        val disposable = spreadsheetDao.all()
+        val disposable = spreadsheetDao.allSorted()
                 .subscribeOn(Schedulers.io())
                 .subscribe {
                     subject.onNext(ListSpreadsheet(it))

@@ -13,6 +13,7 @@ import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
@@ -42,6 +43,8 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        requireActivity().title = getString(R.string.spreadsheetTitle)
+
         return inflater.inflate(R.layout.fragment_spreadsheets, container, false)
     }
 
@@ -72,9 +75,9 @@ class SpreadsheetFragment : Fragment() {
         super.onStart()
     }
 
-    private fun openExpenseFragment(): (String) -> Unit {
+    private fun openExpenseFragment(): (Spreadsheet) -> Unit {
         return {
-            val fragment = ExpenseFragment.create(it)
+            val fragment = ExpenseFragment.create(it.id, it.name)
             requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
                     .addToBackStack(ExpenseFragment.NAME)

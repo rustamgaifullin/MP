@@ -54,7 +54,7 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
         val sut = viewModel()
         sut.viewModelNotifier().subscribe(testSubscriber)
 
-        whenever(spreadsheetDao.all()).thenReturn(
+        whenever(spreadsheetDao.allSorted()).thenReturn(
                 Flowable.just(emptyList())
         )
         whenever(spreadsheetService.list()).thenReturn(
@@ -74,7 +74,7 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
     fun `should show authorization dialog during loading spreadsheets`() {
         val sut = viewModel()
 
-        whenever(spreadsheetDao.all()).thenReturn(
+        whenever(spreadsheetDao.allSorted()).thenReturn(
                 Flowable.empty()
         )
         whenever(spreadsheetService.list()).thenReturn(

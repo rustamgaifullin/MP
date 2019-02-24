@@ -36,14 +36,16 @@ import javax.inject.Inject
 class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     companion object {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
+        private const val SPREADSHEET_NAME = "io.rg.mp.SPREADSHEET_NAME"
         private const val SPREADSHEET_ID = "spreadsheetId"
         const val NAME = "EXPENSE_FRAGMENT"
 
-        fun create(spreadsheetId: String): ExpenseFragment {
+        fun create(spreadsheetId: String, spreadsheetName: String): ExpenseFragment {
             val expenseFragment = ExpenseFragment()
 
             val args = Bundle()
             args.putString(SPREADSHEET_ID, spreadsheetId)
+            args.putString(SPREADSHEET_NAME, spreadsheetName)
             expenseFragment.arguments = args
 
             return expenseFragment
@@ -74,6 +76,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         }
 
         spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
+
+        requireActivity().title = arguments?.getString(SPREADSHEET_NAME) ?: ""
 
         datePickerDialog = DatePickerDialog(requireContext(), this, 0, 0, 0)
 

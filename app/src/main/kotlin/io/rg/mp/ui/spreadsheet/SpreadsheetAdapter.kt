@@ -1,6 +1,7 @@
 package io.rg.mp.ui.spreadsheet
 
 import android.support.v7.widget.RecyclerView
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,16 +11,17 @@ import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
 import io.rg.mp.persistence.entity.Spreadsheet
+import java.util.Date
 
 class SpreadsheetAdapter : RecyclerView.Adapter<SpreadsheetAdapter.ViewHolder> () {
     private val spreadsheetList: MutableList<Spreadsheet> = mutableListOf()
-    private val onClickSubject = PublishSubject.create<String>()
+    private val onClickSubject = PublishSubject.create<Spreadsheet>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val cardLayout = LayoutInflater.from(parent.context)
                 .inflate(R.layout.card_spreadsheet, parent, false)
 
-        return ViewHolder(cardLayout)
+        return ViewHolder(cardLayout, DateFormat.getLongDateFormat(parent.context))
     }
 
     override fun getItemCount(): Int {
@@ -31,7 +33,7 @@ class SpreadsheetAdapter : RecyclerView.Adapter<SpreadsheetAdapter.ViewHolder> (
 
         holder.bindData(spreadsheet)
         holder.itemView.setOnClickListener {
-            onClickSubject.onNext(spreadsheet.id)
+            onClickSubject.onNext(spreadsheet)
         }
     }
 
@@ -41,15 +43,17 @@ class SpreadsheetAdapter : RecyclerView.Adapter<SpreadsheetAdapter.ViewHolder> (
         notifyDataSetChanged()
     }
 
-    fun onClick(): Flowable<String> = onClickSubject.toFlowable(BackpressureStrategy.BUFFER)
+    fun onClick(): Flowable<Spreadsheet> = onClickSubject.toFlowable(BackpressureStrategy.BUFFER)
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(
+            itemView: View,
+            private val dateFormat: java.text.DateFormat) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
         private val lastModifiedTextView: TextView = itemView.findViewById(R.id.lastModifiedTextView)
 
         fun bindData(spreadsheet: Spreadsheet) {
             nameTextView.text = spreadsheet.name
-            lastModifiedTextView.text = spreadsheet.modifiedTime.toString()
+            lastModifiedTextView.text = dateFormat.format(Date(spreadsheet.modifiedTime))
         }
     }
 }
