@@ -96,9 +96,7 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun handleProgressBar(): (Boolean) -> Unit {
-        return { showProgress ->
-
-        }
+        return {}
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

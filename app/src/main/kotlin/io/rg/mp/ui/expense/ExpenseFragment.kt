@@ -75,7 +75,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
 
-        datePickerDialog = DatePickerDialog(activity, this, 0, 0, 0)
+        datePickerDialog = DatePickerDialog(requireContext(), this, 0, 0, 0)
 
         return inflater.inflate(R.layout.fragment_expense, container, false)
     }
@@ -88,7 +88,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         addButton.setOnClickListener { saveExpense() }
 
         savedInstanceState?.apply {
-            date = getParcelable(LAST_DATE_KEY)
+            date = getParcelable(LAST_DATE_KEY) ?: DateInt.currentDateInt()
         }
 
         dateButton.setOnClickListener {

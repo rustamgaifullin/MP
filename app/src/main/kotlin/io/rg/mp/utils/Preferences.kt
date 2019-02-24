@@ -13,7 +13,7 @@ class Preferences(val context: Context) {
 
     var accountName: String
         get() = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-                .getString(PREF_ACCOUNT_NAME, "")
+                .getString(PREF_ACCOUNT_NAME, "") ?: ""
         set(value) = save { it.putString(PREF_ACCOUNT_NAME, value) }
 
     val isAccountNameAvailable: Boolean
