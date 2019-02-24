@@ -157,7 +157,10 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Single.just("en_GB")
         )
         whenever(transactionService.saveExpense(any(), any())).thenReturn(
-                Flowable.just(Saved())
+                Flowable.just(Saved(spreadsheetId))
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.just(Balance("", "", ""))
         )
         sut.viewModelNotifier().subscribe(testSubscriber)
         sut.saveExpense(
@@ -169,8 +172,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
 
         testSubscriber
                 .assertNoErrors()
-                .assertValueAt(0, { it is SavedSuccessfully })
-                .assertValueAt(1, { it is ToastInfo && it.messageId == R.string.saved_message })
+                .assertValueAt(0) { it is SavedSuccessfully }
+                .assertValueAt(1) { it is BalanceUpdated }
+                .assertValueAt(2) { it is ToastInfo && it.messageId == R.string.saved_message }
                 .assertNotComplete()
     }
 

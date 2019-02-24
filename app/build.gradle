@@ -6,7 +6,7 @@ apply plugin: 'kotlin-android-extensions'
 buildscript {
     ext {
         kotlin_version = "1.3.21"
-        rxjava_version = "2.1.12"
+        rxjava_version = "2.1.17"
         rxkotlin_version = "2.2.0"
         mockito_version = "2.18.0"
         junit_version = "4.12"

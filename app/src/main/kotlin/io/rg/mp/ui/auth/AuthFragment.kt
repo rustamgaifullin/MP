@@ -55,7 +55,7 @@ class AuthFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        compositeDisposable.add(authViewModel.viewModelResultNotifier()
+        compositeDisposable.add(authViewModel.viewModelNotifier()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(

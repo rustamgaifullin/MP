@@ -31,24 +31,26 @@ class SpreadsheetViewModel(
     }
 
     private fun reloadSpreadsheets() {
-        spreadsheetDao.all()
+        val disposable = spreadsheetDao.all()
                 .subscribeOn(Schedulers.io())
                 .subscribe {
                     subject.onNext(ListSpreadsheet(it))
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun downloadSpreadsheets() {
-        spreadsheetService.list()
+        val disposable = spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { (spreadsheetList) -> spreadsheetDao.updateData(spreadsheetList) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     fun createNewSpreadsheet() {
-        copyService
+        val disposable = copyService
                 .copy()
                 .flatMap(this@SpreadsheetViewModel::moveToFolderAndClearTransactions)
                 .subscribeOn(Schedulers.io())
@@ -56,6 +58,7 @@ class SpreadsheetViewModel(
                         { subject.onNext(CreatedSuccessfully(it.id)) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {

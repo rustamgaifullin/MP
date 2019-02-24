@@ -44,13 +44,14 @@ class ExpenseViewModel(
     }
 
     private fun reloadCategories(spreadsheetId: String) {
-        categoryDao.findBySpreadsheetId(spreadsheetId)
+        val disposable = categoryDao.findBySpreadsheetId(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { subject.onNext(ListCategory(it)) }
+        compositeDisposable.add(disposable)
     }
 
     private fun updateLocale(spreadsheetId: String) {
-        localeService.getBy(spreadsheetId)
+        val disposable = localeService.getBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
@@ -58,20 +59,22 @@ class ExpenseViewModel(
                         { spreadsheetDao.updateLocale(it, spreadsheetId) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     private fun reloadBalance(spreadsheetId: String) {
-        balanceService.retrieve(spreadsheetId)
+        val disposable = balanceService.retrieve(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribe { balance ->
                     subject.onNext(BalanceUpdated(balance))
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun downloadCategories(spreadsheetId: String) {
-        categoryService.getListBy(spreadsheetId)
+        val disposable = categoryService.getListBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
@@ -80,6 +83,7 @@ class ExpenseViewModel(
                         { categoryDao.insertAll(*it.list.toTypedArray()) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
+        compositeDisposable.add(disposable)
     }
 
     fun saveExpense(
@@ -88,7 +92,7 @@ class ExpenseViewModel(
             description: String,
             spreadsheetId: String,
             date: DateInt) {
-        spreadsheetDao.getLocaleBy(spreadsheetId)
+        val disposable = spreadsheetDao.getLocaleBy(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .subscribe { locale ->
                     val formattedDate = formatDate(date, locale)
@@ -101,12 +105,14 @@ class ExpenseViewModel(
                                     { handleErrors(it, REQUEST_AUTHORIZATION_EXPENSE) }
                             )
                 }
+        compositeDisposable.add(disposable)
     }
 
     private fun handleSaving(result: Result) {
         val messageId = when (result) {
             is Saved -> {
                 subject.onNext(SavedSuccessfully())
+                reloadBalance(result.spreadsheetId)
                 R.string.saved_message
             }
             is NotSaved -> R.string.not_saved_message
