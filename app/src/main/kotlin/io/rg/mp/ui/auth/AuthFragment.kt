@@ -50,7 +50,7 @@ class AuthFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        beginButton.setOnClickListener { _ -> authViewModel.beginButtonClick() }
+        beginButton.setOnClickListener { authViewModel.beginButtonClick() }
     }
 
     override fun onStart() {

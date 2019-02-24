@@ -75,10 +75,10 @@ class SpreadsheetFragment : Fragment() {
     private fun openExpenseFragment(): (String) -> Unit {
         return {
             val fragment = ExpenseFragment.create(it)
-            activity?.supportFragmentManager?.beginTransaction()
-                    ?.replace(R.id.main_container, fragment, ExpenseFragment.NAME)
-                    ?.addToBackStack(null)
-                    ?.commit()
+            requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
+                    .addToBackStack(ExpenseFragment.NAME)
+                    .commit()
         }
     }
 
