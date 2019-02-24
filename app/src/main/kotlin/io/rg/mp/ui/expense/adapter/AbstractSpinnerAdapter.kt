@@ -11,7 +11,7 @@ abstract class AbstractSpinnerAdapter<T>(
         context: Context,
         val resourceId: Int,
         val inflater: LayoutInflater,
-        private var items: MutableList<T> = mutableListOf<T>())
+        private var items: MutableList<T> = mutableListOf())
     : ArrayAdapter<T>(context, resourceId, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {

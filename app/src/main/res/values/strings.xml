@@ -11,4 +11,5 @@
     <string name="button_add">Add</string>
     <string name="saved_message">Saved</string>
     <string name="not_saved_message">Not saved</string>
+    <string name="spreadsheetTitle">Spreadsheets</string>
 </resources>

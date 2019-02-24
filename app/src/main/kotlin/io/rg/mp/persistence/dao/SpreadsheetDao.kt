@@ -12,8 +12,8 @@ import io.rg.mp.persistence.entity.Spreadsheet
 
 @Dao
 abstract class SpreadsheetDao {
-    @Query("SELECT * FROM spreadsheet")
-    abstract fun all() : Flowable<List<Spreadsheet>>
+    @Query("SELECT * FROM spreadsheet ORDER BY modifiedTime DESC")
+    abstract fun allSorted() : Flowable<List<Spreadsheet>>
 
     @Query("SELECT locale FROM spreadsheet WHERE id = :spreadsheetId LIMIT 1")
     abstract fun getLocaleBy(spreadsheetId: String): Single<String>

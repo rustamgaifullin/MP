@@ -29,7 +29,7 @@ class TransactionService(private val googleSheetService: Sheets) {
                     .execute()
 
             if (result.tableRange.isNotEmpty()) {
-                Saved()
+                Saved(spreadsheetId)
             } else {
                 NotSaved()
             }

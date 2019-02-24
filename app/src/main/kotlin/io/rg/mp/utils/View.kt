@@ -1,4 +1,4 @@
-package io.rg.mp.ui.extension
+package io.rg.mp.utils
 
 import android.view.View
 

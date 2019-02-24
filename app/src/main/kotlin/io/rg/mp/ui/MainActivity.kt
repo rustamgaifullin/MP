@@ -2,21 +2,18 @@ package io.rg.mp.ui
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
 import android.support.v7.app.AppCompatActivity
 import dagger.android.AndroidInjection
 import io.rg.mp.R
 import io.rg.mp.ui.auth.AuthFragment
 import io.rg.mp.ui.expense.ExpenseFragment
+import io.rg.mp.ui.spreadsheet.SpreadsheetFragment
 import io.rg.mp.utils.Preferences
 import javax.inject.Inject
 
 
 class MainActivity : AppCompatActivity() {
-
-    companion object {
-        const val EXPENSE_FRAGMENT = "EXPENSE_FRAGMENT"
-        const val AUTH_FRAGMENT = "AUTH_FRAGMENT"
-    }
 
     @Inject lateinit var preferences: Preferences
 
@@ -31,9 +28,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun initFragments() {
         if (preferences.isAccountNameAvailable) {
-            addFragment(EXPENSE_FRAGMENT, { ExpenseFragment() })
+            addFragment(SpreadsheetFragment.NAME) { SpreadsheetFragment() }
         } else {
-            addFragment(AUTH_FRAGMENT, { AuthFragment() })
+            addFragment(AuthFragment.NAME) { AuthFragment() }
         }
     }
 
@@ -42,6 +39,15 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.beginTransaction()
                     .add(R.id.main_container, fragment.invoke(), tag)
                     .commit()
+        }
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null) {
+            supportFragmentManager.popBackStack(ExpenseFragment.NAME,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        } else {
+            super.onBackPressed()
         }
     }
 }

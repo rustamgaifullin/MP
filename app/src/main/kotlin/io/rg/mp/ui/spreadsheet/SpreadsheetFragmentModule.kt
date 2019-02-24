@@ -1,4 +1,4 @@
-package io.rg.mp.ui.expense
+package io.rg.mp.ui.spreadsheet
 
 import android.support.v4.app.Fragment
 import dagger.Binds
@@ -7,12 +7,11 @@ import dagger.android.AndroidInjector
 import dagger.android.support.FragmentKey
 import dagger.multibindings.IntoMap
 
-
-@Module (subcomponents = [(ExpenseSubcomponent::class)])
-abstract class ExpenseFragmentModule {
+@Module (subcomponents = [(SpreadsheetSubcomponent::class)])
+abstract class SpreadsheetFragmentModule {
     @Binds
     @IntoMap
-    @FragmentKey(ExpenseFragment::class)
-    abstract fun bindExpenseFragment(builder: ExpenseSubcomponent.Builder)
+    @FragmentKey(SpreadsheetFragment::class)
+    abstract fun bindSpreadsheetFragment(builder: SpreadsheetSubcomponent.Builder)
             : AndroidInjector.Factory<out Fragment>
 }

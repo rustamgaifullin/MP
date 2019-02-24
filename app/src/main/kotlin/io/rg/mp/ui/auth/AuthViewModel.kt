@@ -6,26 +6,20 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.ReplaySubject
 import io.rg.mp.R
 import io.rg.mp.drive.SpreadsheetService
-import io.rg.mp.ui.DisposableViewModel
-import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
-import io.rg.mp.ui.model.PermissionRequest
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
+import io.rg.mp.ui.AbstractViewModel
+import io.rg.mp.ui.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.PermissionRequest
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
 import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
 import io.rg.mp.utils.isDeviceOnline
@@ -37,24 +31,13 @@ class AuthViewModel(private val context: Context,
                     private val apiAvailabilityService: GoogleApiAvailabilityService,
                     private val credential: GoogleAccountCredential,
                     private val preferences: Preferences,
-                    private val spreadsheetService: SpreadsheetService): DisposableViewModel {
+                    private val spreadsheetService: SpreadsheetService): AbstractViewModel() {
     companion object {
-        private const val TAG = "AuthViewModel"
         const val REQUEST_ACCOUNT_PICKER = 1000
         const val REQUEST_AUTHORIZATION = 1001
         const val REQUEST_GOOGLE_PLAY_SERVICES = 1002
         const val REQUEST_PERMISSION_GET_ACCOUNTS = 1003
     }
-
-    private val viewModelSubject = ReplaySubject.create<ViewModelResult>()
-    private val viewModelResultFlowable = viewModelSubject.toFlowable(BackpressureStrategy.BUFFER)
-    private val compositeDisposable = CompositeDisposable()
-
-    override fun clear() {
-        compositeDisposable.dispose()
-    }
-
-    fun viewModelResultNotifier(): Flowable<ViewModelResult> = viewModelResultFlowable
 
     fun beginButtonClick() {
         authorize()
@@ -63,7 +46,7 @@ class AuthViewModel(private val context: Context,
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             REQUEST_GOOGLE_PLAY_SERVICES -> if (resultCode != Activity.RESULT_OK) {
-                viewModelSubject.onNext(
+                subject.onNext(
                         ToastInfo(R.string.requre_google_play_services, LENGTH_LONG)
                 )
             } else {
@@ -89,12 +72,12 @@ class AuthViewModel(private val context: Context,
     private fun authorize() {
         if (!apiAvailabilityService.isAvailable()) {
             apiAvailabilityService.acquire {
-                viewModelSubject.onNext(GooglePlayServicesAvailabilityError(it))
+                subject.onNext(GooglePlayServicesAvailabilityError(it))
             }
         } else if (credential.selectedAccountName == null) {
             chooseAccount()
         } else if (!context.isDeviceOnline()) {
-            viewModelSubject.onNext(ToastInfo(R.string.no_network_message, LENGTH_SHORT))
+            subject.onNext(ToastInfo(R.string.no_network_message, LENGTH_SHORT))
         } else {
             downloadSpreadsheets()
         }
@@ -108,12 +91,12 @@ class AuthViewModel(private val context: Context,
                 credential.selectedAccountName = accountName
                 authorize()
             } else {
-                viewModelSubject.onNext(
+                subject.onNext(
                         StartActivity(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
                 )
             }
         } else {
-            viewModelSubject.onNext(
+            subject.onNext(
                     PermissionRequest(
                             arrayOf(GET_ACCOUNTS),
                             REQUEST_PERMISSION_GET_ACCOUNTS
@@ -128,7 +111,7 @@ class AuthViewModel(private val context: Context,
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         {
-                            viewModelSubject.onComplete()
+                            subject.onComplete()
                         },
                         {
                             handleErrors(it)
@@ -140,14 +123,13 @@ class AuthViewModel(private val context: Context,
     private fun handleErrors(error: Throwable) {
         when (error) {
             is GooglePlayServicesAvailabilityIOException ->
-                viewModelSubject.onNext(
+                subject.onNext(
                         GooglePlayServicesAvailabilityError(error.connectionStatusCode)
                 )
             is UserRecoverableAuthIOException ->
-                viewModelSubject.onNext(StartActivity(error.intent, REQUEST_AUTHORIZATION))
+                subject.onNext(StartActivity(error.intent, REQUEST_AUTHORIZATION))
             else -> {
-                Log.e(TAG, error.message, error)
-                viewModelSubject.onNext(ToastInfo(R.string.unknown_error, LENGTH_LONG))
+                subject.onNext(ToastInfo(R.string.unknown_error, LENGTH_LONG))
             }
         }
     }

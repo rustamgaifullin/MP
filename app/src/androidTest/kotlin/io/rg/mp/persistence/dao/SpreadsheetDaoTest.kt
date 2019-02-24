@@ -73,7 +73,7 @@ class SpreadsheetDaoTest {
         }
 
         spreadsheetDao.updateData(spreadsheets)
-        spreadsheetDao.all().subscribe(testSubscriber)
+        spreadsheetDao.allSorted().subscribe(testSubscriber)
 
         testSubscriber.assertValue(listOf(
                 Spreadsheet("1", "newName1", 1),

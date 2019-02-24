@@ -21,18 +21,18 @@ import io.reactivex.Flowable
 import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.AndroidContextAwareTest
 import io.rg.mp.R
-import io.rg.mp.rule.TrampolineSchedulerRule
-import io.rg.mp.drive.data.SpreadsheetList
 import io.rg.mp.drive.SpreadsheetService
+import io.rg.mp.drive.data.SpreadsheetList
+import io.rg.mp.rule.TrampolineSchedulerRule
+import io.rg.mp.ui.GooglePlayServicesAvailabilityError
+import io.rg.mp.ui.PermissionRequest
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_ACCOUNT_PICKER
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_AUTHORIZATION
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_PERMISSION_GET_ACCOUNTS
-import io.rg.mp.ui.model.GooglePlayServicesAvailabilityError
-import io.rg.mp.ui.model.PermissionRequest
-import io.rg.mp.ui.model.StartActivity
-import io.rg.mp.ui.model.ToastInfo
-import io.rg.mp.ui.model.ViewModelResult
 import io.rg.mp.utils.GoogleApiAvailabilityService
 import io.rg.mp.utils.Preferences
 import org.junit.Before
@@ -67,7 +67,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         whenever(credential.selectedAccountName).thenReturn(null)
         hasNoPermission()
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -86,7 +86,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         whenever(preferences.accountName).thenReturn("")
         whenever(credential.newChooseAccountIntent()).thenReturn(intent)
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -107,7 +107,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .thenReturn(accountName)
 
         whenever(spreadsheetService.list()).thenReturn(Flowable.just(SpreadsheetList(emptyList())))
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         verify(credential).selectedAccountName = eq(accountName)
@@ -124,7 +124,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         whenever(credential.selectedAccountName).thenReturn(accountName)
         whenever(spreadsheetService.list()).thenReturn(Flowable.just(SpreadsheetList(emptyList())))
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -139,15 +139,15 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         whenever(credential.selectedAccountName).thenReturn("asdf@asdf.as")
         whenever(spreadsheetService.list()).thenReturn(Flowable.empty())
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.onActivityResult(REQUEST_GOOGLE_PLAY_SERVICES, 123, Intent())
 
         testSubscriber
                 .assertNoErrors()
                 .assertValueCount(1)
-                .assertValueAt(0, {
+                .assertValueAt(0) {
                     it is ToastInfo && it.messageId == R.string.requre_google_play_services
-                })
+                }
         verifyZeroInteractions(spreadsheetService)
 
         sut.onActivityResult(REQUEST_GOOGLE_PLAY_SERVICES, RESULT_OK, Intent())
@@ -206,7 +206,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         deviceOffline()
         whenever(credential.selectedAccountName).thenReturn("")
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -225,7 +225,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .thenReturn(Flowable.error(
                         userRecoverableAuthIoException())
                 )
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -243,7 +243,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .thenReturn(Flowable.error(
                         googlePlayServiceAvailabilityError()
                 ))
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -261,7 +261,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .thenReturn(Flowable.error(
                         Exception()
                 ))
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
 
         testSubscriber
@@ -277,7 +277,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
 
         whenever(apiAvailabilityService.isAvailable()).thenReturn(false)
 
-        sut.viewModelResultNotifier().subscribe(testSubscriber)
+        sut.viewModelNotifier().subscribe(testSubscriber)
         sut.beginButtonClick()
         verify(apiAvailabilityService).acquire(argumentCaptor.capture())
         argumentCaptor.firstValue.invoke(123)
