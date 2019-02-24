@@ -22,7 +22,7 @@ import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES
-import io.rg.mp.ui.expense.ExpenseFragment
+import io.rg.mp.ui.spreadsheet.SpreadsheetFragment
 import kotlinx.android.synthetic.main.fragment_auth.*
 import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
@@ -104,7 +104,7 @@ class AuthFragment : Fragment() {
         return {
             fragmentManager?.apply {
                 val transaction = beginTransaction()
-                transaction.replace(R.id.main_container, ExpenseFragment())
+                transaction.replace(R.id.main_container, SpreadsheetFragment())
                 transaction.commit()
             }
         }
