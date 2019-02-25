@@ -25,7 +25,6 @@ import kotlinx.android.synthetic.main.fragment_spreadsheets.*
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
-
     companion object {
         const val NAME = "SPREADSHEET_FRAGMENT"
     }

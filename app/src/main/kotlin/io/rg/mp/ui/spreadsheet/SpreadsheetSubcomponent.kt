@@ -8,5 +8,5 @@ import io.rg.mp.ui.FragmentScope
 @FragmentScope
 interface SpreadsheetSubcomponent : AndroidInjector<SpreadsheetFragment> {
     @Subcomponent.Builder
-    abstract class Builder: AndroidInjector.Builder<SpreadsheetFragment>()
+    abstract class Builder : AndroidInjector.Builder<SpreadsheetFragment>()
 }

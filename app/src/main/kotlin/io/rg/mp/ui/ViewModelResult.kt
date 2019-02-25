@@ -4,6 +4,7 @@ import android.content.Intent
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.persistence.entity.Transaction
 
 sealed class ViewModelResult
 
@@ -14,6 +15,7 @@ data class GooglePlayServicesAvailabilityError(val requestCode: Int) : ViewModel
 
 data class ListCategory(val list: List<Category>) : ViewModelResult()
 data class ListSpreadsheet(val list: List<Spreadsheet>) : ViewModelResult()
+data class ListTransaction(val list: List<Transaction>) : ViewModelResult()
 
 data class CreatedSuccessfully(val spreadsheetId: String) : ViewModelResult()
 
