@@ -9,7 +9,7 @@ import io.rg.mp.persistence.entity.Transaction
 
 @Dao
 interface TransactionDao {
-    @Query("SELECT * FROM transactions WHERE spreadsheet_id = :spreadsheetId ORDER BY date")
+    @Query("SELECT * FROM transactions WHERE spreadsheet_id = :spreadsheetId ORDER BY date DESC")
     fun findBySpreadsheetIdSorted(spreadsheetId: String) : Flowable<List<Transaction>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

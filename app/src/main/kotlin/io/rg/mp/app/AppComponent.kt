@@ -9,6 +9,7 @@ import io.rg.mp.ui.MainActivityModule
 import io.rg.mp.ui.auth.AuthFragmentModule
 import io.rg.mp.ui.expense.ExpenseFragmentModule
 import io.rg.mp.ui.spreadsheet.SpreadsheetFragmentModule
+import io.rg.mp.ui.transactions.TransactionsFragmentModule
 import javax.inject.Singleton
 
 @Component(modules = arrayOf(
@@ -20,6 +21,7 @@ import javax.inject.Singleton
         ExpenseFragmentModule::class,
         AuthFragmentModule::class,
         SpreadsheetFragmentModule::class,
+        TransactionsFragmentModule::class,
         MainActivityModule::class
 ))
 @Singleton

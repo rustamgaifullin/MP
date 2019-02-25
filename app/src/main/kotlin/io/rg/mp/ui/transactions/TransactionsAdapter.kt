@@ -8,7 +8,7 @@ import android.widget.TextView
 import io.rg.mp.R
 import io.rg.mp.persistence.entity.Transaction
 
-class TransactionAdapter : RecyclerView.Adapter<TransactionAdapter.ViewHolder>() {
+class TransactionsAdapter : RecyclerView.Adapter<TransactionsAdapter.ViewHolder>() {
     private val transactionList: MutableList<Transaction> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

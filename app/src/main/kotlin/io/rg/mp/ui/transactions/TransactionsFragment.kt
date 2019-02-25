@@ -38,7 +38,7 @@ class TransactionsFragment : Fragment() {
     lateinit var viewModel: TransactionsViewModel
 
     private val compositeDisposable = CompositeDisposable()
-    private val transactionAdapter = TransactionAdapter()
+    private val transactionAdapter = TransactionsAdapter()
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)

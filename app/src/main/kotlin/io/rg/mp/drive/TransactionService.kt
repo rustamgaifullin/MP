@@ -16,6 +16,7 @@ import io.rg.mp.persistence.entity.Transaction
 class TransactionService(private val googleSheetService: Sheets) {
     companion object {
         private const val EXPENSES_RANGE = "Transactions!B5:E5"
+        private const val EXPENSES_RANGE_ALL = "Transactions!B5:\$E"
         private const val INCOMES_RANGE = "Transactions!G5:J5"
     }
 
@@ -56,7 +57,7 @@ class TransactionService(private val googleSheetService: Sheets) {
             val response = googleSheetService
                     .spreadsheets()
                     .values()
-                    .get(spreadsheetId, EXPENSES_RANGE)
+                    .get(spreadsheetId, EXPENSES_RANGE_ALL)
                     .execute()
 
             var transactionList = emptyList<Transaction>()
