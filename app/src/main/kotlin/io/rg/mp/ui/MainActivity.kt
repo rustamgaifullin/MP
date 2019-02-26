@@ -45,12 +45,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-            supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null ->
-                supportFragmentManager.popBackStack(
-                        ExpenseFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            supportFragmentManager.findFragmentByTag(TransactionsFragment.NAME) != null ->
-                supportFragmentManager.popBackStack(
-                        TransactionsFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            supportFragmentManager.findFragmentByTag(TransactionsFragment.NAME) != null -> supportFragmentManager.popBackStack(
+                    TransactionsFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null -> supportFragmentManager.popBackStack(
+                    ExpenseFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             else -> super.onBackPressed()
         }
     }
