@@ -11,12 +11,10 @@ import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
-import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.R
 import io.rg.mp.drive.BalanceService
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.drive.LocaleService
-import io.rg.mp.drive.SubscribableTest
 import io.rg.mp.drive.TransactionService
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.drive.data.CategoryList
@@ -31,14 +29,13 @@ import io.rg.mp.ui.ListCategory
 import io.rg.mp.ui.SavedSuccessfully
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
-import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.model.DateInt
 import org.junit.Rule
 import org.junit.Test
 
-class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
+class ExpenseViewModelTest {
 
     @get:Rule
     val trampolineSchedulerRule = TrampolineSchedulerRule()
@@ -78,13 +75,15 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Single.just(Balance())
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.reloadData(spreadsheetId)
 
         testSubscriber
                 .assertNoErrors()
                 .assertValues(ListCategory(listOf(category)), BalanceUpdated(Balance()))
                 .assertNotComplete()
+                .dispose()
 
         verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
         verify(localeService).getBy(eq(spreadsheetId))
@@ -107,7 +106,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.never()
         )
-        sut.viewModelNotifier().subscribe(testSubscriber)
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.reloadData(spreadsheetId)
 
         testSubscriber
@@ -117,6 +118,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                             && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
                 }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
@@ -136,7 +138,8 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.never()
         )
-        sut.viewModelNotifier().subscribe(testSubscriber)
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.reloadData(spreadsheetId)
 
         testSubscriber
@@ -146,6 +149,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                             && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
                 }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
@@ -162,7 +166,9 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.just(Balance("", "", ""))
         )
-        sut.viewModelNotifier().subscribe(testSubscriber)
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.saveExpense(
                 123.0F,
                 Category("", ""),
@@ -176,6 +182,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertValueAt(1) { it is BalanceUpdated }
                 .assertValueAt(2) { it is ToastInfo && it.messageId == R.string.saved_message }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
@@ -189,7 +196,8 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(transactionService.saveExpense(any(), eq(spreadsheetId))).thenReturn(
                 Flowable.just(NotSaved())
         )
-        sut.viewModelNotifier().subscribe(testSubscriber)
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.saveExpense(
                 123.0F,
                 Category("", ""),
@@ -200,6 +208,7 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 .assertNoErrors()
                 .assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
@@ -213,26 +222,26 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
         whenever(transactionService.saveExpense(any(), any())).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
         )
-        sut.viewModelNotifier().subscribe(testSubscriber)
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.saveExpense(
                 123.0F,
                 Category("", ""),
                 "",
                 spreadsheetId,
                 DateInt.currentDateInt())
-
         testSubscriber
                 .assertNoErrors()
                 .assertValue {
                     it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION_EXPENSE
                 }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
     fun `should receive progress notifications`() {
         val sut = viewModel()
-        val progressTestSubscriber = TestSubscriber<Boolean>()
         val spreadsheetId = "id"
 
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
@@ -248,13 +257,15 @@ class ExpenseViewModelTest : SubscribableTest<ViewModelResult>() {
                 Single.just(Balance())
         )
 
-        sut.isOperationInProgress().toFlowable(BackpressureStrategy.BUFFER)
-                .subscribe(progressTestSubscriber)
+        val testSubscriber = sut.isOperationInProgress()
+                .toFlowable(BackpressureStrategy.BUFFER).test()
+
         sut.reloadData(spreadsheetId)
 
-        progressTestSubscriber
+        testSubscriber
                 .assertNoErrors()
                 .assertValues(false, true, false, true, false, true, false)
+                .dispose()
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

@@ -10,7 +10,7 @@ import io.rg.mp.partialBalance
 import org.junit.Test
 import java.util.LinkedList
 
-class BalanceServiceTest : SubscribableTest<Balance>() {
+class BalanceServiceTest {
     @Test
     fun `should return balance response`() {
         val responses = LinkedList<MockLowLevelHttpResponse>()
@@ -18,12 +18,12 @@ class BalanceServiceTest : SubscribableTest<Balance>() {
 
         val sut = BalanceService(mockSheetClient(responses))
 
-        sut.retrieve("any").toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.retrieve("any").toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == Balance("2000", "200", "1000")
                 }
+                .dispose()
     }
 
     @Test
@@ -33,12 +33,12 @@ class BalanceServiceTest : SubscribableTest<Balance>() {
 
         val sut = BalanceService(mockSheetClient(responses))
 
-        sut.retrieve("any").toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.retrieve("any").toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == Balance()
                 }
+                .dispose()
     }
 
     @Test
@@ -48,11 +48,11 @@ class BalanceServiceTest : SubscribableTest<Balance>() {
 
         val sut = BalanceService(mockSheetClient(responses))
 
-        sut.retrieve("any").toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.retrieve("any").toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == Balance(actual = "200")
                 }
+                .dispose()
     }
 }

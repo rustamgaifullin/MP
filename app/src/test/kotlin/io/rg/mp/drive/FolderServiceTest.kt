@@ -1,7 +1,6 @@
 package io.rg.mp.drive
 
 import com.google.api.client.testing.http.MockLowLevelHttpResponse
-import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.createFolder
 import io.rg.mp.emptyFolder
 import io.rg.mp.mockDriveClient
@@ -11,7 +10,7 @@ import org.junit.Test
 import java.util.LinkedList
 
 
-class FolderServiceTest : SubscribableTest<String>() {
+class FolderServiceTest {
 
     @Test
     fun `should find folder for current year`() {
@@ -20,12 +19,12 @@ class FolderServiceTest : SubscribableTest<String>() {
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.folderIdForCurrentYear().toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == "yearFolderId"
                 }
+                .dispose()
     }
 
     @Test
@@ -37,12 +36,12 @@ class FolderServiceTest : SubscribableTest<String>() {
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.folderIdForCurrentYear().toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == "newIdForYearFolder"
                 }
+                .dispose()
     }
 
     @Test
@@ -55,26 +54,26 @@ class FolderServiceTest : SubscribableTest<String>() {
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().subscribe(testSubscriber)
-
-        testSubscriber.assertNoErrors()
+        sut.folderIdForCurrentYear().toFlowable().test()
+                .assertNoErrors()
                 .assertValue {
                     it == "newIdForYearFolder"
                 }
+                .dispose()
     }
 
     @Test
-    fun `should complete stream after moving a file to some folder`(){
+    fun `should complete stream after moving a file to some folder`() {
         //given
         val responses = LinkedList<MockLowLevelHttpResponse>()
         responses.add(mockResponse("{}"))
         val sut = FolderService(mockDriveClient(responses))
-        val testSubscriber = TestSubscriber<Any>()
 
         //when
-        sut.moveToFolder("id", "folder").toFlowable<Any>().subscribe(testSubscriber)
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertNoValues()
-        testSubscriber.assertComplete()
+        sut.moveToFolder("id", "folder").toFlowable<Any>().test()
+                .assertNoErrors()
+                .assertNoValues()
+                .assertComplete()
+                .dispose()
     }
 }
