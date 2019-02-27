@@ -9,11 +9,14 @@ import io.rg.mp.drive.data.Expense
 import io.rg.mp.drive.data.NotSaved
 import io.rg.mp.drive.data.Result
 import io.rg.mp.drive.data.Saved
+import io.rg.mp.drive.data.TransactionList
+import io.rg.mp.persistence.entity.Transaction
 
 
 class TransactionService(private val googleSheetService: Sheets) {
     companion object {
         private const val EXPENSES_RANGE = "Transactions!B5:E5"
+        private const val EXPENSES_RANGE_ALL = "Transactions!B5:\$E"
         private const val INCOMES_RANGE = "Transactions!G5:J5"
     }
 
@@ -46,6 +49,34 @@ class TransactionService(private val googleSheetService: Sheets) {
                     .values()
                     .batchClear(spreadsheetId, request)
                     .execute()
+        }
+    }
+
+    fun all(spreadsheetId: String): Flowable<TransactionList> {
+        return Flowable.fromCallable {
+            val response = googleSheetService
+                    .spreadsheets()
+                    .values()
+                    .get(spreadsheetId, EXPENSES_RANGE_ALL)
+                    .execute()
+
+            var transactionList = emptyList<Transaction>()
+
+            if (response.getValues() != null) {
+                transactionList = response.getValues()
+                        .filter { it.size > 0 }
+                        .map {
+                            Transaction(
+                                    0L,
+                                    it[0].toString(),
+                                    it[1].toString(),
+                                    it[2].toString(),
+                                    it[3].toString(),
+                                    spreadsheetId)
+                        }
+            }
+
+            TransactionList(transactionList)
         }
     }
 }

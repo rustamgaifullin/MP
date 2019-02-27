@@ -7,11 +7,10 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.drive.LocaleService
-import io.rg.mp.drive.SubscribableTest
 import org.junit.Before
 import org.junit.Test
 
-class LocaleServiceTest: SubscribableTest<String>() {
+class LocaleServiceTest {
 
     private val sheetsService: Sheets = mock()
     private val spreadsheets: Sheets.Spreadsheets = mock()
@@ -36,12 +35,11 @@ class LocaleServiceTest: SubscribableTest<String>() {
         whenever(response.properties).thenReturn(properties)
         whenever(properties.locale).thenReturn("en_GB")
 
-        sut.getBy("id").subscribe(testSubscriber)
-
-        testSubscriber
+        sut.getBy("id").test()
                 .assertNoErrors()
                 .assertValue { it == "en_GB" }
                 .assertComplete()
+                .dispose()
     }
 
     @Test
@@ -52,12 +50,11 @@ class LocaleServiceTest: SubscribableTest<String>() {
         whenever(response.properties).thenReturn(properties)
         whenever(properties.locale).thenReturn(null)
 
-        sut.getBy("id").subscribe(testSubscriber)
-
-        testSubscriber
+        sut.getBy("id").test()
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
+                .dispose()
     }@Test
     fun `should complete observer when response from google service is empty`() {
         val sut = LocaleService(sheetsService)
@@ -66,11 +63,10 @@ class LocaleServiceTest: SubscribableTest<String>() {
         whenever(response.properties).thenReturn(properties)
         whenever(properties.locale).thenReturn("")
 
-        sut.getBy("id").subscribe(testSubscriber)
-
-        testSubscriber
+        sut.getBy("id").test()
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
+                .dispose()
     }
 }

@@ -21,11 +21,10 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
-import kotlinx.android.synthetic.main.fragment_spreadsheets.*
+import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
-
     companion object {
         const val NAME = "SPREADSHEET_FRAGMENT"
     }

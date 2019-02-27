@@ -7,6 +7,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
@@ -27,9 +30,21 @@ import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
+import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.formatDate
 import io.rg.mp.utils.setVisibility
-import kotlinx.android.synthetic.main.fragment_expense.*
+import kotlinx.android.synthetic.main.fragment_expense.actualBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.actualBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.addButton
+import kotlinx.android.synthetic.main.fragment_expense.amountEditText
+import kotlinx.android.synthetic.main.fragment_expense.categorySpinner
+import kotlinx.android.synthetic.main.fragment_expense.currentBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.dateButton
+import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
+import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.progressBar
 import javax.inject.Inject
 
 
@@ -81,6 +96,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         datePickerDialog = DatePickerDialog(requireContext(), this, 0, 0, 0)
 
+        setHasOptionsMenu(true)
+
         return inflater.inflate(R.layout.fragment_expense, container, false)
     }
 
@@ -103,6 +120,28 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         }
 
         formatDateButtonText()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        menu?.clear()
+        inflater?.inflate(R.menu.menu_expense, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.action_transactions -> openTransactions()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun openTransactions() {
+        val fragment = TransactionsFragment.create(spreadsheetId)
+        requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.main_container, fragment, TransactionsFragment.NAME)
+                .addToBackStack(TransactionsFragment.NAME)
+                .commit()
     }
 
     private fun saveExpense() {

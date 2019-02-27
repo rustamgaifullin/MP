@@ -12,4 +12,6 @@
     <string name="saved_message">Saved</string>
     <string name="not_saved_message">Not saved</string>
     <string name="spreadsheetTitle">Spreadsheets</string>
+    <string name="transactionsTitle">Transactions</string>
+    <string name="transaction_menu">Transactions</string>
 </resources>

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2296c173ba635f98f8690dff6d55129f",
+    "identityHash": "a62adf86614697aaad468c845724cc6e",
     "entities": [
       {
         "tableName": "category",
@@ -89,11 +89,82 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT NOT NULL, `amount` TEXT NOT NULL, `description` TEXT NOT NULL, `category` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spreadsheetId",
+            "columnName": "spreadsheet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_transactions_spreadsheet_id",
+            "unique": false,
+            "columnNames": [
+              "spreadsheet_id"
+            ],
+            "createSql": "CREATE  INDEX `index_transactions_spreadsheet_id` ON `${TABLE_NAME}` (`spreadsheet_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "spreadsheet",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "spreadsheet_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2296c173ba635f98f8690dff6d55129f\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"a62adf86614697aaad468c845724cc6e\")"
     ]
   }
 }

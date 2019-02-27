@@ -9,6 +9,7 @@ import io.rg.mp.R
 import io.rg.mp.ui.auth.AuthFragment
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetFragment
+import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.Preferences
 import javax.inject.Inject
 
@@ -43,11 +44,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null) {
-            supportFragmentManager.popBackStack(ExpenseFragment.NAME,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        } else {
-            super.onBackPressed()
+        when {
+            supportFragmentManager.findFragmentByTag(TransactionsFragment.NAME) != null -> supportFragmentManager.popBackStack(
+                    TransactionsFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null -> supportFragmentManager.popBackStack(
+                    ExpenseFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            else -> super.onBackPressed()
         }
     }
 }

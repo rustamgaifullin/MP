@@ -15,7 +15,6 @@ import io.reactivex.Single
 import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.SpreadsheetService
-import io.rg.mp.drive.SubscribableTest
 import io.rg.mp.drive.TransactionService
 import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.SpreadsheetList
@@ -25,12 +24,11 @@ import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
-import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import org.junit.Rule
 import org.junit.Test
 
-class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
+class SpreadsheetViewModelTest {
 
     @get:Rule
     val trampolineSchedulerRule = TrampolineSchedulerRule()
@@ -52,7 +50,6 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
     @Test
     fun `should load spreadsheet`() {
         val sut = viewModel()
-        sut.viewModelNotifier().subscribe(testSubscriber)
 
         whenever(spreadsheetDao.allSorted()).thenReturn(
                 Flowable.just(emptyList())
@@ -61,14 +58,16 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.just(SpreadsheetList(emptyList()))
         )
 
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.reloadData()
 
         testSubscriber
                 .assertNoErrors()
                 .assertValues(ListSpreadsheet(emptyList()))
                 .assertNotComplete()
+                .dispose()
     }
-
 
     @Test
     fun `should show authorization dialog during loading spreadsheets`() {
@@ -81,7 +80,8 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Flowable.error(userRecoverableAuthIoException())
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
+        val testSubscriber = sut.viewModelNotifier().test()
+
         sut.reloadData()
 
         testSubscriber
@@ -92,6 +92,7 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                             it.requestCode == REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
                 }
                 .assertNotComplete()
+                .dispose()
     }
 
     @Test
@@ -112,13 +113,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Completable.complete()
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.createNewSpreadsheet()
+        val testSubscriber = sut.viewModelNotifier().test()
 
-        verify(copyService).copy()
-        verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
-        verify(transactionService).clearAllTransactions(newSpreadsheetId)
-        verify(spreadsheetService, never()).deleteSpreadsheet(newSpreadsheetId)
+        sut.createNewSpreadsheet()
 
         testSubscriber
                 .assertNoErrors()
@@ -126,6 +123,12 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                     it is CreatedSuccessfully && it.spreadsheetId == "newId"
                 }
                 .assertNotComplete()
+                .dispose()
+
+        verify(copyService).copy()
+        verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
+        verify(transactionService).clearAllTransactions(newSpreadsheetId)
+        verify(spreadsheetService, never()).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
@@ -146,10 +149,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Completable.complete()
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.createNewSpreadsheet()
+        val testSubscriber = sut.viewModelNotifier().test()
 
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+        sut.createNewSpreadsheet()
 
         testSubscriber
                 .assertNoErrors()
@@ -157,6 +159,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                     it is ToastInfo
                 }
                 .assertNotComplete()
+                .dispose()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
@@ -180,10 +185,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Completable.complete()
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.createNewSpreadsheet()
+        val testSubscriber = sut.viewModelNotifier().test()
 
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+        sut.createNewSpreadsheet()
 
         testSubscriber
                 .assertNoErrors()
@@ -191,6 +195,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                     it is ToastInfo
                 }
                 .assertNotComplete()
+                .dispose()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
@@ -205,10 +212,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                 Single.error(Exception())
         )
 
-        sut.viewModelNotifier().subscribe(testSubscriber)
-        sut.createNewSpreadsheet()
+        val testSubscriber = sut.viewModelNotifier().test()
 
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+        sut.createNewSpreadsheet()
 
         testSubscriber
                 .assertNoErrors()
@@ -216,6 +222,9 @@ class SpreadsheetViewModelTest : SubscribableTest<ViewModelResult>() {
                     it is ToastInfo
                 }
                 .assertNotComplete()
+                .dispose()
+
+        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

@@ -5,15 +5,12 @@ import com.google.api.services.sheets.v4.model.ValueRange
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import io.rg.mp.persistence.entity.Category
 import io.rg.mp.drive.CategoryService
-import io.rg.mp.drive.SubscribableTest
-import io.rg.mp.drive.data.CategoryList
+import io.rg.mp.persistence.entity.Category
 import org.junit.Before
 import org.junit.Test
 
-class CategoryServiceTest : SubscribableTest<CategoryList>() {
-
+class CategoryServiceTest {
     private val sheetsService: Sheets = mock()
     private val spreadsheets: Sheets.Spreadsheets = mock()
     private val values: Sheets.Spreadsheets.Values = mock()
@@ -35,48 +32,46 @@ class CategoryServiceTest : SubscribableTest<CategoryList>() {
 
         //when
         setToResponse(listOfCategories)
-        sut.getListBy("").subscribe(testSubscriber)
-
-        //then
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { (list) -> list.contains(Category("category", "")) }
-        testSubscriber.assertComplete()
+        sut.getListBy("").test()
+                .assertNoErrors()
+                .assertValue { (list) -> list.contains(Category("category", "")) }
+                .assertComplete()
+                .dispose()
     }
 
     @Test
     fun `should return empty list when no values retrieved`() {
         //when
         setToResponse(emptyList())
-        sut.getListBy("").subscribe(testSubscriber)
-
-        //then
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { (list) -> list.isEmpty() }
-        testSubscriber.assertComplete()
+        sut.getListBy("").test()
+                .assertNoErrors()
+                .assertValue { (list) -> list.isEmpty() }
+                .assertComplete()
+                .dispose()
     }
 
     @Test
     fun `should return empty list when one row with no cells retrieved`() {
         //when
         setToResponse(listOf(emptyList()))
-        sut.getListBy("").subscribe(testSubscriber)
-
-        //then
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { (list) -> list.isEmpty() }
-        testSubscriber.assertComplete()
+        sut.getListBy("")
+                .test()
+                .assertNoErrors()
+                .assertValue { (list) -> list.isEmpty() }
+                .assertComplete()
+                .dispose()
     }
 
     @Test
     fun `should return empty list when null occurs`() {
         //when
         setToResponse(null)
-        sut.getListBy("").subscribe(testSubscriber)
-
-        //then
-        testSubscriber.assertNoErrors()
-        testSubscriber.assertValue { (list) -> list.isEmpty() }
-        testSubscriber.assertComplete()
+        sut.getListBy("")
+                .test()
+                .assertNoErrors()
+                .assertValue { (list) -> list.isEmpty() }
+                .assertComplete()
+                .dispose()
     }
 
     private fun setToResponse(listOfCategories: List<List<Any>>?) {
