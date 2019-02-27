@@ -14,7 +14,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.ui.ListTransaction
 import io.rg.mp.ui.ViewModelResult
-import kotlinx.android.synthetic.main.fragment_transactions.*
+import kotlinx.android.synthetic.main.fragment_transactions.transactionRecyclerView
 import javax.inject.Inject
 
 class TransactionsFragment : Fragment() {

@@ -33,7 +33,18 @@ import io.rg.mp.ui.expense.model.DateInt
 import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.formatDate
 import io.rg.mp.utils.setVisibility
-import kotlinx.android.synthetic.main.fragment_expense.*
+import kotlinx.android.synthetic.main.fragment_expense.actualBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.actualBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.addButton
+import kotlinx.android.synthetic.main.fragment_expense.amountEditText
+import kotlinx.android.synthetic.main.fragment_expense.categorySpinner
+import kotlinx.android.synthetic.main.fragment_expense.currentBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.dateButton
+import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
+import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceLabel
+import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.progressBar
 import javax.inject.Inject
 
 
