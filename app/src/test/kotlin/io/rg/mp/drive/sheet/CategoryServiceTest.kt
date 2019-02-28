@@ -36,7 +36,6 @@ class CategoryServiceTest {
                 .assertNoErrors()
                 .assertValue { (list) -> list.contains(Category("category", "")) }
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -47,7 +46,6 @@ class CategoryServiceTest {
                 .assertNoErrors()
                 .assertValue { (list) -> list.isEmpty() }
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -59,7 +57,6 @@ class CategoryServiceTest {
                 .assertNoErrors()
                 .assertValue { (list) -> list.isEmpty() }
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -71,7 +68,6 @@ class CategoryServiceTest {
                 .assertNoErrors()
                 .assertValue { (list) -> list.isEmpty() }
                 .assertComplete()
-                .dispose()
     }
 
     private fun setToResponse(listOfCategories: List<List<Any>>?) {

@@ -45,7 +45,6 @@ class SpreadsheetServiceTest {
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -60,6 +59,5 @@ class SpreadsheetServiceTest {
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
-                .dispose()
     }
 }

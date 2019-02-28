@@ -1,8 +1,8 @@
 package io.rg.mp.app
 
 import android.app.Activity
-import android.support.multidex.MultiDexApplication
-import android.support.v4.app.Fragment
+import androidx.multidex.MultiDexApplication
+import androidx.fragment.app.Fragment
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
