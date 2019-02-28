@@ -1,10 +1,10 @@
 package io.rg.mp.persistence.dao
 
-import android.arch.core.executor.testing.InstantTaskExecutorRule
-import android.arch.persistence.room.Room
-import android.support.test.InstrumentationRegistry
-import android.support.test.filters.SmallTest
-import android.support.test.runner.AndroidJUnit4
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.room.Room
+import androidx.test.InstrumentationRegistry
+import androidx.test.filters.SmallTest
+import androidx.test.runner.AndroidJUnit4
 import io.reactivex.subscribers.TestSubscriber
 import io.rg.mp.persistence.Database
 import io.rg.mp.persistence.entity.Spreadsheet

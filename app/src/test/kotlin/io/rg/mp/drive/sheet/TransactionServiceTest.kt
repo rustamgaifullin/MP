@@ -49,7 +49,6 @@ class TransactionServiceTest {
                 .assertNoErrors()
                 .assertValue { result -> result is Saved }
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -62,7 +61,6 @@ class TransactionServiceTest {
         sut.clearAllTransactions(spreadsheetId).test()
                 .assertNoErrors()
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -87,6 +85,5 @@ class TransactionServiceTest {
                             "category",
                             spreadsheetId)
                 }
-                .dispose()
     }
 }

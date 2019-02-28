@@ -23,7 +23,6 @@ class BalanceServiceTest {
                 .assertValue {
                     it == Balance("2000", "200", "1000")
                 }
-                .dispose()
     }
 
     @Test
@@ -38,7 +37,6 @@ class BalanceServiceTest {
                 .assertValue {
                     it == Balance()
                 }
-                .dispose()
     }
 
     @Test
@@ -53,6 +51,5 @@ class BalanceServiceTest {
                 .assertValue {
                     it == Balance(actual = "200")
                 }
-                .dispose()
     }
 }

@@ -39,7 +39,6 @@ class LocaleServiceTest {
                 .assertNoErrors()
                 .assertValue { it == "en_GB" }
                 .assertComplete()
-                .dispose()
     }
 
     @Test
@@ -54,7 +53,6 @@ class LocaleServiceTest {
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
-                .dispose()
     }@Test
     fun `should complete observer when response from google service is empty`() {
         val sut = LocaleService(sheetsService)
@@ -67,6 +65,5 @@ class LocaleServiceTest {
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
-                .dispose()
     }
 }

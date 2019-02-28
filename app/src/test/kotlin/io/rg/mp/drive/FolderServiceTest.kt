@@ -24,7 +24,6 @@ class FolderServiceTest {
                 .assertValue {
                     it == "yearFolderId"
                 }
-                .dispose()
     }
 
     @Test
@@ -41,7 +40,6 @@ class FolderServiceTest {
                 .assertValue {
                     it == "newIdForYearFolder"
                 }
-                .dispose()
     }
 
     @Test
@@ -59,7 +57,6 @@ class FolderServiceTest {
                 .assertValue {
                     it == "newIdForYearFolder"
                 }
-                .dispose()
     }
 
     @Test
@@ -74,6 +71,5 @@ class FolderServiceTest {
                 .assertNoErrors()
                 .assertNoValues()
                 .assertComplete()
-                .dispose()
     }
 }

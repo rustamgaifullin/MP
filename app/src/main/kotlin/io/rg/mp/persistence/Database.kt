@@ -1,7 +1,7 @@
 package io.rg.mp.persistence
 
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.RoomDatabase
+import androidx.room.Database
+import androidx.room.RoomDatabase
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.dao.TransactionDao
