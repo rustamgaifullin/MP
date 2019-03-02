@@ -14,122 +14,172 @@
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/descriptionEditText"
+        app:layout_constraintBottom_toTopOf="@+id/descriptionTextInputLayout"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <EditText
-        android:id="@+id/amountEditText"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/amountTextInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:ems="10"
-        android:inputType="numberDecimal"
-        android:text=""
+        android:hint="@string/amount_hint"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/addButton" />
+        app:layout_constraintRight_toLeftOf="@+id/addButton">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/amountEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberDecimal"
+            android:text="" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/addButton"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
         android:text="@string/button_add"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/dateButton" />
+        app:layout_constraintBottom_toBottomOf="@+id/amountTextInputLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/dateButton"
+        app:layout_constraintTop_toBottomOf="@+id/descriptionTextInputLayout" />
 
-    <EditText
-        android:id="@+id/descriptionEditText"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/descriptionTextInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:ems="10"
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/amountEditText"
+        android:hint="@string/description_hint"
+        app:layout_constraintBottom_toTopOf="@+id/amountTextInputLayout"
         app:layout_constraintEnd_toStartOf="@+id/dateButton"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/descriptionEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/dateButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
-        android:text="01/01/2017"
-        app:layout_constraintBottom_toTopOf="@+id/addButton"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@+id/descriptionTextInputLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/descriptionTextInputLayout"
+        app:layout_constraintTop_toTopOf="@+id/descriptionTextInputLayout"
+        tools:text="01/01/2017" />
 
-    <TextView
-        android:id="@+id/currentBalanceTextView"
-        android:layout_width="wrap_content"
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/plannedBalanceTextView"
-        app:layout_constraintTop_toTopOf="@+id/currentBalanceLabel"
-        tools:text="@sample/money" />
-
-    <TextView
-        android:id="@+id/plannedBalanceTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        tools:text="@sample/money"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintStart_toEndOf="@+id/plannedBalanceLabel"
-        app:layout_constraintTop_toTopOf="@+id/plannedBalanceLabel" />
-
-    <TextView
-        android:id="@+id/actualBalanceTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="@sample/money"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintStart_toStartOf="@+id/plannedBalanceTextView"
-        app:layout_constraintTop_toTopOf="@+id/actualBalanceLabel" />
-
-    <TextView
-        android:id="@+id/currentBalanceLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Current balance:"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        android:textStyle="bold"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/plannedBalanceLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:text="Planned expenses:"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/currentBalanceLabel" />
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
 
-    <TextView
-        android:id="@+id/actualBalanceLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:text="Actual expenses:"
-        android:textAppearance="@android:style/TextAppearance.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/plannedBalanceLabel" />
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:textAppearance="@android:style/TextAppearance.Large"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="February 2019" />
+
+            <TextView
+                android:id="@+id/currentBalanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/plannedBalanceTextView"
+                app:layout_constraintTop_toTopOf="@+id/currentBalanceLabel"
+                tools:text="@sample/money" />
+
+            <TextView
+                android:id="@+id/plannedBalanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                app:layout_constraintStart_toEndOf="@+id/plannedBalanceLabel"
+                app:layout_constraintTop_toTopOf="@+id/plannedBalanceLabel"
+                tools:text="@sample/money" />
+
+            <TextView
+                android:id="@+id/actualBalanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                app:layout_constraintStart_toStartOf="@+id/plannedBalanceTextView"
+                app:layout_constraintTop_toTopOf="@+id/actualBalanceLabel"
+                tools:text="@sample/money" />
+
+            <TextView
+                android:id="@+id/currentBalanceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/current_balance"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+
+            <TextView
+                android:id="@+id/plannedBalanceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="24dp"
+                android:text="@string/planned_expenses"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/currentBalanceLabel" />
+
+            <TextView
+                android:id="@+id/actualBalanceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/actual_expenses"
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/plannedBalanceLabel" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <ProgressBar
         android:id="@+id/progressBar"

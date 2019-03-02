@@ -4,16 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
-import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
@@ -74,12 +75,19 @@ class SpreadsheetFragment : Fragment() {
         super.onStart()
     }
 
-    private fun openExpenseFragment(): (Spreadsheet) -> Unit {
+    private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
-            val fragment = ExpenseFragment.create(it.id, it.name)
+            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
+            fragment.sharedElementEnterTransition = TransitionInflater.from(requireContext()).inflateTransition(R.transition.change_textview_transform)
+            fragment.enterTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
+
+            fragment.sharedElementReturnTransition = TransitionInflater.from(requireContext()).inflateTransition(R.transition.change_textview_transform)
+            fragment.returnTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
+
             requireActivity().supportFragmentManager.beginTransaction()
                     .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
                     .addToBackStack(ExpenseFragment.NAME)
+                    .addSharedElement(it.view, ViewCompat.getTransitionName(view!!) ?: "")
                     .commit()
         }
     }

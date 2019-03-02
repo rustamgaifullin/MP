@@ -4,8 +4,8 @@ import android.app.Activity.RESULT_OK
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -14,6 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -45,6 +47,7 @@ import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceLabel
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.progressBar
+import kotlinx.android.synthetic.main.fragment_expense.titleTextView
 import javax.inject.Inject
 
 
@@ -83,6 +86,14 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         super.onAttach(context)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        postponeEnterTransition()
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+//        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         activity?.apply {
@@ -101,6 +112,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         return inflater.inflate(R.layout.fragment_expense, container, false)
     }
 
+    @RequiresApi(VERSION_CODES.LOLLIPOP)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -111,6 +123,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         savedInstanceState?.apply {
             date = getParcelable(LAST_DATE_KEY) ?: DateInt.currentDateInt()
         }
+
+        titleTextView.transitionName = "transition"
+        titleTextView.text = arguments?.getString(SPREADSHEET_NAME) ?: ""
 
         dateButton.setOnClickListener {
             val (year, month, dayOfWeek) = date
@@ -176,8 +191,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListCategory -> categorySpinnerAdapter.setItems(it.list)
                 is SavedSuccessfully -> {
-                    amountEditText.text.clear()
-                    descriptionEditText.text.clear()
+                    amountEditText.text?.clear()
+                    descriptionEditText.text?.clear()
                 }
                 is BalanceUpdated -> updateBalance(it.balance)
             }
