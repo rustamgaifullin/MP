@@ -4,7 +4,6 @@ import android.app.Activity.RESULT_OK
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -14,7 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,6 +43,7 @@ import kotlinx.android.synthetic.main.fragment_expense.currentBalanceLabel
 import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateButton
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
+import kotlinx.android.synthetic.main.fragment_expense.expenseCardView
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceLabel
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.progressBar
@@ -56,14 +56,16 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
         private const val SPREADSHEET_NAME = "io.rg.mp.SPREADSHEET_NAME"
         private const val SPREADSHEET_ID = "spreadsheetId"
+        private const val TRANSITION_NAME = "transitionName"
         const val NAME = "EXPENSE_FRAGMENT"
 
-        fun create(spreadsheetId: String, spreadsheetName: String): ExpenseFragment {
+        fun create(spreadsheetId: String, spreadsheetName: String, transitionName: String): ExpenseFragment {
             val expenseFragment = ExpenseFragment()
 
             val args = Bundle()
             args.putString(SPREADSHEET_ID, spreadsheetId)
             args.putString(SPREADSHEET_NAME, spreadsheetName)
+            args.putString(TRANSITION_NAME, transitionName)
             expenseFragment.arguments = args
 
             return expenseFragment
@@ -88,7 +90,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        postponeEnterTransition()
+//        postponeEnterTransition()
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
 //        }
@@ -112,7 +114,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         return inflater.inflate(R.layout.fragment_expense, container, false)
     }
 
-    @RequiresApi(VERSION_CODES.LOLLIPOP)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -124,7 +125,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             date = getParcelable(LAST_DATE_KEY) ?: DateInt.currentDateInt()
         }
 
-        titleTextView.transitionName = "transition"
+        ViewCompat.setTransitionName(expenseCardView,  arguments?.getString(TRANSITION_NAME) ?: "")
+
         titleTextView.text = arguments?.getString(SPREADSHEET_NAME) ?: ""
 
         dateButton.setOnClickListener {

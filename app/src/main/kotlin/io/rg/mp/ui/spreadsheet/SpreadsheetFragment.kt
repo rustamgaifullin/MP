@@ -22,7 +22,7 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
-import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
+import kotlinx.android.synthetic.main.fragment_spreadsheets.*
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
@@ -77,7 +77,8 @@ class SpreadsheetFragment : Fragment() {
 
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
-            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
+            val transitionName = ViewCompat.getTransitionName(it.view) ?: ""
+            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name, transitionName)
             fragment.sharedElementEnterTransition = TransitionInflater.from(requireContext()).inflateTransition(R.transition.change_textview_transform)
             fragment.enterTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
 
@@ -85,9 +86,9 @@ class SpreadsheetFragment : Fragment() {
             fragment.returnTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
 
             requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
+                    .addSharedElement(it.view, transitionName)
                     .addToBackStack(ExpenseFragment.NAME)
-                    .addSharedElement(it.view, ViewCompat.getTransitionName(view!!) ?: "")
+                    .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
                     .commit()
         }
     }

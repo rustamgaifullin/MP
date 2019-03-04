@@ -86,6 +86,7 @@
         tools:text="01/01/2017" />
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/expenseCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
