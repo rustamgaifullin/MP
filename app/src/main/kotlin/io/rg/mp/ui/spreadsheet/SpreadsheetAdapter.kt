@@ -5,9 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.card.MaterialCardView
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
@@ -35,7 +33,7 @@ class SpreadsheetAdapter : RecyclerView.Adapter<SpreadsheetAdapter.ViewHolder> (
 
         holder.bindData(spreadsheet)
         holder.itemView.setOnClickListener {
-            onClickSubject.onNext(SpreadsheetEvent(spreadsheet, holder.spreadsheetCardView))
+            onClickSubject.onNext(SpreadsheetEvent(spreadsheet, holder.nameTextView))
         }
     }
 
@@ -50,14 +48,11 @@ class SpreadsheetAdapter : RecyclerView.Adapter<SpreadsheetAdapter.ViewHolder> (
     class ViewHolder(
             itemView: View,
             private val dateFormat: java.text.DateFormat) : RecyclerView.ViewHolder(itemView) {
-        internal val spreadsheetCardView: MaterialCardView = itemView.findViewById(R.id.spreadsheetCardView)
         internal val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
-
         private val lastModifiedTextView: TextView = itemView.findViewById(R.id.lastModifiedTextView)
 
         fun bindData(spreadsheet: Spreadsheet) {
             nameTextView.text = spreadsheet.name
-            ViewCompat.setTransitionName(spreadsheetCardView, "textViewTransition")
             lastModifiedTextView.text = dateFormat.format(Date(spreadsheet.modifiedTime))
         }
     }

@@ -4,12 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -22,7 +20,7 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
-import kotlinx.android.synthetic.main.fragment_spreadsheets.*
+import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
@@ -43,7 +41,7 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        requireActivity().title = getString(R.string.spreadsheetTitle)
+        requireActivity().title = getString(R.string.spreadsheet_title)
 
         return inflater.inflate(R.layout.fragment_spreadsheets, container, false)
     }
@@ -77,16 +75,9 @@ class SpreadsheetFragment : Fragment() {
 
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
-            val transitionName = ViewCompat.getTransitionName(it.view) ?: ""
-            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name, transitionName)
-            fragment.sharedElementEnterTransition = TransitionInflater.from(requireContext()).inflateTransition(R.transition.change_textview_transform)
-            fragment.enterTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
-
-            fragment.sharedElementReturnTransition = TransitionInflater.from(requireContext()).inflateTransition(R.transition.change_textview_transform)
-            fragment.returnTransition = TransitionInflater.from(requireContext()).inflateTransition(android.R.transition.explode)
+            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
 
             requireActivity().supportFragmentManager.beginTransaction()
-                    .addSharedElement(it.view, transitionName)
                     .addToBackStack(ExpenseFragment.NAME)
                     .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
                     .commit()

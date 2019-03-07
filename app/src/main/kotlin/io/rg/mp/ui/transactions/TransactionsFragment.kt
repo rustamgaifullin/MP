@@ -49,7 +49,7 @@ class TransactionsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        requireActivity().title = getString(R.string.transactionsTitle)
+        requireActivity().title = getString(R.string.transactions_title)
 
         spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
 

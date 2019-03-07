@@ -6,6 +6,15 @@
     android:id="@+id/expenseFragment"
     tools:context="io.rg.mp.ui.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="12dp"
+        app:layout_constraintEnd_toEndOf="@+id/expenseCardView"
+        app:layout_constraintStart_toStartOf="@+id/expenseCardView"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <Spinner
         android:id="@+id/categorySpinner"
@@ -178,16 +187,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/plannedBalanceLabel" />
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>

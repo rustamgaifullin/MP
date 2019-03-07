@@ -11,12 +11,13 @@
     <string name="button_add">Add</string>
     <string name="saved_message">Saved</string>
     <string name="not_saved_message">Not saved</string>
-    <string name="spreadsheetTitle">Spreadsheets</string>
-    <string name="transactionsTitle">Transactions</string>
+    <string name="spreadsheet_title">Spreadsheets</string>
+    <string name="transactions_title">Transactions</string>
     <string name="transaction_menu">Transactions</string>
     <string name="amount_hint">amount</string>
     <string name="description_hint">description</string>
     <string name="current_balance">Current balance:</string>
     <string name="planned_expenses">Planned expenses:</string>
     <string name="actual_expenses">Actual expenses:</string>
+    <string name="expenses_title">Expenses</string>
 </resources>
