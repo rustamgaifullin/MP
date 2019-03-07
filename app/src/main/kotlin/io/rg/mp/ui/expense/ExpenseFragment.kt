@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -28,7 +29,6 @@ import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
-import io.rg.mp.ui.expense.adapter.CategorySpinnerAdapter
 import io.rg.mp.ui.expense.model.DateInt
 import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.formatDate
@@ -36,7 +36,7 @@ import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_expense.actualBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.addButton
 import kotlinx.android.synthetic.main.fragment_expense.amountEditText
-import kotlinx.android.synthetic.main.fragment_expense.categorySpinner
+import kotlinx.android.synthetic.main.fragment_expense.categoryButton
 import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateButton
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
@@ -68,7 +68,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     @Inject
     lateinit var viewModel: ExpenseViewModel
 
-    private lateinit var categorySpinnerAdapter: CategorySpinnerAdapter
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var spreadsheetId: String
 
@@ -76,22 +75,15 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private val compositeDisposable = CompositeDisposable()
 
+    private var categories: List<Category> = emptyList()
+
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        activity?.apply {
-            categorySpinnerAdapter = CategorySpinnerAdapter(
-                    this, android.R.layout.simple_spinner_dropdown_item, layoutInflater)
-        }
-
         spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
 
         requireActivity().title = getString(R.string.expenses_title)
@@ -106,8 +98,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        categorySpinner.adapter = categorySpinnerAdapter
-
         addButton.setOnClickListener { saveExpense() }
 
         savedInstanceState?.apply {
@@ -121,6 +111,25 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
             datePickerDialog.updateDate(year, month, dayOfWeek)
             datePickerDialog.show()
+        }
+
+        categoryButton.setOnClickListener {
+            val categoryNames = categories.map { it.name }
+            val indexOfFirst = categoryNames.indexOfFirst { it == categoryButton.text }
+
+            val builder = AlertDialog.Builder(requireActivity())
+            builder.setTitle(getString(R.string.choose_category))
+
+            builder.setSingleChoiceItems(categoryNames.toTypedArray(), indexOfFirst) { dialog, index ->
+                categoryButton.text = categoryNames[index]
+                dialog.dismiss()
+            }
+
+            builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+
+            builder.create().show()
         }
 
         formatDateButtonText()
@@ -151,7 +160,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     private fun saveExpense() {
         //TODO: validation of required fields please
         val amount = amountEditText.text.toString().toFloat()
-        val category = categorySpinner.selectedItem as Category
+        val category = categories.first { it.name == categoryButton.text }
         val description = descriptionEditText.text.toString()
 
         viewModel.saveExpense(amount, category, description, spreadsheetId, date)
@@ -178,7 +187,10 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             when (it) {
                 is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
-                is ListCategory -> categorySpinnerAdapter.setItems(it.list)
+                is ListCategory -> {
+                    categories = it.list
+                    categoryButton.text = categories[0].name
+                }
                 is SavedSuccessfully -> {
                     amountEditText.text?.clear()
                     descriptionEditText.text?.clear()
