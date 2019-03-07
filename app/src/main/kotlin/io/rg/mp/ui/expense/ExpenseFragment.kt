@@ -203,16 +203,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     }
 
     private fun handleProgressBar(): (Boolean) -> Unit {
-        return { showProgress ->
-            progressBar.isIndeterminate = showProgress
-
-            progressBar.setVisibility(showProgress)
-            actualBalanceLabel.setVisibility(!showProgress)
-            currentBalanceLabel.setVisibility(!showProgress)
-            plannedBalanceLabel.setVisibility(!showProgress)
-            actualBalanceTextView.setVisibility(!showProgress)
-            currentBalanceTextView.setVisibility(!showProgress)
-            plannedBalanceTextView.setVisibility(!showProgress)
+        return { isInProgress ->
+            progressBar.isIndeterminate = isInProgress
+            progressBar.setVisibility(isInProgress)
         }
     }
 
