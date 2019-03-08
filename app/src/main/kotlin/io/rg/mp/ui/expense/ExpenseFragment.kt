@@ -189,7 +189,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListCategory -> {
                     categories = it.list
-                    categoryEditText.setText(categories[0].name)
+                    categoryEditText.setText(categories.getOrNull(0)?.name)
                 }
                 is SavedSuccessfully -> {
                     amountEditText.text?.clear()
