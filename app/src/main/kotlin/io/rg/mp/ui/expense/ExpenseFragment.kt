@@ -36,7 +36,7 @@ import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_expense.actualBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.addButton
 import kotlinx.android.synthetic.main.fragment_expense.amountEditText
-import kotlinx.android.synthetic.main.fragment_expense.categoryButton
+import kotlinx.android.synthetic.main.fragment_expense.categoryEditText
 import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateButton
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
@@ -113,15 +113,15 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             datePickerDialog.show()
         }
 
-        categoryButton.setOnClickListener {
+        categoryEditText.setOnClickListener {
             val categoryNames = categories.map { it.name }
-            val indexOfFirst = categoryNames.indexOfFirst { it == categoryButton.text }
+            val indexOfFirst = categoryNames.indexOfFirst { it == categoryEditText.text?.toString() }
 
             val builder = AlertDialog.Builder(requireActivity())
             builder.setTitle(getString(R.string.choose_category))
 
             builder.setSingleChoiceItems(categoryNames.toTypedArray(), indexOfFirst) { dialog, index ->
-                categoryButton.text = categoryNames[index]
+                categoryEditText.setText(categoryNames[index])
                 dialog.dismiss()
             }
 
@@ -160,7 +160,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     private fun saveExpense() {
         //TODO: validation of required fields please
         val amount = amountEditText.text.toString().toFloat()
-        val category = categories.first { it.name == categoryButton.text }
+        val category = categories.first { it.name == categoryEditText.text?.toString() }
         val description = descriptionEditText.text.toString()
 
         viewModel.saveExpense(amount, category, description, spreadsheetId, date)
@@ -189,7 +189,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListCategory -> {
                     categories = it.list
-                    categoryButton.text = categories[0].name
+                    categoryEditText.setText(categories[0].name)
                 }
                 is SavedSuccessfully -> {
                     amountEditText.text?.clear()
