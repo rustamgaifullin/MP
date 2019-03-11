@@ -23,4 +23,5 @@
     <string name="choose_category">Choose category</string>
     <string name="category_hint">Category</string>
     <string name="amount_error_message">Amount shouldn\'t be empty</string>
+    <string name="date_hint">Date</string>
 </resources>

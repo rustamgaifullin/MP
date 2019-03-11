@@ -42,7 +42,7 @@ import kotlinx.android.synthetic.main.fragment_expense.amountEditText
 import kotlinx.android.synthetic.main.fragment_expense.amountTextInputLayout
 import kotlinx.android.synthetic.main.fragment_expense.categoryEditText
 import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
-import kotlinx.android.synthetic.main.fragment_expense.dateButton
+import kotlinx.android.synthetic.main.fragment_expense.dateEditText
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.progressBar
@@ -110,7 +110,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         titleTextView.text = arguments?.getString(SPREADSHEET_NAME) ?: ""
 
-        dateButton.setOnClickListener {
+        dateEditText.setOnClickListener {
             val (year, month, dayOfWeek) = date
 
             datePickerDialog.updateDate(year, month, dayOfWeek)
@@ -277,6 +277,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     }
 
     private fun formatDateButtonText() {
-        dateButton.text = formatDate(date)
+        dateEditText.setText(formatDate(date))
     }
 }
