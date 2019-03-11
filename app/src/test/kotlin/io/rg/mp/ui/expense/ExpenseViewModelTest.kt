@@ -69,7 +69,7 @@ class ExpenseViewModelTest {
                 Flowable.just(CategoryList(listOf(category)))
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
-                Single.just("en_EN")
+                Flowable.just("en_EN")
         )
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.just(Balance())
@@ -101,7 +101,7 @@ class ExpenseViewModelTest {
                 Flowable.empty()
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
-                Single.error(userRecoverableAuthIoException())
+                Flowable.error(userRecoverableAuthIoException())
         )
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.never()
@@ -130,7 +130,7 @@ class ExpenseViewModelTest {
                 Flowable.empty()
         )
         whenever(localeService.getBy(spreadsheetId)).thenReturn(
-                Single.never()
+                Flowable.empty()
         )
         whenever(categoryService.getListBy(spreadsheetId)).thenReturn(
                 Flowable.error(userRecoverableAuthIoException())
@@ -251,7 +251,7 @@ class ExpenseViewModelTest {
                 Flowable.empty()
         )
         whenever(localeService.getBy(eq(spreadsheetId))).thenReturn(
-                Single.just("")
+                Flowable.empty()
         )
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
                 Single.just(Balance())
