@@ -5,6 +5,8 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -19,6 +21,7 @@ import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.R.string
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.BalanceUpdated
@@ -36,6 +39,7 @@ import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_expense.actualBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.addButton
 import kotlinx.android.synthetic.main.fragment_expense.amountEditText
+import kotlinx.android.synthetic.main.fragment_expense.amountTextInputLayout
 import kotlinx.android.synthetic.main.fragment_expense.categoryEditText
 import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateButton
@@ -98,7 +102,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        addButton.setOnClickListener { saveExpense() }
+        addButton.setOnClickListener { validateAndSaveExpense() }
 
         savedInstanceState?.apply {
             date = getParcelable(LAST_DATE_KEY) ?: DateInt.currentDateInt()
@@ -132,6 +136,18 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             builder.create().show()
         }
 
+        amountEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                setAmountTextInputLayoutErrorMessage(s?.isEmpty() == true)
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+        })
+
         formatDateButtonText()
     }
 
@@ -157,8 +173,25 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                 .commit()
     }
 
+    private fun validateAndSaveExpense() {
+        if (amountEditText.text.isNullOrEmpty()) {
+            setAmountTextInputLayoutErrorMessage(true)
+        } else {
+            saveExpense()
+        }
+    }
+
+    private fun setAmountTextInputLayoutErrorMessage(isTextEmpty: Boolean) {
+        if (isTextEmpty) {
+            amountTextInputLayout.error = getString(string.amount_error_message)
+        } else {
+            amountTextInputLayout.error = null
+        }
+
+        amountTextInputLayout.isErrorEnabled = isTextEmpty
+    }
+
     private fun saveExpense() {
-        //TODO: validation of required fields please
         val amount = amountEditText.text.toString().toFloat()
         val category = categories.first { it.name == categoryEditText.text?.toString() }
         val description = descriptionEditText.text.toString()
@@ -231,7 +264,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         if (resultCode == RESULT_OK) {
             when (requestCode) {
-                REQUEST_AUTHORIZATION_EXPENSE -> saveExpense()
+                REQUEST_AUTHORIZATION_EXPENSE -> validateAndSaveExpense()
                 REQUEST_AUTHORIZATION_LOADING_CATEGORIES ->
                     viewModel.reloadData(spreadsheetId)
             }

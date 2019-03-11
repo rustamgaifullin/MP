@@ -14,12 +14,13 @@
     <string name="spreadsheet_title">Spreadsheets</string>
     <string name="transactions_title">Transactions</string>
     <string name="transaction_menu">Transactions</string>
-    <string name="amount_hint">amount</string>
-    <string name="description_hint">description</string>
+    <string name="amount_hint">Amount</string>
+    <string name="description_hint">Description</string>
     <string name="current_balance">Current balance:</string>
     <string name="planned_expenses">Planned expenses:</string>
     <string name="actual_expenses">Actual expenses:</string>
     <string name="expenses_title">Expenses</string>
     <string name="choose_category">Choose category</string>
     <string name="category_hint">Category</string>
+    <string name="amount_error_message">Amount shouldn\'t be empty</string>
 </resources>
