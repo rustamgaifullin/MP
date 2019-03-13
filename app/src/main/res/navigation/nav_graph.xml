@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/spreadsheetFragment">
+
+    <fragment
+        android:id="@+id/spreadsheetFragment"
+        android:name="io.rg.mp.ui.spreadsheet.SpreadsheetFragment"
+        android:label="@string/spreadsheet_title"
+        tools:layout="@layout/fragment_spreadsheets"
+        >
+        <action
+            android:id="@+id/actionShowExpenseFragment"
+            app:destination="@id/expenseFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/expenseFragment"
+        android:name="io.rg.mp.ui.expense.ExpenseFragment"
+        android:label="ExpenseFragment"
+        tools:layout="@layout/fragment_expense">
+        <action
+            android:id="@+id/actionShowTransactionsFragment"
+            app:destination="@id/transactionsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/transactionsFragment"
+        android:name="io.rg.mp.ui.transactions.TransactionsFragment"
+        android:label="TransactionsFragment"
+        tools:layout="@layout/fragment_transactions"/>
+</navigation>

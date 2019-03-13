@@ -17,6 +17,7 @@ import android.widget.DatePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.navigation.Navigation
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -57,15 +58,12 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         private const val SPREADSHEET_ID = "spreadsheetId"
         const val NAME = "EXPENSE_FRAGMENT"
 
-        fun create(spreadsheetId: String, spreadsheetName: String): ExpenseFragment {
-            val expenseFragment = ExpenseFragment()
-
+        fun create(spreadsheetId: String, spreadsheetName: String): Bundle {
             val args = Bundle()
             args.putString(SPREADSHEET_ID, spreadsheetId)
             args.putString(SPREADSHEET_NAME, spreadsheetName)
-            expenseFragment.arguments = args
 
-            return expenseFragment
+            return args
         }
     }
 
@@ -166,11 +164,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     }
 
     private fun openTransactions() {
-        val fragment = TransactionsFragment.create(spreadsheetId)
-        requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.main_container, fragment, TransactionsFragment.NAME)
-                .addToBackStack(TransactionsFragment.NAME)
-                .commit()
+        val args = TransactionsFragment.createArgs(spreadsheetId)
+
+        Navigation.findNavController(view!!).navigate(R.id.actionShowTransactionsFragment, args)
     }
 
     private fun validateAndSaveExpense() {

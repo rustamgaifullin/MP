@@ -23,14 +23,11 @@ class TransactionsFragment : Fragment() {
 
         private const val SPREADSHEET_ID = "spreadsheetId"
 
-        fun create(spreadsheetId: String): TransactionsFragment {
-            val transactionsFragment = TransactionsFragment()
-
+        fun createArgs(spreadsheetId: String): Bundle {
             val args = Bundle()
             args.putString(SPREADSHEET_ID, spreadsheetId)
-            transactionsFragment.arguments = args
 
-            return transactionsFragment
+            return args
         }
     }
 

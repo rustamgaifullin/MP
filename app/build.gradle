@@ -28,6 +28,7 @@ buildscript {
         dagger_version = "2.15"
         multidex_version = "2.0.1"
         dex_opener_version = "0.12.1"
+        navigation_fragment_version = "2.0.0-rc02"
     }
 
     repositories {
@@ -107,6 +108,10 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$support_library_version"
 
+    implementation "androidx.navigation:navigation-fragment:$navigation_fragment_version"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_fragment_version"
+    implementation "androidx.navigation:navigation-ui:$navigation_fragment_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation_fragment_version"
 
     implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
     implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlin_version"

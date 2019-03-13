@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -24,10 +25,6 @@ import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecycler
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
-    companion object {
-        const val NAME = "SPREADSHEET_FRAGMENT"
-    }
-
     @Inject
     lateinit var viewModel: SpreadsheetViewModel
 
@@ -41,8 +38,6 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        requireActivity().title = getString(R.string.spreadsheet_title)
-
         return inflater.inflate(R.layout.fragment_spreadsheets, container, false)
     }
 
@@ -73,14 +68,17 @@ class SpreadsheetFragment : Fragment() {
         super.onStart()
     }
 
+    override fun onStop() {
+        super.onStop()
+        compositeDisposable.clear()
+        viewModel.clear()
+    }
+
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
-            val fragment = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
+            val args = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
 
-            requireActivity().supportFragmentManager.beginTransaction()
-                    .addToBackStack(ExpenseFragment.NAME)
-                    .replace(R.id.main_container, fragment, ExpenseFragment.NAME)
-                    .commit()
+            view?.findNavController()?.navigate(R.id.actionShowExpenseFragment, args)
         }
     }
 
