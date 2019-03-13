@@ -76,7 +76,7 @@ class SpreadsheetFragment : Fragment() {
 
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
-            val args = ExpenseFragment.create(it.spreadsheet.id, it.spreadsheet.name)
+            val args = ExpenseFragment.createArgs(it.spreadsheet.id, it.spreadsheet.name)
 
             view?.findNavController()?.navigate(R.id.actionShowExpenseFragment, args)
         }

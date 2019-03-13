@@ -6,27 +6,30 @@ import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.rg.mp.drive.data.SpreadsheetList
 import io.rg.mp.persistence.entity.Spreadsheet
+import io.rg.mp.utils.onErrorIfNotCancelled
 
 class SpreadsheetService(private val drive: Drive) {
     fun list(): Flowable<SpreadsheetList> {
-        return Flowable.create({
-            val files = drive
-                    .files()
-                    .list()
-                    .setQ("mimeType = 'application/vnd.google-apps.spreadsheet' " +
-                            "and fullText contains 'Monthly Budget'")
-                    .setFields("files(id, name, modifiedTime)")
-                    .execute()
-                    .files
-            if (files != null && files.size > 0) {
-                val spreadsheets = files.map {
-                    Spreadsheet(it.id, it.name, it.modifiedTime.value)
+        return Flowable.create({ emitter ->
+            onErrorIfNotCancelled(emitter) {
+                val files = drive
+                        .files()
+                        .list()
+                        .setQ("mimeType = 'application/vnd.google-apps.spreadsheet' " +
+                                "and fullText contains 'Monthly Budget'")
+                        .setFields("files(id, name, modifiedTime)")
+                        .execute()
+                        .files
+                if (files != null && files.size > 0) {
+                    val spreadsheets = files.map {
+                        Spreadsheet(it.id, it.name, it.modifiedTime.value)
+                    }
+
+                    emitter.onNext(SpreadsheetList(spreadsheets))
                 }
 
-                it.onNext(SpreadsheetList(spreadsheets))
+                emitter.onComplete()
             }
-
-            it.onComplete()
         }, BackpressureStrategy.BUFFER)
     }
 

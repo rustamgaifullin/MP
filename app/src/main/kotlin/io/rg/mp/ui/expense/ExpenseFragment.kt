@@ -56,9 +56,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
         private const val SPREADSHEET_NAME = "io.rg.mp.SPREADSHEET_NAME"
         private const val SPREADSHEET_ID = "spreadsheetId"
-        const val NAME = "EXPENSE_FRAGMENT"
 
-        fun create(spreadsheetId: String, spreadsheetName: String): Bundle {
+        fun createArgs(spreadsheetId: String, spreadsheetName: String): Bundle {
             val args = Bundle()
             args.putString(SPREADSHEET_ID, spreadsheetId)
             args.putString(SPREADSHEET_NAME, spreadsheetName)
