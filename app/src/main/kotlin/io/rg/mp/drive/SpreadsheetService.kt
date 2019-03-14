@@ -21,8 +21,8 @@ class SpreadsheetService(private val drive: Drive) {
                         .execute()
                         .files
                 if (files != null && files.size > 0) {
-                    val spreadsheets = files.map {
-                        Spreadsheet(it.id, it.name, it.modifiedTime.value)
+                    val spreadsheets = files.map { file ->
+                        Spreadsheet(file.id, file.name, file.modifiedTime.value)
                     }
 
                     emitter.onNext(SpreadsheetList(spreadsheets))

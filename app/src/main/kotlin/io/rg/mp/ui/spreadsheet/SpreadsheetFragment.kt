@@ -31,7 +31,7 @@ class SpreadsheetFragment : Fragment() {
     private val compositeDisposable = CompositeDisposable()
     private val spreadsheetAdapter = SpreadsheetAdapter()
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -78,7 +78,7 @@ class SpreadsheetFragment : Fragment() {
         return {
             val args = ExpenseFragment.createArgs(it.spreadsheet.id, it.spreadsheet.name)
 
-            view?.findNavController()?.navigate(R.id.actionShowExpenseFragment, args)
+            view?.findNavController()?.navigate(R.id.actionShowExpenseScreen, args)
         }
     }
 

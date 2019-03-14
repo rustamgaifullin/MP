@@ -3,30 +3,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/spreadsheetFragment">
+    app:startDestination="@id/spreadsheetScreen">
 
     <fragment
-        android:id="@+id/spreadsheetFragment"
+        android:id="@+id/spreadsheetScreen"
         android:name="io.rg.mp.ui.spreadsheet.SpreadsheetFragment"
         android:label="@string/spreadsheet_title"
         tools:layout="@layout/fragment_spreadsheets"
         >
         <action
-            android:id="@+id/actionShowExpenseFragment"
-            app:destination="@id/expenseFragment" />
+            android:id="@+id/actionShowExpenseScreen"
+            app:destination="@id/expenseScreen" />
+        <action
+            android:id="@+id/actionShowLoginScreen"
+            app:destination="@id/nav_login"
+            app:launchSingleTop="false"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
-        android:id="@+id/expenseFragment"
+        android:id="@+id/expenseScreen"
         android:name="io.rg.mp.ui.expense.ExpenseFragment"
-        android:label="ExpenseFragment"
+        android:label="@string/expenses_title"
         tools:layout="@layout/fragment_expense">
         <action
-            android:id="@+id/actionShowTransactionsFragment"
-            app:destination="@id/transactionsFragment" />
+            android:id="@+id/actionShowTransactionsScreen"
+            app:destination="@id/transactionsScreen" />
     </fragment>
     <fragment
-        android:id="@+id/transactionsFragment"
+        android:id="@+id/transactionsScreen"
         android:name="io.rg.mp.ui.transactions.TransactionsFragment"
-        android:label="TransactionsFragment"
+        android:label="@string/transactions_title"
         tools:layout="@layout/fragment_transactions"/>
+    <include app:graph="@navigation/login_graph" />
 </navigation>

@@ -27,42 +27,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         navController = findNavController(R.id.nav_host)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
+
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.spreadsheetScreen, R.id.authScreen))
+
         setupActionBarWithNavController(navController, appBarConfiguration)
-//        initFragments()
+
+        if (!preferences.isAccountNameAvailable) {
+            navController.navigate(R.id.actionShowLoginScreen)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
-//
-//    private fun initFragments() {
-//        if (preferences.isAccountNameAvailable) {
-//            val finalHost = NavHostFragment.createArgs(R.navigation.nav_graph)
-//            supportFragmentManager.beginTransaction()
-//                    .replace(R.id.nav_host, finalHost)
-//                    .setPrimaryNavigationFragment(finalHost) // this is the equivalent to app:defaultNavHost="true"
-//                    .commit()
-//        } else {
-//            addFragment(AuthFragment.NAME) { AuthFragment() }
-//        }
-//    }
-//
-//    private fun addFragment(tag: String, fragment: () -> Fragment) {
-//        if (supportFragmentManager.findFragmentByTag(tag) == null) {
-//            supportFragmentManager.beginTransaction()
-//                    .replace(R.id.nav_host, fragment.invoke(), tag)
-//                    .commit()
-//        }
-//    }
-
-//    override fun onBackPressed() {
-//        when {
-//            supportFragmentManager.findFragmentByTag(TransactionsFragment.NAME) != null -> supportFragmentManager.popBackStack(
-//                    TransactionsFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//            supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null -> supportFragmentManager.popBackStack(
-//                    ExpenseFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//            else -> super.onBackPressed()
-//        }
-//    }
 }

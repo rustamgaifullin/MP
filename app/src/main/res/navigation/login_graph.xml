@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_login"
+    app:startDestination="@id/authScreen">
+
+    <fragment
+        android:id="@+id/authScreen"
+        android:name="io.rg.mp.ui.auth.AuthFragment"
+        android:label="AuthFragment" />
+</navigation>

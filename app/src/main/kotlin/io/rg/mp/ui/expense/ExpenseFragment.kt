@@ -78,7 +78,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private var categories: List<Category> = emptyList()
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -148,14 +148,14 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         formatDateButtonText()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        menu?.clear()
-        inflater?.inflate(R.menu.menu_expense, menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.menu_expense, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_transactions -> openTransactions()
         }
 
@@ -165,7 +165,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     private fun openTransactions() {
         val args = TransactionsFragment.createArgs(spreadsheetId)
 
-        Navigation.findNavController(view!!).navigate(R.id.actionShowTransactionsFragment, args)
+        Navigation.findNavController(view!!).navigate(R.id.actionShowTransactionsScreen, args)
     }
 
     private fun validateAndSaveExpense() {

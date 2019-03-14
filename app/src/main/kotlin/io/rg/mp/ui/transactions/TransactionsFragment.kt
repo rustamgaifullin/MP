@@ -4,10 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -19,8 +19,6 @@ import javax.inject.Inject
 
 class TransactionsFragment : Fragment() {
     companion object {
-        const val NAME = "TRANSACTIONS_FRAGMENT"
-
         private const val SPREADSHEET_ID = "spreadsheetId"
 
         fun createArgs(spreadsheetId: String): Bundle {
@@ -37,7 +35,7 @@ class TransactionsFragment : Fragment() {
     private val compositeDisposable = CompositeDisposable()
     private val transactionAdapter = TransactionsAdapter()
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
