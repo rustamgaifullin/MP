@@ -1,15 +1,14 @@
 package io.rg.mp.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
 import dagger.android.AndroidInjection
 import io.rg.mp.R
-import io.rg.mp.ui.auth.AuthFragment
-import io.rg.mp.ui.expense.ExpenseFragment
-import io.rg.mp.ui.spreadsheet.SpreadsheetFragment
-import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.Preferences
 import javax.inject.Inject
 
@@ -18,38 +17,27 @@ class MainActivity : AppCompatActivity() {
 
     @Inject lateinit var preferences: Preferences
 
+    private lateinit var navController: NavController
+    private lateinit var appBarConfiguration: AppBarConfiguration
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initFragments()
-    }
+        navController = findNavController(R.id.nav_host)
 
-    private fun initFragments() {
-        if (preferences.isAccountNameAvailable) {
-            addFragment(SpreadsheetFragment.NAME) { SpreadsheetFragment() }
-        } else {
-            addFragment(AuthFragment.NAME) { AuthFragment() }
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.spreadsheetScreen, R.id.authScreen))
+
+        setupActionBarWithNavController(navController, appBarConfiguration)
+
+        if (!preferences.isAccountNameAvailable) {
+            navController.navigate(R.id.actionShowLoginScreen)
         }
     }
 
-    private fun addFragment(tag: String, fragment: () -> Fragment) {
-        if (supportFragmentManager.findFragmentByTag(tag) == null) {
-            supportFragmentManager.beginTransaction()
-                    .add(R.id.main_container, fragment.invoke(), tag)
-                    .commit()
-        }
-    }
-
-    override fun onBackPressed() {
-        when {
-            supportFragmentManager.findFragmentByTag(TransactionsFragment.NAME) != null -> supportFragmentManager.popBackStack(
-                    TransactionsFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            supportFragmentManager.findFragmentByTag(ExpenseFragment.NAME) != null -> supportFragmentManager.popBackStack(
-                    ExpenseFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            else -> super.onBackPressed()
-        }
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

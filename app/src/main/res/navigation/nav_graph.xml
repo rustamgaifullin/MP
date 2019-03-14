@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/spreadsheetScreen">
+
+    <fragment
+        android:id="@+id/spreadsheetScreen"
+        android:name="io.rg.mp.ui.spreadsheet.SpreadsheetFragment"
+        android:label="@string/spreadsheet_title"
+        tools:layout="@layout/fragment_spreadsheets"
+        >
+        <action
+            android:id="@+id/actionShowExpenseScreen"
+            app:destination="@id/expenseScreen"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/actionShowLoginScreen"
+            app:destination="@id/nav_login"
+            app:launchSingleTop="false"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
+            app:popUpToInclusive="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/expenseScreen"
+        android:name="io.rg.mp.ui.expense.ExpenseFragment"
+        android:label="@string/expenses_title"
+        tools:layout="@layout/fragment_expense">
+        <action
+            android:id="@+id/actionShowTransactionsScreen"
+            app:destination="@id/transactionsScreen"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+    <fragment
+        android:id="@+id/transactionsScreen"
+        android:name="io.rg.mp.ui.transactions.TransactionsFragment"
+        android:label="@string/transactions_title"
+        tools:layout="@layout/fragment_transactions"/>
+    <include app:graph="@navigation/login_graph" />
+</navigation>

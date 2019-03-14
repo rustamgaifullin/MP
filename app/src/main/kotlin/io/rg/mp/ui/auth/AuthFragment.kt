@@ -4,12 +4,14 @@ package io.rg.mp.ui.auth
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.google.android.gms.common.GoogleApiAvailability
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -22,22 +24,18 @@ import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.auth.AuthViewModel.Companion.REQUEST_GOOGLE_PLAY_SERVICES
-import io.rg.mp.ui.spreadsheet.SpreadsheetFragment
-import kotlinx.android.synthetic.main.fragment_auth.*
+import kotlinx.android.synthetic.main.fragment_auth.beginButton
 import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 
 
-class AuthFragment : Fragment() {
-    companion object {
-        const val NAME = "AUTH_FRAGMENT"
-    }
-
-    @Inject lateinit var authViewModel: AuthViewModel
+class AuthFragment : Fragment(), OnBackPressedCallback {
+    @Inject
+    lateinit var authViewModel: AuthViewModel
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -49,6 +47,8 @@ class AuthFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addOnBackPressedCallback(this)
 
         beginButton.setOnClickListener { authViewModel.beginButtonClick() }
     }
@@ -102,11 +102,7 @@ class AuthFragment : Fragment() {
 
     private fun finish(): () -> Unit {
         return {
-            fragmentManager?.apply {
-                val transaction = beginTransaction()
-                transaction.replace(R.id.main_container, SpreadsheetFragment())
-                transaction.commit()
-            }
+            view?.findNavController()?.popBackStack()
         }
     }
 
@@ -114,6 +110,11 @@ class AuthFragment : Fragment() {
         super.onStop()
         compositeDisposable.clear()
         authViewModel.clear()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().removeOnBackPressedCallback(this)
     }
 
     override fun onActivityResult(
@@ -128,5 +129,10 @@ class AuthFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, authViewModel)
+    }
+
+    override fun handleOnBackPressed(): Boolean {
+        requireActivity().finish()
+        return true
     }
 }
