@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import com.google.android.gms.common.GoogleApiAvailability
@@ -28,7 +29,7 @@ import pub.devrel.easypermissions.EasyPermissions
 import javax.inject.Inject
 
 
-class AuthFragment : Fragment() {
+class AuthFragment : Fragment(), OnBackPressedCallback {
     @Inject
     lateinit var authViewModel: AuthViewModel
 
@@ -47,10 +48,7 @@ class AuthFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().addOnBackPressedCallback {
-            requireActivity().finish()
-            true
-        }
+        requireActivity().addOnBackPressedCallback(this)
 
         beginButton.setOnClickListener { authViewModel.beginButtonClick() }
     }
@@ -114,6 +112,11 @@ class AuthFragment : Fragment() {
         authViewModel.clear()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().removeOnBackPressedCallback(this)
+    }
+
     override fun onActivityResult(
             requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -126,5 +129,10 @@ class AuthFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, authViewModel)
+    }
+
+    override fun handleOnBackPressed(): Boolean {
+        requireActivity().finish()
+        return true
     }
 }
