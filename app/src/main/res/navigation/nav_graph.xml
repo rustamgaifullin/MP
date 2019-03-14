@@ -13,11 +13,17 @@
         >
         <action
             android:id="@+id/actionShowExpenseScreen"
-            app:destination="@id/expenseScreen" />
+            app:destination="@id/expenseScreen"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/actionShowLoginScreen"
             app:destination="@id/nav_login"
             app:launchSingleTop="false"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
             app:popUpToInclusive="false" />
     </fragment>
     <fragment
@@ -27,7 +33,11 @@
         tools:layout="@layout/fragment_expense">
         <action
             android:id="@+id/actionShowTransactionsScreen"
-            app:destination="@id/transactionsScreen" />
+            app:destination="@id/transactionsScreen"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/transactionsScreen"
