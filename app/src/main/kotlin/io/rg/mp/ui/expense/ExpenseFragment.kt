@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -165,7 +166,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     private fun openTransactions() {
         val args = TransactionsFragment.createArgs(spreadsheetId)
 
-        Navigation.findNavController(view!!).navigate(R.id.actionShowTransactionsScreen, args)
+        view?.findNavController()?.navigate(R.id.actionShowTransactionsScreen, args)
     }
 
     private fun validateAndSaveExpense() {
