@@ -146,7 +146,7 @@ class AuthViewModelTest : AndroidContextAwareTest() {
                 .assertNoErrors()
                 .assertValueCount(1)
                 .assertValueAt(0) {
-                    it is ToastInfo && it.messageId == R.string.requre_google_play_services
+                    it is ToastInfo && it.messageId == R.string.require_google_play_services
                 }
         verifyZeroInteractions(spreadsheetService)
 

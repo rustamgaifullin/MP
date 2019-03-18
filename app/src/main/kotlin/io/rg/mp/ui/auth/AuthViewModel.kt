@@ -47,7 +47,7 @@ class AuthViewModel(private val context: Context,
         when (requestCode) {
             REQUEST_GOOGLE_PLAY_SERVICES -> if (resultCode != Activity.RESULT_OK) {
                 subject.onNext(
-                        ToastInfo(R.string.requre_google_play_services, LENGTH_LONG)
+                        ToastInfo(R.string.require_google_play_services, LENGTH_LONG)
                 )
             } else {
                 authorize()
