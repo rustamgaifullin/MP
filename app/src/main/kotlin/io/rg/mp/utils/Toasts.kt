@@ -10,7 +10,7 @@ class Toasts {
     }
 
     fun requireGooglePlayServices(context: Context) {
-        longToast(context, context.getString(R.string.requre_google_play_services))
+        longToast(context, context.getString(R.string.require_google_play_services))
     }
 
     fun shortToast(context: Context, message: String) {

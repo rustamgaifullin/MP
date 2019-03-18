@@ -135,7 +135,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
         amountEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                setAmountTextInputLayoutErrorMessage(s?.isEmpty() == true)
+                if (s?.isNotEmpty() == true) {
+                    setAmountTextInputLayoutErrorMessage(false)
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {

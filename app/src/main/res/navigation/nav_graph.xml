@@ -20,7 +20,7 @@
             app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/actionShowLoginScreen"
-            app:destination="@id/nav_login"
+            app:destination="@id/login_graph"
             app:launchSingleTop="false"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out"
