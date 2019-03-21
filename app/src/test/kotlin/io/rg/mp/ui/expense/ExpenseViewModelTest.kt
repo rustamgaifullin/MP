@@ -23,14 +23,15 @@ import io.rg.mp.drive.data.Saved
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
+import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
-import io.rg.mp.ui.BalanceUpdated
 import io.rg.mp.ui.ListCategory
 import io.rg.mp.ui.SavedSuccessfully
+import io.rg.mp.ui.SpreadsheetData
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
-import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING
 import io.rg.mp.ui.expense.model.DateInt
 import org.junit.Rule
 import org.junit.Test
@@ -61,7 +62,11 @@ class ExpenseViewModelTest {
         val sut = viewModel()
         val category = Category("name", "id")
         val spreadsheetId = "123"
+        val spreadsheet = Spreadsheet(spreadsheetId, "", 0L)
 
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.just(spreadsheet)
+        )
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
                 Flowable.just(listOf(category))
         )
@@ -81,9 +86,8 @@ class ExpenseViewModelTest {
 
         testSubscriber
                 .assertNoErrors()
-                .assertValues(ListCategory(listOf(category)), BalanceUpdated(Balance()))
+                .assertValues(SpreadsheetData(spreadsheet), ListCategory(listOf(category)))
                 .assertNotComplete()
-                .dispose()
 
         verify(spreadsheetDao).updateLocale(eq("en_EN"), any())
         verify(localeService).getBy(eq(spreadsheetId))
@@ -94,6 +98,9 @@ class ExpenseViewModelTest {
         val sut = viewModel()
         val spreadsheetId = "id"
 
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
                 Flowable.empty()
         )
@@ -115,17 +122,19 @@ class ExpenseViewModelTest {
                 .assertNoErrors()
                 .assertValue {
                     it is StartActivity
-                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
-    fun `should handle authorization error for loading current category`() {
+    fun `should handle authorization error for loading categories`() {
         val sut = viewModel()
         val spreadsheetId = "id"
 
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
                 Flowable.empty()
         )
@@ -146,17 +155,53 @@ class ExpenseViewModelTest {
                 .assertNoErrors()
                 .assertValue {
                     it is StartActivity
-                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING
                 }
                 .assertNotComplete()
-                .dispose()
+    }
+
+    @Test
+    fun `should handle authorization error for loading current balane`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(localeService.getBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(categoryService.getListBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
+        whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
+                Single.error(userRecoverableAuthIoException())
+        )
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.reloadData(spreadsheetId)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity
+                            && it.requestCode == REQUEST_AUTHORIZATION_LOADING
+                }
+                .assertNotComplete()
     }
 
     @Test
     fun `should show toast with saved message and notify with successful result when an expense is saved`() {
         val sut = viewModel()
         val spreadsheetId = "id"
+        val balance = Balance("", "", "")
 
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.just(Spreadsheet(spreadsheetId, "", 0L))
+        )
         whenever(spreadsheetDao.getLocaleBy(eq(spreadsheetId))).thenReturn(
                 Single.just("en_GB")
         )
@@ -164,7 +209,7 @@ class ExpenseViewModelTest {
                 Flowable.just(Saved(spreadsheetId))
         )
         whenever(balanceService.retrieve(spreadsheetId)).thenReturn(
-                Single.just(Balance("", "", ""))
+                Single.just(balance)
         )
 
         val testSubscriber = sut.viewModelNotifier().test()
@@ -179,10 +224,10 @@ class ExpenseViewModelTest {
         testSubscriber
                 .assertNoErrors()
                 .assertValueAt(0) { it is SavedSuccessfully }
-                .assertValueAt(1) { it is BalanceUpdated }
-                .assertValueAt(2) { it is ToastInfo && it.messageId == R.string.saved_message }
+                .assertValueAt(1) { it is ToastInfo && it.messageId == R.string.saved_message }
                 .assertNotComplete()
-                .dispose()
+                
+        verify(spreadsheetDao).updateFromBalance(balance, spreadsheetId)
     }
 
     @Test
@@ -208,7 +253,6 @@ class ExpenseViewModelTest {
                 .assertNoErrors()
                 .assertValue { it is ToastInfo && it.messageId == R.string.not_saved_message }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -236,7 +280,6 @@ class ExpenseViewModelTest {
                     it is StartActivity && it.requestCode == REQUEST_AUTHORIZATION_EXPENSE
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -244,6 +287,9 @@ class ExpenseViewModelTest {
         val sut = viewModel()
         val spreadsheetId = "id"
 
+        whenever(spreadsheetDao.getSpreadsheetBy(spreadsheetId)).thenReturn(
+                Flowable.empty()
+        )
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(
                 Flowable.empty()
         )
@@ -265,7 +311,6 @@ class ExpenseViewModelTest {
         testSubscriber
                 .assertNoErrors()
                 .assertValues(false, true, false, true, false, true, false)
-                .dispose()
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

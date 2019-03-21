@@ -8,12 +8,16 @@ import androidx.room.Transaction
 import androidx.room.Update
 import io.reactivex.Flowable
 import io.reactivex.Single
+import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Spreadsheet
 
 @Dao
 abstract class SpreadsheetDao {
     @Query("SELECT * FROM spreadsheet ORDER BY modifiedTime DESC")
-    abstract fun allSorted() : Flowable<List<Spreadsheet>>
+    abstract fun allSorted(): Flowable<List<Spreadsheet>>
+
+    @Query("SELECT * FROM spreadsheet WHERE id = :spreadsheetId LIMIT 1")
+    abstract fun getSpreadsheetBy(spreadsheetId: String): Flowable<Spreadsheet>
 
     @Query("SELECT locale FROM spreadsheet WHERE id = :spreadsheetId LIMIT 1")
     abstract fun getLocaleBy(spreadsheetId: String): Single<String>
@@ -36,6 +40,10 @@ abstract class SpreadsheetDao {
     @Query("DELETE FROM spreadsheet WHERE id IN (:spreadsheetId)")
     abstract fun deleteByIds(spreadsheetId: List<String>)
 
+    @Query("""UPDATE spreadsheet SET currentBalance = :currentBalance,
+        plannedExpense = :plannedExpense, actualExpense = :actualExpense WHERE id = :spreadsheetId""")
+    abstract fun updateBalance(currentBalance: String, plannedExpense: String, actualExpense: String, spreadsheetId: String)
+
     @Transaction
     open fun updateData(spreadsheetList: List<Spreadsheet>) {
         val ids = spreadsheetList.map { spreadsheet -> spreadsheet.id }
@@ -49,7 +57,7 @@ abstract class SpreadsheetDao {
         insertAll(*spreadsheetList.toTypedArray())
     }
 
-    private fun updateByIds(ids: List<String>, spreadsheets:List<Spreadsheet>) {
+    private fun updateByIds(ids: List<String>, spreadsheets: List<Spreadsheet>) {
         val spreadsheetsToUpdate = ids
                 .map { entry ->
                     spreadsheets.first { spreadsheet ->
@@ -57,5 +65,9 @@ abstract class SpreadsheetDao {
                     }
                 }
         updateSpreadsheets(*spreadsheetsToUpdate.toTypedArray())
+    }
+
+    open fun updateFromBalance(balance: Balance, spreadsheetId: String) {
+        updateBalance(balance.current, balance.planned, balance.actual, spreadsheetId)
     }
 }

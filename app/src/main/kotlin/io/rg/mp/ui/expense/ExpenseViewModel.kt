@@ -15,9 +15,9 @@ import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.AbstractViewModel
-import io.rg.mp.ui.BalanceUpdated
 import io.rg.mp.ui.ListCategory
 import io.rg.mp.ui.SavedSuccessfully
+import io.rg.mp.ui.SpreadsheetData
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.expense.model.DateInt
 import io.rg.mp.utils.formatDate
@@ -32,15 +32,23 @@ class ExpenseViewModel(
 
     companion object {
         const val REQUEST_AUTHORIZATION_EXPENSE = 2000
-        const val REQUEST_AUTHORIZATION_LOADING_CATEGORIES = 2002
+        const val REQUEST_AUTHORIZATION_LOADING = 2002
     }
 
     fun reloadData(spreadsheetId: String) {
+        reloadSpreadsheet(spreadsheetId)
         reloadCategories(spreadsheetId)
 
         downloadCategories(spreadsheetId)
         updateLocale(spreadsheetId)
-        reloadBalance(spreadsheetId)
+        updateBalance(spreadsheetId)
+    }
+
+    private fun reloadSpreadsheet(spreadsheetId: String) {
+        val disposable = spreadsheetDao.getSpreadsheetBy(spreadsheetId)
+                .subscribeOn(Schedulers.io())
+                .subscribe { subject.onNext(SpreadsheetData(it)) }
+        compositeDisposable.add(disposable)
     }
 
     private fun reloadCategories(spreadsheetId: String) {
@@ -57,19 +65,20 @@ class ExpenseViewModel(
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         { spreadsheetDao.updateLocale(it, spreadsheetId) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
+                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING) }
                 )
         compositeDisposable.add(disposable)
     }
 
-    private fun reloadBalance(spreadsheetId: String) {
+    private fun updateBalance(spreadsheetId: String) {
         val disposable = balanceService.retrieve(spreadsheetId)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
-                .subscribe { balance ->
-                    subject.onNext(BalanceUpdated(balance))
-                }
+                .subscribe(
+                        { spreadsheetDao.updateFromBalance(it, spreadsheetId) },
+                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING) }
+                )
         compositeDisposable.add(disposable)
     }
 
@@ -81,7 +90,7 @@ class ExpenseViewModel(
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         { categoryDao.insertAll(*it.list.toTypedArray()) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
+                        { handleErrors(it, REQUEST_AUTHORIZATION_LOADING) }
                 )
         compositeDisposable.add(disposable)
     }
@@ -111,8 +120,8 @@ class ExpenseViewModel(
     private fun handleSaving(result: Result) {
         val messageId = when (result) {
             is Saved -> {
-                subject.onNext(SavedSuccessfully())
-                reloadBalance(result.spreadsheetId)
+                subject.onNext(SavedSuccessfully)
+                updateBalance(result.spreadsheetId)
                 R.string.saved_message
             }
             is NotSaved -> R.string.not_saved_message

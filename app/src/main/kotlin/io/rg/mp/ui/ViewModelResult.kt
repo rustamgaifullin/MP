@@ -1,7 +1,6 @@
 package io.rg.mp.ui
 
 import android.content.Intent
-import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.persistence.entity.Spreadsheet
 import io.rg.mp.persistence.entity.Transaction
@@ -17,8 +16,8 @@ data class ListCategory(val list: List<Category>) : ViewModelResult()
 data class ListSpreadsheet(val list: List<Spreadsheet>) : ViewModelResult()
 data class ListTransaction(val list: List<Transaction>) : ViewModelResult()
 
+data class SpreadsheetData(val spreadsheet: Spreadsheet) : ViewModelResult()
+
 data class CreatedSuccessfully(val spreadsheetId: String) : ViewModelResult()
 
-data class BalanceUpdated(val balance: Balance) : ViewModelResult()
-
-class SavedSuccessfully : ViewModelResult()
+object SavedSuccessfully : ViewModelResult()
