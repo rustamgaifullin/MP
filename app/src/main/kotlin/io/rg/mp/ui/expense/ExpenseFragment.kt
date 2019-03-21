@@ -25,14 +25,14 @@ import io.rg.mp.R
 import io.rg.mp.R.string
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
-import io.rg.mp.ui.BalanceUpdated
 import io.rg.mp.ui.ListCategory
 import io.rg.mp.ui.SavedSuccessfully
+import io.rg.mp.ui.SpreadsheetData
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
-import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
+import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING
 import io.rg.mp.ui.expense.model.DateInt
 import io.rg.mp.ui.transactions.TransactionsFragment
 import io.rg.mp.utils.formatDate
@@ -225,7 +225,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                     amountEditText.text?.clear()
                     descriptionEditText.text?.clear()
                 }
-                is BalanceUpdated -> updateBalance(it.balance)
+                is SpreadsheetData -> updateBalance(Balance.fromSpreadsheet(it.spreadsheet))
             }
 
         }
@@ -262,8 +262,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_EXPENSE -> validateAndSaveExpense()
-                REQUEST_AUTHORIZATION_LOADING_CATEGORIES ->
-                    viewModel.reloadData(spreadsheetId)
+                REQUEST_AUTHORIZATION_LOADING -> viewModel.reloadData(spreadsheetId)
             }
         }
     }

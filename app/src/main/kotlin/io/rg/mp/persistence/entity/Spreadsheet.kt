@@ -8,5 +8,8 @@ data class Spreadsheet(
         @PrimaryKey var id: String,
         var name: String,
         var modifiedTime: Long,
-        var locale: String = ""
+        var locale: String = "",
+        var currentBalance: String = "",
+        var actualExpense: String = "",
+        var plannedExpense: String = ""
 )

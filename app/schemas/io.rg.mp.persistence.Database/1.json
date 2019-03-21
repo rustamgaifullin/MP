@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "a62adf86614697aaad468c845724cc6e",
+    "identityHash": "31c16f15d17b59a9104bda308630ed2a",
     "entities": [
       {
         "tableName": "category",
@@ -54,7 +54,7 @@
       },
       {
         "tableName": "spreadsheet",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `modifiedTime` INTEGER NOT NULL, `locale` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `modifiedTime` INTEGER NOT NULL, `locale` TEXT NOT NULL, `currentBalance` TEXT NOT NULL, `actualExpense` TEXT NOT NULL, `plannedExpense` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -77,6 +77,24 @@
           {
             "fieldPath": "locale",
             "columnName": "locale",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentBalance",
+            "columnName": "currentBalance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualExpense",
+            "columnName": "actualExpense",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedExpense",
+            "columnName": "plannedExpense",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -164,7 +182,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"a62adf86614697aaad468c845724cc6e\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"31c16f15d17b59a9104bda308630ed2a\")"
     ]
   }
 }
