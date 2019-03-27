@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -46,7 +47,6 @@ import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateEditText
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
-import kotlinx.android.synthetic.main.fragment_expense.progressBar
 import kotlinx.android.synthetic.main.fragment_expense.titleTextView
 import javax.inject.Inject
 
@@ -71,6 +71,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var spreadsheetId: String
+    private lateinit var mainProgressBar: ProgressBar
 
     private var date: DateInt = DateInt.currentDateInt()
 
@@ -98,6 +99,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mainProgressBar = requireActivity().findViewById(R.id.mainProgressBar)
 
         addButton.setOnClickListener { validateAndSaveExpense() }
 
@@ -233,8 +236,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private fun handleProgressBar(): (Boolean) -> Unit {
         return { isInProgress ->
-            progressBar.isIndeterminate = isInProgress
-            progressBar.setVisibility(isInProgress)
+            mainProgressBar.isIndeterminate = isInProgress
+            mainProgressBar.setVisibility(isInProgress)
         }
     }
 
