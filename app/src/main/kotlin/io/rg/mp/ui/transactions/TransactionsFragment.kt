@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -14,6 +15,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.ui.ListTransaction
 import io.rg.mp.ui.ViewModelResult
+import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_transactions.transactionRecyclerView
 import javax.inject.Inject
 
@@ -31,6 +33,8 @@ class TransactionsFragment : Fragment() {
 
     @Inject
     lateinit var viewModel: TransactionsViewModel
+
+    private lateinit var mainProgressBar: ProgressBar
 
     private val compositeDisposable = CompositeDisposable()
     private val transactionAdapter = TransactionsAdapter()
@@ -53,6 +57,8 @@ class TransactionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mainProgressBar = requireActivity().findViewById(R.id.mainProgressBar)
 
         transactionRecyclerView.adapter = transactionAdapter
     }
@@ -82,8 +88,11 @@ class TransactionsFragment : Fragment() {
         }
     }
 
-    private fun handleProgressBar(): (Boolean) -> Unit  {
-        return {}
+    private fun handleProgressBar(): (Boolean) -> Unit {
+        return { isInProgress ->
+            mainProgressBar.isIndeterminate = isInProgress
+            mainProgressBar.setVisibility(isInProgress)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

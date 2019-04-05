@@ -31,6 +31,8 @@ class TransactionsViewModel(
     private fun downloadCategories(spreadsheetId: String) {
         val disposable = transactionService.all(spreadsheetId)
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         { transactionDao.insertAll(*it.list.toTypedArray()) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS) }

@@ -5,11 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import dagger.android.AndroidInjection
 import io.rg.mp.R
 import io.rg.mp.utils.Preferences
+import kotlinx.android.synthetic.main.activity_main.toolbar
 import javax.inject.Inject
 
 
@@ -26,18 +26,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        setSupportActionBar(toolbar)
         navController = findNavController(R.id.nav_host)
-
         appBarConfiguration = AppBarConfiguration(setOf(R.id.spreadsheetScreen, R.id.authScreen))
-
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        toolbar.setupWithNavController(navController, appBarConfiguration)
 
         if (!preferences.isAccountNameAvailable) {
             navController.navigate(R.id.actionShowLoginScreen)
         }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
