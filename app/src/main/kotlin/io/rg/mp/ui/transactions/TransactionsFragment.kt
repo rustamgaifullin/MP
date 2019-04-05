@@ -88,8 +88,8 @@ class TransactionsFragment : Fragment() {
         }
     }
 
-    private fun handleProgressBar(): (Boolean) -> Unit  {
-        return {isInProgress ->
+    private fun handleProgressBar(): (Boolean) -> Unit {
+        return { isInProgress ->
             mainProgressBar.isIndeterminate = isInProgress
             mainProgressBar.setVisibility(isInProgress)
         }
