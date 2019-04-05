@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -17,6 +16,7 @@ import io.rg.mp.ui.ListTransaction
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_transactions.transactionRecyclerView
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
 class TransactionsFragment : Fragment() {
@@ -34,7 +34,7 @@ class TransactionsFragment : Fragment() {
     @Inject
     lateinit var viewModel: TransactionsViewModel
 
-    private lateinit var mainProgressBar: ProgressBar
+    private lateinit var mainProgressBar: MaterialProgressBar
 
     private val compositeDisposable = CompositeDisposable()
     private val transactionAdapter = TransactionsAdapter()

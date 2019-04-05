@@ -23,12 +23,15 @@
             android:theme="@style/ThemeOverlay.MaterialComponents.Dark" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ProgressBar
+    <me.zhanghai.android.materialprogressbar.MaterialProgressBar
         android:id="@+id/mainProgressBar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.MaterialProgressBar.ProgressBar.Horizontal.NoPadding"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="invisible"
+        app:mpb_useIntrinsicPadding="false"
+        app:mpb_progressStyle="horizontal"
+        app:mpb_setBothDrawables="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarLayout" />

@@ -48,6 +48,7 @@ import kotlinx.android.synthetic.main.fragment_expense.dateEditText
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.titleTextView
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
 
@@ -71,7 +72,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var spreadsheetId: String
-    private lateinit var mainProgressBar: ProgressBar
+    private lateinit var mainProgressBar: MaterialProgressBar
 
     private var date: DateInt = DateInt.currentDateInt()
 
