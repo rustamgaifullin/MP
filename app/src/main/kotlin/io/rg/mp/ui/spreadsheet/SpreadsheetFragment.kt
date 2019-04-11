@@ -5,15 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
@@ -38,6 +43,8 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        setHasOptionsMenu(true)
+
         return inflater.inflate(R.layout.fragment_spreadsheets, container, false)
     }
 
@@ -74,6 +81,24 @@ class SpreadsheetFragment : Fragment() {
         viewModel.clear()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.menu_spreadsheet, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_create_spreadsheet -> createSpreadsheet()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun createSpreadsheet() {
+        viewModel.createNewSpreadsheet()
+    }
+
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
         return {
             val args = ExpenseFragment.createArgs(it.spreadsheet.id, it.spreadsheet.name)
@@ -89,6 +114,10 @@ class SpreadsheetFragment : Fragment() {
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListSpreadsheet -> {
                     spreadsheetAdapter.setData(it.list)
+                }
+                is CreatedSuccessfully -> {
+                    Toast.makeText(activity, "Created successfully", LENGTH_SHORT).show()
+                    viewModel.reloadData()
                 }
             }
 

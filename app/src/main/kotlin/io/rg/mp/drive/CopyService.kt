@@ -20,6 +20,8 @@ class CopyService(private val googleSheetService: Sheets) {
 
     private fun copyFrom(id: String): Spreadsheet {
         val content = getFileFrom(id)
+        content.spreadsheetId = null
+        content.properties.title = "Copy of ${content.properties.title}"
 
         return googleSheetService
                 .spreadsheets()
