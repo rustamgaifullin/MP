@@ -1,5 +1,6 @@
 package io.rg.mp.ui.spreadsheet
 
+import android.os.Bundle
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
@@ -12,6 +13,9 @@ import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.ui.AbstractViewModel
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
+import io.rg.mp.utils.getLocaleInstance
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SpreadsheetViewModel(
         private val spreadsheetDao: SpreadsheetDao,
@@ -23,6 +27,7 @@ class SpreadsheetViewModel(
     companion object {
         const val REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS = 2001
         const val REQUEST_AUTHORIZATION_NEW_SPREADSHEET = 2003
+        const val SPREADSHEET_NAME = "spreadsheetName"
     }
 
     fun reloadData() {
@@ -49,18 +54,23 @@ class SpreadsheetViewModel(
         compositeDisposable.add(disposable)
     }
 
-    fun createNewSpreadsheet() {
+    fun createNewSpreadsheet(name: String) {
         val disposable = copyService
-                .copy()
+                .copy(name)
                 .flatMap(this@SpreadsheetViewModel::moveToFolderAndClearTransactions)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { subject.onNext(CreatedSuccessfully(it.id)) },
-                        { handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET) }
+                        {
+                            val extras = Bundle()
+                            extras.putString(SPREADSHEET_NAME, name)
+                            handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET, extras)
+                        }
                 )
         compositeDisposable.add(disposable)
     }
 
+    //FIXME deleting spreadsheet in doOnError is not correct if you're not authorized
     private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {
         return folderService
                 .folderIdForCurrentYear()
@@ -73,5 +83,10 @@ class SpreadsheetViewModel(
                             .toSingleDefault(result)
                 }
                 .doOnError { spreadsheetService.deleteSpreadsheet(result.id).subscribe() }
+    }
+
+    fun createSpreadsheetName() : String {
+        val simpleDateFormat = SimpleDateFormat("LLLL YYYY", getLocaleInstance())
+        return simpleDateFormat.format(Date())
     }
 }

@@ -12,12 +12,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
+import com.google.android.material.textfield.TextInputEditText
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.R.string
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
@@ -26,6 +29,7 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
 import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
 import javax.inject.Inject
 
@@ -96,7 +100,25 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun createSpreadsheet() {
-        viewModel.createNewSpreadsheet()
+        val builder = AlertDialog.Builder(requireActivity())
+        builder.setTitle(getString(string.enter_name))
+
+        val view = View.inflate(requireContext(), R.layout.dialog_edittext, null)
+        val editText = view.findViewById<TextInputEditText>(R.id.dialogEditText)
+        editText.setText(viewModel.createSpreadsheetName())
+
+        builder.setView(view)
+
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.setPositiveButton(getString(string.create)) { dialog, _ ->
+            viewModel.createNewSpreadsheet(editText.text.toString())
+            dialog.dismiss()
+        }
+
+        builder.create().show()
     }
 
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
@@ -133,7 +155,10 @@ class SpreadsheetFragment : Fragment() {
 
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> viewModel.createNewSpreadsheet()
+                REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> {
+                    val name = data?.getStringExtra(SPREADSHEET_NAME) ?: ""
+                    viewModel.createNewSpreadsheet(name)
+                }
                 REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS -> viewModel.reloadData()
             }
         }

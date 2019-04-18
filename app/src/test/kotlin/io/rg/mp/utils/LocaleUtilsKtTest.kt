@@ -8,16 +8,16 @@ class LocaleUtilsKtTest {
 
     @Test
     fun `should create instance of locale based on input string`() {
-        var locale = createLocale("en_GB")
+        var locale = getLocaleInstance("en_GB")
 
         assertEquals("en", locale.language)
         assertEquals("GB", locale.country)
 
-        locale = createLocale("en")
+        locale = getLocaleInstance("en")
         assertEquals("en", locale.language)
         assertEquals("", locale.country)
 
-        locale = createLocale("")
+        locale = getLocaleInstance("")
         assertEquals(Locale.getDefault(), locale)
     }
 }

@@ -25,4 +25,6 @@
     <string name="amount_error_message">Amount shouldn\'t be empty</string>
     <string name="date_hint">Date</string>
     <string name="create_spreadsheet_menu">Create spreadsheet</string>
+    <string name="enter_name">Enter name</string>
+    <string name="create">Create</string>
 </resources>

@@ -25,8 +25,12 @@ import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
+import io.rg.mp.utils.getLocaleInstance
 import org.junit.Rule
 import org.junit.Test
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.test.assertEquals
 
 class SpreadsheetViewModelTest {
 
@@ -115,7 +119,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet()
+        sut.createNewSpreadsheet("")
 
         testSubscriber
                 .assertNoErrors()
@@ -151,7 +155,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet()
+        sut.createNewSpreadsheet("")
 
         testSubscriber
                 .assertNoErrors()
@@ -187,7 +191,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet()
+        sut.createNewSpreadsheet("")
 
         testSubscriber
                 .assertNoErrors()
@@ -214,7 +218,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet()
+        sut.createNewSpreadsheet("")
 
         testSubscriber
                 .assertNoErrors()
@@ -225,6 +229,13 @@ class SpreadsheetViewModelTest {
                 .dispose()
 
         verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
+    }
+
+    @Test
+    fun `should return name in format current month current year`() {
+        val sut = viewModel()
+        val simpleDateFormat = SimpleDateFormat("LLLL YYYY", getLocaleInstance())
+        assertEquals(simpleDateFormat.format(Date()), sut.createSpreadsheetName())
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

@@ -2,7 +2,7 @@ package io.rg.mp.utils
 
 import java.util.Locale
 
-fun createLocale(locale: String): Locale {
+fun getLocaleInstance(locale: String = ""): Locale {
     if (locale.isEmpty()) return Locale.getDefault()
 
     val splitList = locale.split("_")

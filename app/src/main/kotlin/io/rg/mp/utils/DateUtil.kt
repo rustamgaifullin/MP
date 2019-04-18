@@ -12,7 +12,7 @@ fun formatDate(date: DateInt, localeString: String = Locale.getDefault().toStrin
         set(year, month, dayOfMonth)
     }
 
-    val locale = createLocale(localeString)
+    val locale = getLocaleInstance(localeString)
     val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale)
     return dateFormat.format(calendar.time)
 }
