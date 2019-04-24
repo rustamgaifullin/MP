@@ -12,7 +12,7 @@ interface CategoryDao {
     @Query("SELECT * FROM category")
     fun all() : Flowable<List<Category>>
 
-    @Query("SELECT * FROM category where spreadsheet_id = :spreadsheetId")
+    @Query("SELECT * FROM category WHERE spreadsheet_id = :spreadsheetId")
     fun findBySpreadsheetId(spreadsheetId: String): Flowable<List<Category>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

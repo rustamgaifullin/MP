@@ -9,6 +9,7 @@ import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
+import io.rg.mp.persistence.dao.FailedSpreadsheetDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.ui.FragmentScope
 
@@ -34,7 +35,6 @@ class SpreadsheetServiceModule {
     @FragmentScope
     fun transactionService(sheets: Sheets) = TransactionService(sheets)
 
-
     @Provides
     @FragmentScope
     fun spreadsheetViewModel(
@@ -42,12 +42,15 @@ class SpreadsheetServiceModule {
             copyService: CopyService,
             folderService: FolderService,
             transactionService: TransactionService,
-            spreadsheetService: SpreadsheetService): SpreadsheetViewModel {
+            spreadsheetService: SpreadsheetService,
+            failedSpreadsheetDao: FailedSpreadsheetDao): SpreadsheetViewModel {
         return SpreadsheetViewModel(
                 spreadsheetDao,
                 copyService,
                 folderService,
                 transactionService,
-                spreadsheetService)
+                spreadsheetService,
+                failedSpreadsheetDao
+        )
     }
 }

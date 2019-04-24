@@ -7,6 +7,7 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.never
+import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Completable
@@ -18,22 +19,26 @@ import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
 import io.rg.mp.drive.data.CreationResult
 import io.rg.mp.drive.data.SpreadsheetList
+import io.rg.mp.persistence.dao.FailedSpreadsheetDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
+import io.rg.mp.persistence.entity.FailedSpreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
 import io.rg.mp.utils.getLocaleInstance
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.test.assertEquals
 
 class SpreadsheetViewModelTest {
-
     @get:Rule
     val trampolineSchedulerRule = TrampolineSchedulerRule()
 
@@ -42,13 +47,15 @@ class SpreadsheetViewModelTest {
     private val folderService: FolderService = mock()
     private val spreadsheetDao: SpreadsheetDao = mock()
     private val transactionService: TransactionService = mock()
+    private val failedSpreadsheetDao: FailedSpreadsheetDao = mock()
 
     private fun viewModel() = SpreadsheetViewModel(
             spreadsheetDao,
             copyService,
             folderService,
             transactionService,
-            spreadsheetService
+            spreadsheetService,
+            failedSpreadsheetDao
     )
 
     @Test
@@ -132,11 +139,44 @@ class SpreadsheetViewModelTest {
         verify(copyService).copy()
         verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
         verify(transactionService).clearAllTransactions(newSpreadsheetId)
-        verify(spreadsheetService, never()).deleteSpreadsheet(newSpreadsheetId)
+        verify(failedSpreadsheetDao).insert(FailedSpreadsheet(spreadsheetId = newSpreadsheetId))
+        verify(failedSpreadsheetDao).delete(newSpreadsheetId)
     }
 
     @Test
-    fun `should delete created earlier spreadsheet if error will occur during moving to folder`() {
+    fun `should show authorization dialog if error occurs during moving to folder`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "newId"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+                Completable.error(userRecoverableAuthIoException())
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
+                Completable.complete()
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.createNewSpreadsheet("")
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity &&
+                            it.requestCode == REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+                }
+                .assertNotComplete()
+                .dispose()
+    }
+
+    @Test
+    fun `should show toast info if error occurs during moving to folder`() {
         val sut = viewModel()
         val newSpreadsheetId = "newId"
 
@@ -164,12 +204,45 @@ class SpreadsheetViewModelTest {
                 }
                 .assertNotComplete()
                 .dispose()
-
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
-    fun `should delete created earlier spreadsheet if error will occur during clearing old transactions`() {
+    fun `should show authorization dialog if error occurs during clearing old transactions`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "id"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.just("folderId")
+        )
+        whenever(folderService.moveToFolder(eq(newSpreadsheetId), any())).thenReturn(
+                Completable.complete()
+        )
+        whenever(transactionService.clearAllTransactions(newSpreadsheetId)).thenReturn(
+                Completable.error(userRecoverableAuthIoException())
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(newSpreadsheetId)).thenReturn(
+                Completable.complete()
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.createNewSpreadsheet("")
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity &&
+                            it.requestCode == REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+                }
+                .assertNotComplete()
+                .dispose()
+    }
+
+    @Test
+    fun `should show toast info if error occurs during clearing old transactions`() {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
@@ -200,12 +273,35 @@ class SpreadsheetViewModelTest {
                 }
                 .assertNotComplete()
                 .dispose()
-
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
-    fun `should delete created earlier spreadsheet if error will occur during getting folder id`() {
+    fun `should show authorization dialog if error occurs during getting folder id`() {
+        val sut = viewModel()
+        val newSpreadsheetId = "id"
+
+        whenever(copyService.copy()).thenReturn(
+                Single.just(CreationResult(newSpreadsheetId))
+        )
+        whenever(folderService.folderIdForCurrentYear()).thenReturn(
+                Single.error(userRecoverableAuthIoException())
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.createNewSpreadsheet("")
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity &&
+                            it.requestCode == REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should show toast info if error occurs during getting folder id`() {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
@@ -226,9 +322,6 @@ class SpreadsheetViewModelTest {
                     it is ToastInfo
                 }
                 .assertNotComplete()
-                .dispose()
-
-        verify(spreadsheetService).deleteSpreadsheet(newSpreadsheetId)
     }
 
     @Test
@@ -236,6 +329,54 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val simpleDateFormat = SimpleDateFormat("LLLL YYYY", getLocaleInstance())
         assertEquals(simpleDateFormat.format(Date()), sut.createSpreadsheetName())
+    }
+
+    @Test
+    fun `should delete failed spreadsheets`() {
+        val sut = viewModel()
+
+        whenever(failedSpreadsheetDao.all()).thenReturn(
+                Single.just(listOf(
+                        FailedSpreadsheet(0, "0"),
+                        FailedSpreadsheet(1, "1")
+                        ))
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(anyString())).thenReturn(
+                Completable.complete()
+        )
+
+        sut.deleteFailedSpreadsheets()
+
+        verify(failedSpreadsheetDao, times(2)).delete(anyString())
+        verify(spreadsheetDao, times(2)).delete(anyString())
+    }
+
+    @Test
+    fun `should show authorization dialog during deleting spreadsheet`() {
+        val sut = viewModel()
+
+        whenever(failedSpreadsheetDao.all()).thenReturn(
+                Single.just(listOf(
+                        FailedSpreadsheet(0, "0")
+                        ))
+        )
+        whenever(spreadsheetService.deleteSpreadsheet(anyString())).thenReturn(
+                Completable.error(userRecoverableAuthIoException())
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.deleteFailedSpreadsheets()
+
+        testSubscriber.assertNoErrors()
+                .assertValue {
+                    it is StartActivity &&
+                            it.requestCode == REQUEST_AUTHORIZATION_FOR_DELETE
+                }
+                .assertNotComplete()
+
+        verify(failedSpreadsheetDao, never()).delete(anyString())
+        verify(spreadsheetDao, never()).delete(anyString())
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

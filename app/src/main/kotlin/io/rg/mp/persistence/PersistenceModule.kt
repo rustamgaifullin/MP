@@ -25,4 +25,8 @@ class PersistenceModule {
     @Provides
     @Singleton
     fun transactionDao(database: Database) = database.transactionDao()
+
+    @Provides
+    @Singleton
+    fun failedSpreadsheetDao(database: Database) = database.failedSpreadsheetDao()
 }

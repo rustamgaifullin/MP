@@ -27,6 +27,7 @@ import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
@@ -132,7 +133,10 @@ class SpreadsheetFragment : Fragment() {
     private fun handleViewModelResult(): (ViewModelResult) -> Unit {
         return {
             when (it) {
-                is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
+                is ToastInfo -> {
+                    viewModel.deleteFailedSpreadsheets()
+                    Toast.makeText(activity, it.messageId, it.length).show()
+                }
                 is StartActivity -> startActivityForResult(it.intent, it.requestCode)
                 is ListSpreadsheet -> {
                     spreadsheetAdapter.setData(it.list)
@@ -157,9 +161,11 @@ class SpreadsheetFragment : Fragment() {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> {
                     val name = data?.getStringExtra(SPREADSHEET_NAME) ?: ""
+                    viewModel.deleteFailedSpreadsheets()
                     viewModel.createNewSpreadsheet(name)
                 }
                 REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS -> viewModel.reloadData()
+                REQUEST_AUTHORIZATION_FOR_DELETE -> viewModel.deleteFailedSpreadsheets()
             }
         }
     }
