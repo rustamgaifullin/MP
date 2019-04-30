@@ -52,6 +52,8 @@ class SpreadsheetViewModel(
     private fun downloadSpreadsheets() {
         val disposable = spreadsheetService.list()
                 .subscribeOn(Schedulers.io())
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribe(
                         { (spreadsheetList) -> spreadsheetDao.updateData(spreadsheetList) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS) }
@@ -64,6 +66,8 @@ class SpreadsheetViewModel(
                 .copy(name)
                 .doOnSuccess(temporaryInsertToFailed())
                 .flatMap(this@SpreadsheetViewModel::moveToFolderAndClearTransactions)
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         {

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -31,7 +32,9 @@ import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZAT
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
-import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
+import io.rg.mp.utils.setVisibility
+import kotlinx.android.synthetic.main.fragment_spreadsheets.*
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
@@ -40,6 +43,9 @@ class SpreadsheetFragment : Fragment() {
 
     private val compositeDisposable = CompositeDisposable()
     private val spreadsheetAdapter = SpreadsheetAdapter()
+
+    private lateinit var mainProgressBar: MaterialProgressBar
+    private var menu: Menu? = null
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -55,6 +61,8 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mainProgressBar = requireActivity().findViewById(R.id.mainProgressBar)
 
         spreadsheetsRecyclerView.adapter = spreadsheetAdapter
     }
@@ -89,6 +97,7 @@ class SpreadsheetFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.menu_spreadsheet, menu)
+        this.menu = menu
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -115,11 +124,21 @@ class SpreadsheetFragment : Fragment() {
         }
 
         builder.setPositiveButton(getString(string.create)) { dialog, _ ->
-            viewModel.createNewSpreadsheet(editText.text.toString())
+            createNewSpreadsheet(editText.text)
             dialog.dismiss()
         }
 
         builder.create().show()
+    }
+
+    private fun createNewSpreadsheet(editable: Editable?) {
+        viewModel.createNewSpreadsheet(editable.toString())
+        enableActionComponents(false)
+    }
+
+    private fun enableActionComponents(isEnabled: Boolean) {
+        menu?.findItem(R.id.action_create_spreadsheet)?.isEnabled = isEnabled
+        viewDisableLayout.setVisibility(!isEnabled)
     }
 
     private fun openExpenseFragment(): (SpreadsheetEvent) -> Unit {
@@ -151,7 +170,14 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun handleProgressBar(): (Boolean) -> Unit {
-        return {}
+        return { isInProgress ->
+            mainProgressBar.isIndeterminate = isInProgress
+            mainProgressBar.setVisibility(isInProgress)
+
+            if (!isInProgress) {
+                enableActionComponents(true)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
