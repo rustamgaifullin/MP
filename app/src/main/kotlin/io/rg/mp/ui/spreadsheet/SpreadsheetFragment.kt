@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -30,12 +29,15 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
 import io.rg.mp.ui.spreadsheet.SpreadsheetAdapter.Companion.COPY_ACTION
 import io.rg.mp.ui.spreadsheet.SpreadsheetAdapter.Companion.RENAME_ACTION
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.DEFAULT_TEMPLATE_ID
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_ID
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
 import io.rg.mp.utils.setVisibility
-import kotlinx.android.synthetic.main.fragment_spreadsheets.*
+import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
+import kotlinx.android.synthetic.main.fragment_spreadsheets.viewDisableLayout
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
@@ -130,11 +132,11 @@ class SpreadsheetFragment : Fragment() {
 
     private fun copySpreadsheet() {
         spreadsheetAdapter.lastClicked()?.let {
-            TODO("Implement copying")
+            createSpreadsheet(it.id)
         }
     }
 
-    private fun createSpreadsheet() {
+    private fun createSpreadsheet(fromId: String = DEFAULT_TEMPLATE_ID) {
         val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(getString(string.enter_name))
 
@@ -149,15 +151,15 @@ class SpreadsheetFragment : Fragment() {
         }
 
         builder.setPositiveButton(getString(string.create)) { dialog, _ ->
-            createNewSpreadsheet(editText.text)
+            createNewSpreadsheet(editText.text.toString(), fromId)
             dialog.dismiss()
         }
 
         builder.create().show()
     }
 
-    private fun createNewSpreadsheet(editable: Editable?) {
-        viewModel.createNewSpreadsheet(editable.toString())
+    private fun createNewSpreadsheet(name: String, fromId: String) {
+        viewModel.createNewSpreadsheet(name, fromId)
         enableActionComponents(false)
     }
 
@@ -212,8 +214,9 @@ class SpreadsheetFragment : Fragment() {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> {
                     val name = data?.getStringExtra(SPREADSHEET_NAME) ?: ""
+                    val id = data?.getStringExtra(SPREADSHEET_ID) ?: DEFAULT_TEMPLATE_ID
                     viewModel.deleteFailedSpreadsheets()
-                    viewModel.createNewSpreadsheet(name)
+                    viewModel.createNewSpreadsheet(name, id)
                 }
                 REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS -> viewModel.reloadData()
                 REQUEST_AUTHORIZATION_FOR_DELETE -> viewModel.deleteFailedSpreadsheets()

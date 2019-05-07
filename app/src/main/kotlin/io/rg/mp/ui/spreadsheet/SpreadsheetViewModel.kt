@@ -18,7 +18,7 @@ import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.utils.getLocaleInstance
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class SpreadsheetViewModel(
         private val spreadsheetDao: SpreadsheetDao,
@@ -29,10 +29,13 @@ class SpreadsheetViewModel(
         private val failedSpreadsheetDao: FailedSpreadsheetDao) : AbstractViewModel() {
 
     companion object {
+        const val DEFAULT_TEMPLATE_ID = "1Ydrns7Pv4mf17D4eZjLD_sNL78LPH0SC05Lt_U45JFk"
+
         const val REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS = 2001
         const val REQUEST_AUTHORIZATION_NEW_SPREADSHEET = 2003
         const val REQUEST_AUTHORIZATION_FOR_DELETE = 2005
         const val SPREADSHEET_NAME = "spreadsheetName"
+        const val SPREADSHEET_ID = "spreadsheetId"
     }
 
     fun reloadData() {
@@ -61,9 +64,9 @@ class SpreadsheetViewModel(
         compositeDisposable.add(disposable)
     }
 
-    fun createNewSpreadsheet(name: String) {
+    fun createNewSpreadsheet(name: String, id: String) {
         val disposable = copyService
-                .copy(name)
+                .copy(id, name)
                 .doOnSuccess(temporaryInsertToFailed())
                 .flatMap(this@SpreadsheetViewModel::moveToFolderAndClearTransactions)
                 .doOnSubscribe { progressSubject.onNext(1) }

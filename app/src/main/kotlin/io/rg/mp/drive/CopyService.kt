@@ -7,11 +7,10 @@ import io.rg.mp.drive.data.CreationResult
 
 class CopyService(private val googleSheetService: Sheets) {
     companion object {
-        private const val DEFAULT_TEMPLATE_ID = "1Ydrns7Pv4mf17D4eZjLD_sNL78LPH0SC05Lt_U45JFk"
         private const val EMPTY_NAME = ""
     }
 
-    fun copy(name: String = EMPTY_NAME, fromId: String = DEFAULT_TEMPLATE_ID): Single<CreationResult> {
+    fun copy(fromId: String, name: String = EMPTY_NAME): Single<CreationResult> {
         return Single.fromCallable{
             val newFile = copyFrom(fromId, name)
 

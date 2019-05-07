@@ -35,7 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 import kotlin.test.assertEquals
 
 class SpreadsheetViewModelTest {
@@ -111,7 +111,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "newId"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -126,7 +126,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -136,7 +136,7 @@ class SpreadsheetViewModelTest {
                 .assertNotComplete()
                 .dispose()
 
-        verify(copyService).copy()
+        verify(copyService).copy(anyString(), anyString())
         verify(folderService).moveToFolder(eq(newSpreadsheetId), any())
         verify(transactionService).clearAllTransactions(newSpreadsheetId)
         verify(failedSpreadsheetDao).insert(FailedSpreadsheet(spreadsheetId = newSpreadsheetId))
@@ -148,7 +148,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "newId"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -163,7 +163,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -180,7 +180,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "newId"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -195,7 +195,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -211,7 +211,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -229,7 +229,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -246,7 +246,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -264,7 +264,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -280,7 +280,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -289,7 +289,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -305,7 +305,7 @@ class SpreadsheetViewModelTest {
         val sut = viewModel()
         val newSpreadsheetId = "id"
 
-        whenever(copyService.copy()).thenReturn(
+        whenever(copyService.copy("")).thenReturn(
                 Single.just(CreationResult(newSpreadsheetId))
         )
         whenever(folderService.folderIdForCurrentYear()).thenReturn(
@@ -314,7 +314,7 @@ class SpreadsheetViewModelTest {
 
         val testSubscriber = sut.viewModelNotifier().test()
 
-        sut.createNewSpreadsheet("")
+        sut.createNewSpreadsheet("", "")
 
         testSubscriber
                 .assertNoErrors()
@@ -339,7 +339,7 @@ class SpreadsheetViewModelTest {
                 Single.just(listOf(
                         FailedSpreadsheet(0, "0"),
                         FailedSpreadsheet(1, "1")
-                        ))
+                ))
         )
         whenever(spreadsheetService.deleteSpreadsheet(anyString())).thenReturn(
                 Completable.complete()
@@ -358,7 +358,7 @@ class SpreadsheetViewModelTest {
         whenever(failedSpreadsheetDao.all()).thenReturn(
                 Single.just(listOf(
                         FailedSpreadsheet(0, "0")
-                        ))
+                ))
         )
         whenever(spreadsheetService.deleteSpreadsheet(anyString())).thenReturn(
                 Completable.error(userRecoverableAuthIoException())
