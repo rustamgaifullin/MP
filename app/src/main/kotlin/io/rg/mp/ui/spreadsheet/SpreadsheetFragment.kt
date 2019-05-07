@@ -28,6 +28,8 @@ import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.expense.ExpenseFragment
+import io.rg.mp.ui.spreadsheet.SpreadsheetAdapter.Companion.COPY_ACTION
+import io.rg.mp.ui.spreadsheet.SpreadsheetAdapter.Companion.RENAME_ACTION
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
@@ -63,6 +65,8 @@ class SpreadsheetFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mainProgressBar = requireActivity().findViewById(R.id.mainProgressBar)
+
+        registerForContextMenu(spreadsheetsRecyclerView)
 
         spreadsheetsRecyclerView.adapter = spreadsheetAdapter
     }
@@ -107,6 +111,27 @@ class SpreadsheetFragment : Fragment() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            RENAME_ACTION -> renameSpreadsheet()
+            COPY_ACTION -> copySpreadsheet()
+        }
+
+        return super.onContextItemSelected(item)
+    }
+
+    private fun renameSpreadsheet() {
+        spreadsheetAdapter.lastClicked()?.let {
+            TODO("Implement renaming")
+        }
+    }
+
+    private fun copySpreadsheet() {
+        spreadsheetAdapter.lastClicked()?.let {
+            TODO("Implement copying")
+        }
     }
 
     private fun createSpreadsheet() {
