@@ -13,9 +13,10 @@ import io.rg.mp.persistence.entity.FailedSpreadsheet
 import io.rg.mp.ui.AbstractViewModel
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
+import io.rg.mp.ui.RenamedSuccessfully
 import io.rg.mp.utils.getLocaleInstance
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 
 class SpreadsheetViewModel(
         private val spreadsheetDao: SpreadsheetDao,
@@ -30,6 +31,7 @@ class SpreadsheetViewModel(
         const val REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS = 2001
         const val REQUEST_AUTHORIZATION_NEW_SPREADSHEET = 2003
         const val REQUEST_AUTHORIZATION_FOR_DELETE = 2005
+        const val REQUEST_DO_NOTHING = 2000000
         const val SPREADSHEET_NAME = "spreadsheetName"
         const val SPREADSHEET_ID = "spreadsheetId"
     }
@@ -105,5 +107,17 @@ class SpreadsheetViewModel(
     fun createSpreadsheetName(): String {
         val simpleDateFormat = SimpleDateFormat("LLLL YYYY", getLocaleInstance())
         return simpleDateFormat.format(Date())
+    }
+
+    fun renameSpreadsheet(id: String, newName: String) {
+        val disposable = folderService.rename(id, newName)
+                .doOnSubscribe { progressSubject.onNext(1) }
+                .doFinally { progressSubject.onNext(-1) }
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        { subject.onNext(RenamedSuccessfully) },
+                        { handleErrors(it, REQUEST_DO_NOTHING) }
+                )
+        compositeDisposable.add(disposable)
     }
 }

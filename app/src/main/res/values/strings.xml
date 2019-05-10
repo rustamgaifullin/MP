@@ -27,4 +27,6 @@
     <string name="create_spreadsheet_menu">Create spreadsheet</string>
     <string name="enter_name">Enter name</string>
     <string name="create">Create</string>
+    <string name="rename">Rename</string>
+    <string name="renamed_successfully">Renamed successfully</string>
 </resources>

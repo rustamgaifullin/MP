@@ -22,11 +22,13 @@ import io.rg.mp.persistence.entity.FailedSpreadsheet
 import io.rg.mp.rule.TrampolineSchedulerRule
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
+import io.rg.mp.ui.RenamedSuccessfully
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
+import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_DO_NOTHING
 import io.rg.mp.utils.getLocaleInstance
 import org.junit.Rule
 import org.junit.Test
@@ -72,7 +74,6 @@ class SpreadsheetViewModelTest {
                 .assertNoErrors()
                 .assertValues(ListSpreadsheet(emptyList()))
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -98,7 +99,6 @@ class SpreadsheetViewModelTest {
                             it.requestCode == REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -123,7 +123,6 @@ class SpreadsheetViewModelTest {
                     it is CreatedSuccessfully && it.spreadsheetId == "newId"
                 }
                 .assertNotComplete()
-                .dispose()
 
         verify(folderService).copy(anyString(), anyString())
         verify(transactionService).clearAllTransactions(newSpreadsheetId)
@@ -153,7 +152,6 @@ class SpreadsheetViewModelTest {
                     it is ToastInfo
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -182,7 +180,6 @@ class SpreadsheetViewModelTest {
                             it.requestCode == REQUEST_AUTHORIZATION_NEW_SPREADSHEET
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -210,7 +207,6 @@ class SpreadsheetViewModelTest {
                     it is ToastInfo
                 }
                 .assertNotComplete()
-                .dispose()
     }
 
     @Test
@@ -287,6 +283,51 @@ class SpreadsheetViewModelTest {
 
         verify(failedSpreadsheetDao, never()).delete(anyString())
         verify(spreadsheetDao, never()).delete(anyString())
+    }
+
+    @Test
+    fun `should show authorization dialog during renaming`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+        val newName = "newName"
+
+        whenever(folderService.rename(spreadsheetId, newName)).thenReturn(
+                Completable.complete()
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.renameSpreadsheet(spreadsheetId, newName)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is RenamedSuccessfully
+                }
+                .assertNotComplete()
+    }
+
+    @Test
+    fun `should successfully rename a spreadsheet and receive event`() {
+        val sut = viewModel()
+        val spreadsheetId = "id"
+        val newName = "newName"
+
+        whenever(folderService.rename(spreadsheetId, newName)).thenReturn(
+                Completable.error(userRecoverableAuthIoException())
+        )
+
+        val testSubscriber = sut.viewModelNotifier().test()
+
+        sut.renameSpreadsheet(spreadsheetId, newName)
+
+        testSubscriber
+                .assertNoErrors()
+                .assertValue {
+                    it is StartActivity &&
+                            it.requestCode == REQUEST_DO_NOTHING
+                }
+                .assertNotComplete()
     }
 
     private fun userRecoverableAuthIoException(): UserRecoverableAuthIOException {

@@ -7,6 +7,7 @@ import io.rg.mp.emptyFolder
 import io.rg.mp.mockDriveClient
 import io.rg.mp.mockResponse
 import io.rg.mp.oneFolder
+import io.rg.mp.renameFile
 import org.junit.Test
 import java.util.LinkedList
 
@@ -61,5 +62,17 @@ class FolderServiceTest {
                 .assertValue {
                     it.id == "123456"
                 }
+    }
+
+    @Test
+    fun `should rename a spreadsheet successfully`() {
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse(renameFile()))
+
+        val sut = FolderService(mockDriveClient(responses))
+
+        sut.rename("id", "newName").test()
+                .assertNoErrors()
+                .assertComplete()
     }
 }

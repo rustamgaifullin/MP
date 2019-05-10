@@ -3,6 +3,7 @@ package io.rg.mp.drive
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.rg.mp.drive.data.CreationResult
 import java.util.*
@@ -11,6 +12,15 @@ class FolderService(private val drive: Drive) {
     companion object {
         private const val EMPTY_NAME = ""
         private const val FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
+    }
+
+    fun rename(id: String, newName: String): Completable {
+        return Completable.fromAction {
+            val fileMetadata = File()
+            fileMetadata.name = newName
+
+            drive.files().update(id, fileMetadata).execute()
+        }
     }
 
     fun copy(fromId: String, name: String = EMPTY_NAME): Single<CreationResult> {

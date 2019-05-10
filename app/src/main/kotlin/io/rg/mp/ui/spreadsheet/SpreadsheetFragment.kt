@@ -12,7 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AlertDialog.Builder
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import com.google.android.material.textfield.TextInputEditText
@@ -20,9 +20,11 @@ import dagger.android.support.AndroidSupportInjection
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
+import io.rg.mp.R.layout
 import io.rg.mp.R.string
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
+import io.rg.mp.ui.RenamedSuccessfully
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
@@ -36,8 +38,7 @@ import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZAT
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_ID
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
 import io.rg.mp.utils.setVisibility
-import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
-import kotlinx.android.synthetic.main.fragment_spreadsheets.viewDisableLayout
+import kotlinx.android.synthetic.main.fragment_spreadsheets.*
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
@@ -60,7 +61,7 @@ class SpreadsheetFragment : Fragment() {
                               container: ViewGroup?, savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
 
-        return inflater.inflate(R.layout.fragment_spreadsheets, container, false)
+        return inflater.inflate(layout.fragment_spreadsheets, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -125,8 +126,10 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun renameSpreadsheet() {
-        spreadsheetAdapter.lastClicked()?.let {
-            TODO("Implement renaming")
+        spreadsheetAdapter.lastClicked()?.let {spreadsheet ->
+            showDialogWithName(getString(string.rename), spreadsheet.name) { name ->
+                viewModel.renameSpreadsheet(spreadsheet.id, name)
+            }
         }
     }
 
@@ -137,12 +140,18 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun createSpreadsheet(fromId: String = DEFAULT_TEMPLATE_ID) {
-        val builder = AlertDialog.Builder(requireActivity())
+        showDialogWithName(getString(string.create), viewModel.createSpreadsheetName()) { name ->
+            createNewSpreadsheet(name, fromId)
+        }
+    }
+
+    private fun showDialogWithName(positiveButton: String, name: String, positiveAction: (String) -> Unit) {
+        val builder = Builder(requireActivity())
         builder.setTitle(getString(string.enter_name))
 
-        val view = View.inflate(requireContext(), R.layout.dialog_edittext, null)
+        val view = View.inflate(requireContext(), layout.dialog_edittext, null)
         val editText = view.findViewById<TextInputEditText>(R.id.dialogEditText)
-        editText.setText(viewModel.createSpreadsheetName())
+        editText.setText(name)
 
         builder.setView(view)
 
@@ -150,8 +159,8 @@ class SpreadsheetFragment : Fragment() {
             dialog.dismiss()
         }
 
-        builder.setPositiveButton(getString(string.create)) { dialog, _ ->
-            createNewSpreadsheet(editText.text.toString(), fromId)
+        builder.setPositiveButton(positiveButton) { dialog, _ ->
+            positiveAction.invoke(editText.text.toString())
             dialog.dismiss()
         }
 
@@ -191,8 +200,11 @@ class SpreadsheetFragment : Fragment() {
                     Toast.makeText(activity, "Created successfully", LENGTH_SHORT).show()
                     viewModel.reloadData()
                 }
+                is RenamedSuccessfully -> {
+                    Toast.makeText(activity, "Renamed successfully", LENGTH_SHORT).show()
+                    viewModel.reloadData()
+                }
             }
-
         }
     }
 
