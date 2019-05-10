@@ -3,34 +3,36 @@ package io.rg.mp.drive
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
-import io.reactivex.Completable
 import io.reactivex.Single
-import java.util.Calendar
+import io.rg.mp.drive.data.CreationResult
+import java.util.*
 
 class FolderService(private val drive: Drive) {
     companion object {
-        const val FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
+        private const val EMPTY_NAME = ""
+        private const val FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
     }
 
-    fun moveToFolder(spreadsheetId: String, toFolder: String): Completable {
-        return Completable.fromAction {
-            val content = File()
-
-            drive.files().update(spreadsheetId, content)
-                    .setAddParents(toFolder)
-                    .execute()
-        }
-    }
-
-    fun folderIdForCurrentYear(): Single<String> {
+    fun copy(fromId: String, name: String = EMPTY_NAME): Single<CreationResult> {
         return Single.fromCallable {
-            val year = Calendar.getInstance().get(Calendar.YEAR).toString()
-            val fileList = findFolder(year).files
-
-            if (fileList != null && fileList.size > 0)
-                fileList.first().id else
-                initializeFolders("Budget", year)
+            val fileMetadata = File()
+            fileMetadata.name = name
+            fileMetadata.parents = listOf(folderIdForCurrentYear())
+            val copiedFile = drive.files()
+                    .copy(fromId, fileMetadata)
+                    .execute()
+            CreationResult(copiedFile.id)
         }
+    }
+
+    private fun folderIdForCurrentYear(): String {
+        val year = Calendar.getInstance().get(Calendar.YEAR).toString()
+        val fileList = findFolder(year).files
+
+        return if (fileList != null && fileList.size > 0)
+            fileList.first().id
+        else
+            initializeFolders("Budget", year)
     }
 
     private fun findFolder(name: String): FileList {
@@ -48,7 +50,7 @@ class FolderService(private val drive: Drive) {
             budgetFileList.first().id else
             createFolder(rootFolder)
 
-        return createFolder(name = yearFolder, parent =  budgetId)
+        return createFolder(name = yearFolder, parent = budgetId)
     }
 
     private fun createFolder(name: String, parent: String = ""): String {

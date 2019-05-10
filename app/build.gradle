@@ -22,7 +22,7 @@ buildscript {
         room_version = "2.0.0"
         google_api_version = "1.23.0"
         google_sheets_version = "v4-rev486-$google_api_version"
-        google_drive_version = "v3-rev85-$google_api_version"
+        google_drive_version = "v3-rev110-$google_api_version"
         google_play_services_version = "16.0.1"
         easy_permission_version = "0.3.0"
         dagger_version = "2.15"

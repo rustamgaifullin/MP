@@ -1,11 +1,8 @@
 package io.rg.mp.ui.spreadsheet
 
 import android.os.Bundle
-import io.reactivex.Completable
 import io.reactivex.Flowable
-import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
-import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
@@ -22,7 +19,6 @@ import java.util.Date
 
 class SpreadsheetViewModel(
         private val spreadsheetDao: SpreadsheetDao,
-        private val copyService: CopyService,
         private val folderService: FolderService,
         private val transactionService: TransactionService,
         private val spreadsheetService: SpreadsheetService,
@@ -65,10 +61,10 @@ class SpreadsheetViewModel(
     }
 
     fun createNewSpreadsheet(name: String, id: String) {
-        val disposable = copyService
+        val disposable = folderService
                 .copy(id, name)
                 .doOnSuccess(temporaryInsertToFailed())
-                .flatMap(this@SpreadsheetViewModel::moveToFolderAndClearTransactions)
+                .flatMap{ transactionService.clearAllTransactions(it.id).toSingleDefault(it) }
                 .doOnSubscribe { progressSubject.onNext(1) }
                 .doFinally { progressSubject.onNext(-1) }
                 .subscribeOn(Schedulers.io())
@@ -88,19 +84,6 @@ class SpreadsheetViewModel(
 
     private fun temporaryInsertToFailed(): (CreationResult) -> Unit =
             { failedSpreadsheetDao.insert(FailedSpreadsheet(spreadsheetId = it.id)) }
-
-    private fun moveToFolderAndClearTransactions(result: CreationResult): Single<CreationResult> {
-        return folderService
-                .folderIdForCurrentYear()
-                .flatMap { folderId ->
-                    Completable.concat(
-                            listOf(
-                                    folderService.moveToFolder(result.id, folderId),
-                                    transactionService.clearAllTransactions(result.id)
-                            ))
-                            .toSingleDefault(result)
-                }
-    }
 
     fun deleteFailedSpreadsheets() {
         val disposable = failedSpreadsheetDao.all()

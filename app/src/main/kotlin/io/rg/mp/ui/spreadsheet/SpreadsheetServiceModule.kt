@@ -5,7 +5,6 @@ import com.google.api.services.sheets.v4.Sheets
 import dagger.Module
 import dagger.Provides
 import io.rg.mp.drive.BalanceService
-import io.rg.mp.drive.CopyService
 import io.rg.mp.drive.FolderService
 import io.rg.mp.drive.SpreadsheetService
 import io.rg.mp.drive.TransactionService
@@ -18,10 +17,6 @@ class SpreadsheetServiceModule {
     @Provides
     @FragmentScope
     fun spreadsheetService(drive: Drive) = SpreadsheetService(drive)
-
-    @Provides
-    @FragmentScope
-    fun copyService(sheets: Sheets) = CopyService(sheets)
 
     @Provides
     @FragmentScope
@@ -39,14 +34,12 @@ class SpreadsheetServiceModule {
     @FragmentScope
     fun spreadsheetViewModel(
             spreadsheetDao: SpreadsheetDao,
-            copyService: CopyService,
             folderService: FolderService,
             transactionService: TransactionService,
             spreadsheetService: SpreadsheetService,
             failedSpreadsheetDao: FailedSpreadsheetDao): SpreadsheetViewModel {
         return SpreadsheetViewModel(
                 spreadsheetDao,
-                copyService,
                 folderService,
                 transactionService,
                 spreadsheetService,
