@@ -38,7 +38,8 @@ import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZAT
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_ID
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
 import io.rg.mp.utils.setVisibility
-import kotlinx.android.synthetic.main.fragment_spreadsheets.*
+import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
+import kotlinx.android.synthetic.main.fragment_spreadsheets.viewDisableLayout
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 

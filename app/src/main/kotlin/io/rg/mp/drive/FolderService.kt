@@ -6,7 +6,7 @@ import com.google.api.services.drive.model.FileList
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.rg.mp.drive.data.CreationResult
-import java.util.*
+import java.util.Calendar
 
 class FolderService(private val drive: Drive) {
     companion object {

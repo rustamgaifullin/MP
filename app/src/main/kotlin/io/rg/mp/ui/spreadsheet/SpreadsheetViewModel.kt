@@ -16,7 +16,7 @@ import io.rg.mp.ui.ListSpreadsheet
 import io.rg.mp.ui.RenamedSuccessfully
 import io.rg.mp.utils.getLocaleInstance
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class SpreadsheetViewModel(
         private val spreadsheetDao: SpreadsheetDao,
