@@ -1,5 +1,6 @@
 package io.rg.mp.ui
 
+import android.os.Bundle
 import android.util.Log
 import android.widget.Toast.LENGTH_LONG
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -27,10 +28,12 @@ open class AbstractViewModel : DisposableViewModel {
 
     fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
 
-    protected fun handleErrors(error: Throwable, requestCode: Int) {
+    protected fun handleErrors(error: Throwable, requestCode: Int, extras: Bundle = Bundle()) {
         val result = when (error) {
-            is UserRecoverableAuthIOException ->
+            is UserRecoverableAuthIOException -> {
+                error.intent.putExtras(extras)
                 StartActivity(error.intent, requestCode)
+            }
             else -> {
                 Log.e(TAG, error.message, error)
                 ToastInfo(R.string.unknown_error, LENGTH_LONG)

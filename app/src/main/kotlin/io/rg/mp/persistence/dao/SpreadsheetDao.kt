@@ -40,6 +40,9 @@ abstract class SpreadsheetDao {
     @Query("DELETE FROM spreadsheet WHERE id IN (:spreadsheetId)")
     abstract fun deleteByIds(spreadsheetId: List<String>)
 
+    @Query("DELETE FROM spreadsheet WHERE id = :spreadsheetId")
+    abstract fun delete(spreadsheetId: String)
+
     @Query("""UPDATE spreadsheet SET currentBalance = :currentBalance,
         plannedExpense = :plannedExpense, actualExpense = :actualExpense WHERE id = :spreadsheetId""")
     abstract fun updateBalance(currentBalance: String, plannedExpense: String, actualExpense: String, spreadsheetId: String)

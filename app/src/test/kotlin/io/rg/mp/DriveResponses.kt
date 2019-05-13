@@ -50,8 +50,27 @@ fun dummyFileSearch() = """
                 ]
                 }
             """.trimIndent()
+
 fun emptyFileSearch() = """
                 {
                     "files": []
                 }
             """.trimIndent()
+
+fun copyFile() = """
+                {
+                     "kind": "drive#file",
+                     "id": "123456",
+                     "name": "Copy of copy",
+                     "mimeType": "application/vnd.google-apps.spreadsheet"
+                }
+            """.trimIndent()
+
+fun renameFile() = """
+                {
+                    "kind": "drive#file",
+                    "id": "123456",
+                    "name": "newName",
+                    "mimeType": "application/vnd.google-apps.spreadsheet"
+                }
+                """.trimIndent()

@@ -1,11 +1,13 @@
 package io.rg.mp.drive
 
 import com.google.api.client.testing.http.MockLowLevelHttpResponse
+import io.rg.mp.copyFile
 import io.rg.mp.createFolder
 import io.rg.mp.emptyFolder
 import io.rg.mp.mockDriveClient
 import io.rg.mp.mockResponse
 import io.rg.mp.oneFolder
+import io.rg.mp.renameFile
 import org.junit.Test
 import java.util.LinkedList
 
@@ -13,16 +15,17 @@ import java.util.LinkedList
 class FolderServiceTest {
 
     @Test
-    fun `should find folder for current year`() {
+    fun `should copy file when folder for current year is existed`() {
         val responses = LinkedList<MockLowLevelHttpResponse>()
         responses.add(mockResponse(oneFolder("2018", "yearFolderId")))
+        responses.add(mockResponse(copyFile()))
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().test()
+        sut.copy("name").test()
                 .assertNoErrors()
                 .assertValue {
-                    it == "yearFolderId"
+                    it.id == "123456"
                 }
     }
 
@@ -32,13 +35,14 @@ class FolderServiceTest {
         responses.add(mockResponse(emptyFolder()))
         responses.add(mockResponse(oneFolder("Budget", "budgetId")))
         responses.add(mockResponse(createFolder("newIdForYearFolder")))
+        responses.add(mockResponse(copyFile()))
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().test()
+        sut.copy("name").test()
                 .assertNoErrors()
                 .assertValue {
-                    it == "newIdForYearFolder"
+                    it.id == "123456"
                 }
     }
 
@@ -49,27 +53,26 @@ class FolderServiceTest {
         responses.add(mockResponse(emptyFolder()))
         responses.add(mockResponse(createFolder("budgetId")))
         responses.add(mockResponse(createFolder("newIdForYearFolder")))
+        responses.add(mockResponse(copyFile()))
 
         val sut = FolderService(mockDriveClient(responses))
 
-        sut.folderIdForCurrentYear().toFlowable().test()
+        sut.copy("name").test()
                 .assertNoErrors()
                 .assertValue {
-                    it == "newIdForYearFolder"
+                    it.id == "123456"
                 }
     }
 
     @Test
-    fun `should complete stream after moving a file to some folder`() {
-        //given
+    fun `should rename a spreadsheet successfully`() {
         val responses = LinkedList<MockLowLevelHttpResponse>()
-        responses.add(mockResponse("{}"))
+        responses.add(mockResponse(renameFile()))
+
         val sut = FolderService(mockDriveClient(responses))
 
-        //when
-        sut.moveToFolder("id", "folder").toFlowable<Any>().test()
+        sut.rename("id", "newName").test()
                 .assertNoErrors()
-                .assertNoValues()
                 .assertComplete()
     }
 }

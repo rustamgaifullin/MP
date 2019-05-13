@@ -1,7 +1,7 @@
 package io.rg.mp.persistence
 
-import androidx.room.Room
 import android.content.Context
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -25,4 +25,8 @@ class PersistenceModule {
     @Provides
     @Singleton
     fun transactionDao(database: Database) = database.transactionDao()
+
+    @Provides
+    @Singleton
+    fun failedSpreadsheetDao(database: Database) = database.failedSpreadsheetDao()
 }

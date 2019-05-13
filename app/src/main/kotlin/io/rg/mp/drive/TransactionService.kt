@@ -17,7 +17,7 @@ class TransactionService(private val googleSheetService: Sheets) {
     companion object {
         private const val EXPENSES_RANGE = "Transactions!B5:E5"
         private const val EXPENSES_RANGE_ALL = "Transactions!B5:\$E"
-        private const val INCOMES_RANGE = "Transactions!G5:J5"
+        private const val INCOMES_RANGE_ALL = "Transactions!G5:\$J"
     }
 
     fun saveExpense(data: Expense, spreadsheetId: String): Flowable<Result> {
@@ -42,7 +42,7 @@ class TransactionService(private val googleSheetService: Sheets) {
     fun clearAllTransactions(spreadsheetId: String): Completable {
         return Completable.fromAction {
             val request = BatchClearValuesRequest()
-            request.ranges = listOf(EXPENSES_RANGE, INCOMES_RANGE)
+            request.ranges = listOf(EXPENSES_RANGE_ALL, INCOMES_RANGE_ALL)
 
             googleSheetService
                     .spreadsheets()

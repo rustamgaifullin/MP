@@ -20,4 +20,6 @@ data class SpreadsheetData(val spreadsheet: Spreadsheet) : ViewModelResult()
 
 data class CreatedSuccessfully(val spreadsheetId: String) : ViewModelResult()
 
+object RenamedSuccessfully : ViewModelResult()
+
 object SavedSuccessfully : ViewModelResult()

@@ -1,13 +1,13 @@
 package io.rg.mp.app
 
 import android.app.Activity
-import androidx.multidex.MultiDexApplication
 import androidx.fragment.app.Fragment
+import androidx.multidex.MultiDexApplication
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.support.HasSupportFragmentInjector
-import io.rg.mp.persistence.PersistenceModule
 import io.rg.mp.drive.ServiceModule
+import io.rg.mp.persistence.PersistenceModule
 import javax.inject.Inject
 
 class MpApplication : MultiDexApplication(), HasActivityInjector, HasSupportFragmentInjector {
