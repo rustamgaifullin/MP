@@ -24,6 +24,7 @@ import io.rg.mp.R.layout
 import io.rg.mp.R.string
 import io.rg.mp.ui.CreatedSuccessfully
 import io.rg.mp.ui.ListSpreadsheet
+import io.rg.mp.ui.ReloadViewAuthenticator
 import io.rg.mp.ui.RenamedSuccessfully
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
@@ -46,6 +47,9 @@ import javax.inject.Inject
 class SpreadsheetFragment : Fragment() {
     @Inject
     lateinit var viewModel: SpreadsheetViewModel
+
+    @Inject
+    lateinit var reloadViewAuthenticator: ReloadViewAuthenticator
 
     private val compositeDisposable = CompositeDisposable()
     private val spreadsheetAdapter = SpreadsheetAdapter()
@@ -92,7 +96,10 @@ class SpreadsheetFragment : Fragment() {
                         .subscribe(openExpenseFragment())
         )
 
-        viewModel.reloadData()
+        reloadViewAuthenticator.startReload {
+            viewModel.reloadData()
+        }
+
         super.onStart()
     }
 
@@ -127,7 +134,7 @@ class SpreadsheetFragment : Fragment() {
     }
 
     private fun renameSpreadsheet() {
-        spreadsheetAdapter.lastClicked()?.let {spreadsheet ->
+        spreadsheetAdapter.lastClicked()?.let { spreadsheet ->
             showDialogWithName(getString(string.rename), spreadsheet.name) { name ->
                 viewModel.renameSpreadsheet(spreadsheet.id, name)
             }
@@ -193,7 +200,9 @@ class SpreadsheetFragment : Fragment() {
                     viewModel.deleteFailedSpreadsheets()
                     Toast.makeText(activity, it.messageId, it.length).show()
                 }
-                is StartActivity -> startActivityForResult(it.intent, it.requestCode)
+                is StartActivity -> reloadViewAuthenticator.startAuthentication {
+                    startActivityForResult(it.intent, it.requestCode)
+                }
                 is ListSpreadsheet -> {
                     spreadsheetAdapter.setData(it.list)
                 }
@@ -222,6 +231,7 @@ class SpreadsheetFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        reloadViewAuthenticator.authenticationFinished()
 
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {

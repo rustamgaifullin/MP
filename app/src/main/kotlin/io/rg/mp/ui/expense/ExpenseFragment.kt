@@ -26,6 +26,7 @@ import io.rg.mp.R.string
 import io.rg.mp.drive.data.Balance
 import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.ListCategory
+import io.rg.mp.ui.ReloadViewAuthenticator
 import io.rg.mp.ui.SavedSuccessfully
 import io.rg.mp.ui.SpreadsheetData
 import io.rg.mp.ui.StartActivity
@@ -68,6 +69,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     @Inject
     lateinit var viewModel: ExpenseViewModel
+
+    @Inject
+    lateinit var reloadViewAuthenticator: ReloadViewAuthenticator
 
     private lateinit var datePickerDialog: DatePickerDialog
     private lateinit var spreadsheetId: String
@@ -211,7 +215,10 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
                         .subscribe(handleProgressBar())
         )
 
-        viewModel.reloadData(spreadsheetId)
+        reloadViewAuthenticator.startReload {
+            viewModel.reloadData(spreadsheetId)
+        }
+
         super.onStart()
     }
 
@@ -219,7 +226,9 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         return {
             when (it) {
                 is ToastInfo -> Toast.makeText(activity, it.messageId, it.length).show()
-                is StartActivity -> startActivityForResult(it.intent, it.requestCode)
+                is StartActivity -> reloadViewAuthenticator.startAuthentication {
+                    startActivityForResult(it.intent, it.requestCode)
+                }
                 is ListCategory -> {
                     categories = it.list
                     categoryEditText.setText(categories.getOrNull(0)?.name)
@@ -261,6 +270,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        reloadViewAuthenticator.authenticationFinished()
 
         if (resultCode == RESULT_OK) {
             when (requestCode) {
