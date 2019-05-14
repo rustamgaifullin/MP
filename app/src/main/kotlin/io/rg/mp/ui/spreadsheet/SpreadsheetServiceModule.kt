@@ -11,6 +11,7 @@ import io.rg.mp.drive.TransactionService
 import io.rg.mp.persistence.dao.FailedSpreadsheetDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.ui.FragmentScope
+import io.rg.mp.ui.ReloadViewAuthenticator
 
 @Module
 class SpreadsheetServiceModule {
@@ -46,4 +47,8 @@ class SpreadsheetServiceModule {
                 failedSpreadsheetDao
         )
     }
+
+    @Provides
+    @FragmentScope
+    fun reloadViewAuthenticator() = ReloadViewAuthenticator()
 }

@@ -12,6 +12,7 @@ import io.rg.mp.drive.TransactionService
 import io.rg.mp.persistence.dao.CategoryDao
 import io.rg.mp.persistence.dao.SpreadsheetDao
 import io.rg.mp.ui.FragmentScope
+import io.rg.mp.ui.ReloadViewAuthenticator
 
 @Module
 class ExpenseServiceModule {
@@ -35,7 +36,6 @@ class ExpenseServiceModule {
     @FragmentScope
     fun balanceService(sheets: Sheets) = BalanceService(sheets)
 
-
     @Provides
     @FragmentScope
     fun expenseViewModel(
@@ -52,4 +52,8 @@ class ExpenseServiceModule {
                 categoryDao,
                 spreadsheetDao)
     }
+
+    @Provides
+    @FragmentScope
+    fun reloadViewAuthenticator() = ReloadViewAuthenticator()
 }

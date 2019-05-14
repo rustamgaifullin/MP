@@ -14,6 +14,9 @@ import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.ui.ListTransaction
 import io.rg.mp.ui.ViewModelResult
+import io.rg.mp.ui.ReloadViewAuthenticator
+import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.transactions.TransactionsViewModel.Companion.REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS
 import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_transactions.transactionRecyclerView
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
@@ -33,6 +36,9 @@ class TransactionsFragment : Fragment() {
 
     @Inject
     lateinit var viewModel: TransactionsViewModel
+
+    @Inject
+    lateinit var reloadViewAuthenticator: ReloadViewAuthenticator
 
     private lateinit var mainProgressBar: MaterialProgressBar
 
@@ -75,7 +81,9 @@ class TransactionsFragment : Fragment() {
                         .subscribe(handleProgressBar())
         )
 
-        viewModel.loadData(spreadsheetId)
+        reloadViewAuthenticator.startReload {
+            viewModel.loadData(spreadsheetId)
+        }
 
         super.onStart()
     }
@@ -84,6 +92,9 @@ class TransactionsFragment : Fragment() {
         return {
             when (it) {
                 is ListTransaction -> transactionAdapter.setData(it.list)
+                is StartActivity -> reloadViewAuthenticator.startAuthentication {
+                    startActivityForResult(it.intent, REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS)
+                }
             }
         }
     }
@@ -97,10 +108,10 @@ class TransactionsFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
+        reloadViewAuthenticator.authenticationFinished()
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                TransactionsViewModel.REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS -> viewModel.loadData(spreadsheetId)
+                REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS -> viewModel.loadData(spreadsheetId)
             }
         }
     }

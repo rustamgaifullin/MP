@@ -8,7 +8,6 @@ class Preferences(val context: Context) {
     companion object {
         private const val PREF_FILE_NAME = "io.rg.mp.shared"
         private const val PREF_ACCOUNT_NAME = "accountName"
-        private const val PREF_CURRENT_SPREADSHEET_ID = "spreadsheet"
     }
 
     var accountName: String

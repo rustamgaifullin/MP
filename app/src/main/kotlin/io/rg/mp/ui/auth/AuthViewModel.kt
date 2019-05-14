@@ -85,7 +85,7 @@ class AuthViewModel(private val context: Context,
 
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private fun chooseAccount() {
-        if (hasPermissions(context, Manifest.permission.GET_ACCOUNTS)) {
+        if (hasPermissions(context, GET_ACCOUNTS)) {
             val accountName = preferences.accountName
             if (accountName.isNotEmpty()) {
                 credential.selectedAccountName = accountName

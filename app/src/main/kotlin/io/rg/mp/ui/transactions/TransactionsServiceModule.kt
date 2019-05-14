@@ -6,6 +6,7 @@ import dagger.Provides
 import io.rg.mp.drive.TransactionService
 import io.rg.mp.persistence.dao.TransactionDao
 import io.rg.mp.ui.FragmentScope
+import io.rg.mp.ui.ReloadViewAuthenticator
 
 @Module
 class TransactionsServiceModule {
@@ -20,4 +21,8 @@ class TransactionsServiceModule {
             transactionService: TransactionService): TransactionsViewModel {
         return TransactionsViewModel(transactionDao, transactionService)
     }
+
+    @Provides
+    @FragmentScope
+    fun reloadViewAuthenticator() = ReloadViewAuthenticator()
 }
