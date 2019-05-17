@@ -36,8 +36,8 @@ import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.DEFAULT_TEMPLATE_I
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_FOR_DELETE
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_SPREADSHEETS
 import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.REQUEST_AUTHORIZATION_NEW_SPREADSHEET
-import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_ID
-import io.rg.mp.ui.spreadsheet.SpreadsheetViewModel.Companion.SPREADSHEET_NAME
+import io.rg.mp.ui.spreadsheet.model.SpreadsheetDataToRestore
+import io.rg.mp.ui.spreadsheet.model.SpreadsheetDataToRestore.Companion.emptyPair
 import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_spreadsheets.spreadsheetsRecyclerView
 import kotlinx.android.synthetic.main.fragment_spreadsheets.viewDisableLayout
@@ -45,6 +45,10 @@ import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
 class SpreadsheetFragment : Fragment() {
+    companion object {
+        private const val SPREADSHEET_DATA_KEY = "io.rg.mp.SPREADSHEET_DATA_KEY"
+    }
+
     @Inject
     lateinit var viewModel: SpreadsheetViewModel
 
@@ -56,6 +60,7 @@ class SpreadsheetFragment : Fragment() {
 
     private lateinit var mainProgressBar: MaterialProgressBar
     private var menu: Menu? = null
+    private var spreadsheetData: SpreadsheetDataToRestore? = null
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -77,6 +82,9 @@ class SpreadsheetFragment : Fragment() {
         registerForContextMenu(spreadsheetsRecyclerView)
 
         spreadsheetsRecyclerView.adapter = spreadsheetAdapter
+
+        reloadViewAuthenticator.restoreState(savedInstanceState)
+        spreadsheetData = savedInstanceState?.getParcelable(SPREADSHEET_DATA_KEY)
     }
 
     override fun onStart() {
@@ -107,6 +115,13 @@ class SpreadsheetFragment : Fragment() {
         super.onStop()
         compositeDisposable.clear()
         viewModel.clear()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putAll(reloadViewAuthenticator.getState())
+        outState.putParcelable(SPREADSHEET_DATA_KEY, spreadsheetData)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -149,6 +164,7 @@ class SpreadsheetFragment : Fragment() {
 
     private fun createSpreadsheet(fromId: String = DEFAULT_TEMPLATE_ID) {
         showDialogWithName(getString(string.create), viewModel.createSpreadsheetName()) { name ->
+            spreadsheetData = SpreadsheetDataToRestore(name, fromId)
             createNewSpreadsheet(name, fromId)
         }
     }
@@ -236,8 +252,7 @@ class SpreadsheetFragment : Fragment() {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_NEW_SPREADSHEET -> {
-                    val name = data?.getStringExtra(SPREADSHEET_NAME) ?: ""
-                    val id = data?.getStringExtra(SPREADSHEET_ID) ?: DEFAULT_TEMPLATE_ID
+                    val (name, id) = spreadsheetData?.getNameIdPair() ?: emptyPair()
                     viewModel.deleteFailedSpreadsheets()
                     viewModel.createNewSpreadsheet(name, id)
                 }

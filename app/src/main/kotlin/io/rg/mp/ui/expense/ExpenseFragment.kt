@@ -56,7 +56,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     companion object {
         private const val LAST_DATE_KEY = "io.rg.mp.LAST_DATE_KEY"
         private const val SPREADSHEET_NAME = "io.rg.mp.SPREADSHEET_NAME"
-        private const val SPREADSHEET_ID = "spreadsheetId"
+        private const val SPREADSHEET_ID = "io.rg.mp.SPREADSHEET_ID"
 
         fun createArgs(spreadsheetId: String, spreadsheetName: String): Bundle {
             val args = Bundle()
@@ -155,6 +155,8 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         })
 
         formatDateButtonText()
+
+        reloadViewAuthenticator.restoreState(savedInstanceState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -260,6 +262,7 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         super.onSaveInstanceState(outState)
 
         outState.putParcelable(LAST_DATE_KEY, date)
+        outState.putAll(reloadViewAuthenticator.getState())
     }
 
     override fun onStop() {

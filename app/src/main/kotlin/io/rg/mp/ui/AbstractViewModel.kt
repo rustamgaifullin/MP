@@ -28,12 +28,9 @@ open class AbstractViewModel : DisposableViewModel {
 
     fun viewModelNotifier(): Flowable<ViewModelResult> = subject.toFlowable(BackpressureStrategy.BUFFER)
 
-    protected fun handleErrors(error: Throwable, requestCode: Int, extras: Bundle = Bundle()) {
+    protected fun handleErrors(error: Throwable, requestCode: Int) {
         val result = when (error) {
-            is UserRecoverableAuthIOException -> {
-                error.intent.putExtras(extras)
-                StartActivity(error.intent, requestCode)
-            }
+            is UserRecoverableAuthIOException -> StartActivity(error.intent, requestCode)
             else -> {
                 Log.e(TAG, error.message, error)
                 ToastInfo(R.string.unknown_error, LENGTH_LONG)

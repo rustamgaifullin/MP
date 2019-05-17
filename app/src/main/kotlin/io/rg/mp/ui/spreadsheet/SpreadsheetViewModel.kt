@@ -76,9 +76,7 @@ class SpreadsheetViewModel(
                             subject.onNext(CreatedSuccessfully(it.id))
                         },
                         {
-                            val extras = Bundle()
-                            extras.putString(SPREADSHEET_NAME, name)
-                            handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET, extras)
+                            handleErrors(it, REQUEST_AUTHORIZATION_NEW_SPREADSHEET)
                         }
                 )
         compositeDisposable.add(disposable)
