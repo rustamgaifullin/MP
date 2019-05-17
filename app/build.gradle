@@ -31,6 +31,7 @@ buildscript {
         navigation_fragment_version = "2.0.0"
         activity_version = "1.0.0-alpha06"
         material_progress_bar_version = "1.6.1"
+        leak_canary_version = "2.0-alpha-1"
     }
 
     repositories {
@@ -147,6 +148,8 @@ dependencies {
     implementation "androidx.multidex:multidex:$multidex_version"
 
     implementation "me.zhanghai.android.materialprogressbar:library:$material_progress_bar_version"
+
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leak_canary_version"
 
     kapt "androidx.room:room-compiler:$room_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"

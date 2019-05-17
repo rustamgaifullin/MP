@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 class TransactionsFragment : Fragment() {
     companion object {
-        private const val SPREADSHEET_ID = "spreadsheetId"
+        private const val SPREADSHEET_ID = "io.rg.mp.SPREADSHEET_ID"
 
         fun createArgs(spreadsheetId: String): Bundle {
             val args = Bundle()
@@ -67,6 +67,8 @@ class TransactionsFragment : Fragment() {
         mainProgressBar = requireActivity().findViewById(R.id.mainProgressBar)
 
         transactionRecyclerView.adapter = transactionAdapter
+
+        reloadViewAuthenticator.restoreState(savedInstanceState)
     }
 
     override fun onStart() {
@@ -86,6 +88,18 @@ class TransactionsFragment : Fragment() {
         }
 
         super.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        compositeDisposable.clear()
+        viewModel.clear()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putAll(reloadViewAuthenticator.getState())
     }
 
     private fun handleViewModelResult(): (ViewModelResult) -> Unit {
