@@ -124,6 +124,11 @@ class SpreadsheetFragment : Fragment() {
         outState.putParcelable(SPREADSHEET_DATA_KEY, spreadsheetData)
     }
 
+    override fun onDestroyView() {
+        spreadsheetsRecyclerView.adapter = null
+        super.onDestroyView()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.menu_spreadsheet, menu)

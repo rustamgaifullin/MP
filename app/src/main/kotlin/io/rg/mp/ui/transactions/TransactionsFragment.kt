@@ -13,9 +13,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.rg.mp.R
 import io.rg.mp.ui.ListTransaction
-import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.ReloadViewAuthenticator
 import io.rg.mp.ui.StartActivity
+import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.transactions.TransactionsViewModel.Companion.REQUEST_AUTHORIZATION_DOWNLOADING_TRANSACTIONS
 import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_transactions.transactionRecyclerView
@@ -100,6 +100,11 @@ class TransactionsFragment : Fragment() {
         super.onSaveInstanceState(outState)
 
         outState.putAll(reloadViewAuthenticator.getState())
+    }
+
+    override fun onDestroyView() {
+        transactionRecyclerView.adapter = null
+        super.onDestroyView()
     }
 
     private fun handleViewModelResult(): (ViewModelResult) -> Unit {

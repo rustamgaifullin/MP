@@ -1,6 +1,5 @@
 package io.rg.mp.ui
 
-import android.os.Bundle
 import android.util.Log
 import android.widget.Toast.LENGTH_LONG
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
