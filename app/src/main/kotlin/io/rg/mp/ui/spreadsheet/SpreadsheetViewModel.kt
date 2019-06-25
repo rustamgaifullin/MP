@@ -32,8 +32,6 @@ class SpreadsheetViewModel(
         const val REQUEST_AUTHORIZATION_NEW_SPREADSHEET = 2003
         const val REQUEST_AUTHORIZATION_FOR_DELETE = 2005
         const val REQUEST_DO_NOTHING = 2000000
-        const val SPREADSHEET_NAME = "spreadsheetName"
-        const val SPREADSHEET_ID = "spreadsheetId"
     }
 
     fun reloadData() {
