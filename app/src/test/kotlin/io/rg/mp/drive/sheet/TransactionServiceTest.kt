@@ -37,7 +37,11 @@ class TransactionServiceTest {
     @Test
     fun `should successfully save expense item`() {
         //given
-        val expense = Expense("01/01/17", 5.5f, "", Category("", ""))
+        val expense = Expense(
+                "01/01/17",
+                5.5f,
+                "",
+                Category("", "", "", "", ""))
         val appendResult: AppendValuesResponse = mock()
 
         //when

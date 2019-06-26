@@ -1,6 +1,5 @@
 package io.rg.mp.ui.auth
 
-import android.Manifest
 import android.Manifest.permission.GET_ACCOUNTS
 import android.accounts.AccountManager
 import android.app.Activity

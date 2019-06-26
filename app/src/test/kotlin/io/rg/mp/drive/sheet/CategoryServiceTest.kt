@@ -34,7 +34,9 @@ class CategoryServiceTest {
         setToResponse(listOfCategories)
         sut.getListBy("").test()
                 .assertNoErrors()
-                .assertValue { (list) -> list.contains(Category("category", "")) }
+                .assertValue {
+                    (list) -> list.contains(Category("category", "", "", "", ""))
+                }
                 .assertComplete()
     }
 

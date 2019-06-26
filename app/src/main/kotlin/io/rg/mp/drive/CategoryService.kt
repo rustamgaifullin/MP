@@ -8,7 +8,7 @@ import io.rg.mp.persistence.entity.Category
 class CategoryService(private val googleSheetService: Sheets) {
     fun getListBy(sheetId: String): Flowable<CategoryList> {
         return Flowable.fromCallable {
-            val range = "B29:\$B"
+            val range = "B29:\$F"
             val response = googleSheetService
                     .spreadsheets()
                     .values()
@@ -20,7 +20,14 @@ class CategoryService(private val googleSheetService: Sheets) {
             if (response.getValues() != null) {
                 categoryList = response.getValues()
                         .filter { it.size > 0 }
-                        .map { Category(it[0].toString(), sheetId) }
+                        .map {
+                            Category(
+                                    it[0].toString(),
+                                    it[1].toString(),
+                                    it[2].toString(),
+                                    it[3].toString(),
+                                    sheetId)
+                        }
             }
 
             CategoryList(categoryList)

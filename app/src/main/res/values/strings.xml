@@ -29,4 +29,6 @@
     <string name="create">Create</string>
     <string name="rename">Rename</string>
     <string name="renamed_successfully">Renamed successfully</string>
+    <string name="show_categories">show categories</string>
+    <string name="categories_title">Categories</string>
 </resources>

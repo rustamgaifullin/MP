@@ -38,6 +38,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/actionShowCategoriesScreen"
+            app:destination="@id/categoriesScreen"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
     <fragment
         android:id="@+id/transactionsScreen"
@@ -45,4 +52,8 @@
         android:label="@string/transactions_title"
         tools:layout="@layout/fragment_transactions"/>
     <include app:graph="@navigation/login_graph" />
+    <fragment
+        android:id="@+id/categoriesScreen"
+        android:name="io.rg.mp.ui.categories.CategoriesFragment"
+        android:label="@string/categories_title" />
 </navigation>

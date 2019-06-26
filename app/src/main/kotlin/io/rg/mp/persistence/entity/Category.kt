@@ -19,5 +19,8 @@ import androidx.room.Index
 )
 data class Category(
         @ColumnInfo(name = "name") var name: String,
+        @ColumnInfo var planned: String,
+        @ColumnInfo var actual: String,
+        @ColumnInfo var difference: String,
         @ColumnInfo(name = "spreadsheet_id") var spreadsheetId: String
 )

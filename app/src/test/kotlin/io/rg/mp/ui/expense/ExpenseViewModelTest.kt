@@ -60,7 +60,7 @@ class ExpenseViewModelTest {
     @Test
     fun `should reload all available data for spreadsheet`() {
         val sut = viewModel()
-        val category = Category("name", "id")
+        val category = Category("name", "", "", "", "id")
         val spreadsheetId = "123"
         val spreadsheet = Spreadsheet(spreadsheetId, "", 0L)
 
@@ -216,7 +216,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", ""),
+                Category("", "", "", "", ""),
                 "",
                 spreadsheetId,
                 DateInt.currentDateInt())
@@ -226,7 +226,7 @@ class ExpenseViewModelTest {
                 .assertValueAt(0) { it is SavedSuccessfully }
                 .assertValueAt(1) { it is ToastInfo && it.messageId == R.string.saved_message }
                 .assertNotComplete()
-                
+
         verify(spreadsheetDao).updateFromBalance(balance, spreadsheetId)
     }
 
@@ -245,7 +245,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", ""),
+                Category("", "", "", "", ""),
                 "", spreadsheetId,
                 DateInt.currentDateInt())
 
@@ -270,7 +270,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", ""),
+                Category("", "", "", "", ""),
                 "",
                 spreadsheetId,
                 DateInt.currentDateInt())

@@ -32,6 +32,7 @@ import io.rg.mp.ui.SpreadsheetData
 import io.rg.mp.ui.StartActivity
 import io.rg.mp.ui.ToastInfo
 import io.rg.mp.ui.ViewModelResult
+import io.rg.mp.ui.categories.CategoriesFragment
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_EXPENSE
 import io.rg.mp.ui.expense.ExpenseViewModel.Companion.REQUEST_AUTHORIZATION_LOADING
 import io.rg.mp.ui.expense.model.DateInt
@@ -47,6 +48,7 @@ import kotlinx.android.synthetic.main.fragment_expense.currentBalanceTextView
 import kotlinx.android.synthetic.main.fragment_expense.dateEditText
 import kotlinx.android.synthetic.main.fragment_expense.descriptionEditText
 import kotlinx.android.synthetic.main.fragment_expense.plannedBalanceTextView
+import kotlinx.android.synthetic.main.fragment_expense.showCategoriesButton
 import kotlinx.android.synthetic.main.fragment_expense.titleTextView
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
@@ -91,8 +93,6 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         spreadsheetId = arguments?.getString(SPREADSHEET_ID) ?: ""
-
-        requireActivity().title = getString(R.string.expenses_title)
 
         datePickerDialog = DatePickerDialog(requireContext(), this, 0, 0, 0)
 
@@ -154,6 +154,10 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
             }
         })
 
+        showCategoriesButton.setOnClickListener {
+            openCategories()
+        }
+
         formatDateButtonText()
 
         reloadViewAuthenticator.restoreState(savedInstanceState)
@@ -177,6 +181,12 @@ class ExpenseFragment : Fragment(), DatePickerDialog.OnDateSetListener {
         val args = TransactionsFragment.createArgs(spreadsheetId)
 
         view?.findNavController()?.navigate(R.id.actionShowTransactionsScreen, args)
+    }
+
+    private fun openCategories() {
+        val args = CategoriesFragment.createArgs(spreadsheetId)
+
+        view?.findNavController()?.navigate(R.id.actionShowCategoriesScreen, args)
     }
 
     private fun validateAndSaveExpense() {
