@@ -28,7 +28,7 @@ class CategoryServiceTest {
     @Test
     fun `should successfully return categories`() {
         //given
-        val listOfCategories: List<List<Any>> = listOf(listOf("category", "", "", ""))
+        val listOfCategories: List<List<Any>> = listOf(listOf("category", "", "", "", ""))
 
         //when
         setToResponse(listOfCategories)
