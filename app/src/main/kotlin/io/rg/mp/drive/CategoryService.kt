@@ -23,9 +23,9 @@ class CategoryService(private val googleSheetService: Sheets) {
                         .map {
                             Category(
                                     it[0].toString(),
-                                    it[1].toString(),
                                     it[2].toString(),
                                     it[3].toString(),
+                                    it[4].toString(),
                                     sheetId)
                         }
             }
