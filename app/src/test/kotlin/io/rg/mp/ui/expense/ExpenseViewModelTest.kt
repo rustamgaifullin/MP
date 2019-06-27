@@ -60,7 +60,7 @@ class ExpenseViewModelTest {
     @Test
     fun `should reload all available data for spreadsheet`() {
         val sut = viewModel()
-        val category = Category("name", "", "", "", "id")
+        val category = Category("name", "", "", "", 0, "id")
         val spreadsheetId = "123"
         val spreadsheet = Spreadsheet(spreadsheetId, "", 0L)
 
@@ -216,7 +216,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", "", "", "", ""),
+                Category("", "", "", "", 0, ""),
                 "",
                 spreadsheetId,
                 DateInt.currentDateInt())
@@ -245,7 +245,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", "", "", "", ""),
+                Category("", "", "", "", 0, ""),
                 "", spreadsheetId,
                 DateInt.currentDateInt())
 
@@ -270,7 +270,7 @@ class ExpenseViewModelTest {
 
         sut.saveExpense(
                 123.0F,
-                Category("", "", "", "", ""),
+                Category("", "", "", "", 0, ""),
                 "",
                 spreadsheetId,
                 DateInt.currentDateInt())

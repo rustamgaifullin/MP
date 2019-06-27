@@ -41,7 +41,7 @@ class TransactionServiceTest {
                 "01/01/17",
                 5.5f,
                 "",
-                Category("", "", "", "", ""))
+                Category("", "", "", "", 0, ""))
         val appendResult: AppendValuesResponse = mock()
 
         //when

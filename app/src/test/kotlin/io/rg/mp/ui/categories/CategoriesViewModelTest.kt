@@ -56,7 +56,7 @@ class CategoriesViewModelTest {
     @Test
     fun `should load categories and insert in db`() {
         val sut = viewModel()
-        val category = Category("name", "", "", "", "id")
+        val category = Category("name", "", "", "", 0, "id")
         val spreadsheetId = "id"
 
         whenever(categoryDao.findBySpreadsheetId(spreadsheetId)).thenReturn(

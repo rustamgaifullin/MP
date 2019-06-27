@@ -27,6 +27,7 @@ fun balance() = """
                       ]
                     }
                     """.trimIndent()
+
 fun emptyBalance() = """
                     {
                         "valueRanges": [
@@ -50,5 +51,15 @@ fun partialBalance() = """
                           ]
                         }
                         ]
+                    }
+                    """.trimIndent()
+
+fun updatePlannedValue() = """
+                    {
+                        "spreadsheetId": "id",
+                        "updatedRange": "Summary!D30",
+                        "updatedRows": 1,
+                        "updatedColumns": 1,
+                        "updatedCells": 1
                     }
                     """.trimIndent()

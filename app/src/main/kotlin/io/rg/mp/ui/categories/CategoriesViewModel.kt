@@ -3,14 +3,17 @@ package io.rg.mp.ui.categories
 import io.reactivex.schedulers.Schedulers
 import io.rg.mp.drive.CategoryService
 import io.rg.mp.persistence.dao.CategoryDao
+import io.rg.mp.persistence.entity.Category
 import io.rg.mp.ui.AbstractViewModel
 import io.rg.mp.ui.ListCategory
+import io.rg.mp.ui.SavedSuccessfully
 
 class CategoriesViewModel(
         private val categoryDao: CategoryDao,
         private val categoryService: CategoryService) : AbstractViewModel() {
     companion object {
         const val REQUEST_AUTHORIZATION_LOADING_CATEGORIES = 5001
+        const val REQUEST_AUTHORIZATION_UPDATING_CATEGORY = 5002
     }
 
     fun reloadData(spreadsheetId: String) {
@@ -35,6 +38,16 @@ class CategoriesViewModel(
                         { categoryDao.insertAll(*it.list.toTypedArray()) },
                         { handleErrors(it, REQUEST_AUTHORIZATION_LOADING_CATEGORIES) }
                 )
+        compositeDisposable.add(disposable)
+    }
+
+    fun updatePlannedAmount(category: Category) {
+        val disposable = categoryService.updateCategory(category)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(
+                        { subject.onNext(SavedSuccessfully) },
+                        { handleErrors(it,REQUEST_AUTHORIZATION_UPDATING_CATEGORY ) })
         compositeDisposable.add(disposable)
     }
 }

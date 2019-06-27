@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "cc5e10a1ace5d7b807add09633831a28",
+    "identityHash": "126167a2e1a1499b880fbc299f32322c",
     "entities": [
       {
         "tableName": "category",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `planned` TEXT NOT NULL, `actual` TEXT NOT NULL, `difference` TEXT NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `planned` TEXT NOT NULL, `actual` TEXT NOT NULL, `difference` TEXT NOT NULL, `rowNumber` INTEGER NOT NULL, `spreadsheet_id` TEXT NOT NULL, PRIMARY KEY(`name`, `spreadsheet_id`), FOREIGN KEY(`spreadsheet_id`) REFERENCES `spreadsheet`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "name",
@@ -30,6 +30,12 @@
             "fieldPath": "difference",
             "columnName": "difference",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rowNumber",
+            "columnName": "rowNumber",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -226,7 +232,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"cc5e10a1ace5d7b807add09633831a28\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"126167a2e1a1499b880fbc299f32322c\")"
     ]
   }
 }

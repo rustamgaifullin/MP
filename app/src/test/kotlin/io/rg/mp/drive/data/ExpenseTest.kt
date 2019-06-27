@@ -9,7 +9,7 @@ class ExpenseTest {
     fun `list of properties should represent cells in a spreadsheet`() {
         //given
         val date = "01/01/2017"
-        val category = Category("category", "", "", "", "id")
+        val category = Category("category", "", "", "", 0, "id")
         val expense = Expense(date, 1.0f, "desc", category)
 
         //when

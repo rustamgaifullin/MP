@@ -8,7 +8,7 @@ import android.view.View.OnCreateContextMenuListener
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.BackpressureStrategy
+import io.reactivex.BackpressureStrategy.BUFFER
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
 import io.rg.mp.R
@@ -72,7 +72,7 @@ class SpreadsheetAdapter : RecyclerView.Adapter<ViewHolder>() {
         return null
     }
 
-    fun onClick(): Flowable<SpreadsheetEvent> = onClickSubject.toFlowable(BackpressureStrategy.BUFFER)
+    fun onClick(): Flowable<SpreadsheetEvent> = onClickSubject.toFlowable(BUFFER)
 
     class ViewHolder(
             itemView: View) : RecyclerView.ViewHolder(itemView), OnCreateContextMenuListener {

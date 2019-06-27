@@ -1,14 +1,19 @@
 package io.rg.mp.drive.sheet
 
+import com.google.api.client.testing.http.MockLowLevelHttpResponse
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.ValueRange
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import io.rg.mp.drive.CategoryService
+import io.rg.mp.mockResponse
+import io.rg.mp.mockSheetClient
 import io.rg.mp.persistence.entity.Category
+import io.rg.mp.updatePlannedValue
 import org.junit.Before
 import org.junit.Test
+import java.util.LinkedList
 
 class CategoryServiceTest {
     private val sheetsService: Sheets = mock()
@@ -35,7 +40,7 @@ class CategoryServiceTest {
         sut.getListBy("").test()
                 .assertNoErrors()
                 .assertValue {
-                    (list) -> list.contains(Category("category", "", "", "", ""))
+                    (list) -> list.contains(Category("category", "", "", "", 29, ""))
                 }
                 .assertComplete()
     }
@@ -70,6 +75,20 @@ class CategoryServiceTest {
                 .assertNoErrors()
                 .assertValue { (list) -> list.isEmpty() }
                 .assertComplete()
+    }
+
+    @Test
+    fun `should successfully update planned value`() {
+        val responses = LinkedList<MockLowLevelHttpResponse>()
+        responses.add(mockResponse(updatePlannedValue()))
+
+        val sut = CategoryService(mockSheetClient(responses))
+
+        sut.updateCategory(Category("", "", "", "", 0, ""))
+                .test()
+                .assertNoErrors()
+                .assertComplete()
+
     }
 
     private fun setToResponse(listOfCategories: List<List<Any>>?) {

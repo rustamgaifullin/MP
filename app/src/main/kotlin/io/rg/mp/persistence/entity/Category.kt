@@ -22,5 +22,6 @@ data class Category(
         @ColumnInfo var planned: String,
         @ColumnInfo var actual: String,
         @ColumnInfo var difference: String,
+        @ColumnInfo var rowNumber: Int,
         @ColumnInfo(name = "spreadsheet_id") var spreadsheetId: String
 )
