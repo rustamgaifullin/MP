@@ -39,10 +39,12 @@ class CategoriesAdapter: RecyclerView.Adapter<ViewHolder>() {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
         private val plannedTextView: TextView = itemView.findViewById(R.id.plannedTextView)
+        private val spentMoneyTextView: TextView = itemView.findViewById(R.id.spentMoneyTextView)
 
         fun bindData(category: Category) {
             nameTextView.text = category.name
             plannedTextView.text = category.planned
+            spentMoneyTextView.text = category.actual
         }
     }
 }

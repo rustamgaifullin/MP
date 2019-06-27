@@ -31,4 +31,5 @@
     <string name="renamed_successfully">Renamed successfully</string>
     <string name="show_categories">show categories</string>
     <string name="categories_title">Categories</string>
+    <string name="already_spent">Already spent</string>
 </resources>
