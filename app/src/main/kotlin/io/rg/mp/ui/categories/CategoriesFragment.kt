@@ -27,6 +27,7 @@ import io.rg.mp.ui.ViewModelResult
 import io.rg.mp.ui.categories.CategoriesViewModel.Companion.REQUEST_AUTHORIZATION_LOADING_CATEGORIES
 import io.rg.mp.utils.setVisibility
 import kotlinx.android.synthetic.main.fragment_categories.categoriesRecyclerView
+import kotlinx.android.synthetic.main.fragment_categories.createCategoryButton
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar
 import javax.inject.Inject
 
@@ -76,6 +77,37 @@ class CategoriesFragment : Fragment() {
         categoriesRecyclerView.adapter = categoriesAdapter
 
         reloadViewAuthenticator.restoreState(savedInstanceState)
+
+        createCategoryButton.setOnClickListener {
+            //Uncomment when creating category will be ready
+            //createCategory()
+        }
+    }
+
+    private fun createCategory() {
+        val builder = Builder(requireActivity())
+        builder.setTitle(getString(string.planned_amount))
+
+        val view = View.inflate(requireContext(), layout.dialog_create_category, null)
+        val categoryNameEditText = view.findViewById<TextInputEditText>(R.id.categoryNameEditText)
+        val plannedAmountEditTExt = view.findViewById<TextInputEditText>(R.id.plannedAmountEditText)
+
+        builder.setView(view)
+
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.setPositiveButton(getString(string.update)) { dialog, _ ->
+            viewModel.createCategory(
+                    spreadsheetId,
+                    categoryNameEditText.text.toString(),
+                    plannedAmountEditTExt.text.toString())
+
+            dialog.dismiss()
+        }
+
+        builder.create().show()
     }
 
     override fun onStart() {
@@ -125,6 +157,7 @@ class CategoriesFragment : Fragment() {
             when (requestCode) {
                 REQUEST_AUTHORIZATION_LOADING_CATEGORIES -> viewModel.reloadData(spreadsheetId)
 //                REQUEST_AUTHORIZATION_UPDATING_CATEGORY -> viewModel.updatePlannedAmount() TODO: need to store category somewhere
+//                REQUEST_AUTHORIZATION_CREATING_CATEGORY -> viewModel.createCategory() TODO: need to store category somewhere
             }
         }
     }
@@ -138,7 +171,7 @@ class CategoriesFragment : Fragment() {
 
     private fun editPlannedAmount(category: Category) {
         val builder = Builder(requireActivity())
-        builder.setTitle(getString(string.enter_name))
+        builder.setTitle(getString(string.planned_amount))
 
         //TODO: add validator for the editText
         val view = View.inflate(requireContext(), layout.dialog_edittext, null)

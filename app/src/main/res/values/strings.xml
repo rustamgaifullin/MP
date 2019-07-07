@@ -33,4 +33,6 @@
     <string name="categories_title">Categories</string>
     <string name="already_spent">Already spent</string>
     <string name="update">Update</string>
+    <string name="category_name">Category name</string>
+    <string name="planned_amount">Planned amount</string>
 </resources>
